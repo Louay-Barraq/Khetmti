@@ -11,7 +11,7 @@ class FriendAdditionComponent extends StatelessWidget {
   final VoidCallback onDecline;
 
   const FriendAdditionComponent({
-    Key? key,
+    super.key,
     required this.username,
     required this.email,
     required this.status,
@@ -19,7 +19,7 @@ class FriendAdditionComponent extends StatelessWidget {
     required this.onRemove,
     required this.onAccept,
     required this.onDecline,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +63,11 @@ class FriendAdditionComponent extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10,
-                      vertical: 0), // Horizontal margin of 20 pixels
+                      vertical: 0),
                   child: Container(
                     padding: EdgeInsets.symmetric(
                         horizontal: 15,
-                        vertical: 5), // Inner padding for the text
+                        vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
@@ -125,18 +125,26 @@ class FriendAdditionComponent extends StatelessWidget {
     if (status == 'friends') {
       return Center(
         child: Text(
-          'Friends',
+          'أصــــــدقاء',
           style: TextStyle(
             color: MainTheme.primaryColor,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Amiri',
+            fontSize: 18
+            ,
           ),
         ),
       );
     } else if (status == 'pending') {
       return Center(
         child: IconButton(
-          icon: Icon(Icons.clear, color: Colors.redAccent),
+          icon: Icon(
+            Icons.clear,
+            color: Colors.redAccent,
+            size: 30,
+          ),
           onPressed: onRemove,
+
         ),
       );
     } else if (status == 'received') {
@@ -169,13 +177,13 @@ class FriendAdditionComponent extends StatelessWidget {
           icon: Icon(
             Icons.add,
             color: MainTheme.primaryColor,
-            size: 40,
+            size: 30,
           ),
           onPressed: onAdd,
         ),
       );
     } else {
-      return Container(); // Default case, can be customized
+      return Container();
     }
   }
 }

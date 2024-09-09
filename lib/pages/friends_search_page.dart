@@ -9,31 +9,48 @@ import 'package:khetmti/components/introductive_component.dart';
 import 'package:khetmti/components/top_page_box.dart';
 import '../themes/main_theme.dart';
 
-class SearchFriendsPage extends StatefulWidget {
-  const SearchFriendsPage({super.key});
+class FriendsSearchPage extends StatefulWidget {
+  const FriendsSearchPage({super.key});
 
   @override
-  _SearchFriendsPageState createState() => _SearchFriendsPageState();
+  _FriendsSearchPageState createState() => _FriendsSearchPageState();
 }
 
-class _SearchFriendsPageState extends State<SearchFriendsPage> {
+class _FriendsSearchPageState extends State<FriendsSearchPage> {
   final _controller = TextEditingController();
   List _searchResults = [];
   bool _isLoading = false;
 
   Future _searchForFriends() async {
-    setState(() {
-      _isLoading = true;
-    });
+    final searchQuery = _controller.text.trim();
+
+    if (searchQuery.isEmpty) {
+      // Show a toast message asking for valid input
+      Fluttertoast.showToast(
+        msg: 'الرجاء إدخال اسم صحيح قبل البحث!',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        backgroundColor: Colors.orange,
+        textColor: Colors.white,
+        fontSize: 17.0,
+      );
+
+      _searchResults = [];
+
+      return; // Stop the search
+    }
+
+      setState(() {
+        _isLoading = true;
+      });
 
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     try {
       final userSearchResults = await FirebaseFirestore.instance
           .collection('users')
-          .where('username', isGreaterThanOrEqualTo: _controller.text.trim())
-          .where('username',
-              isLessThanOrEqualTo: '${_controller.text.trim()}\uf8ff')
+          .where('username', isGreaterThanOrEqualTo: searchQuery)
+          .where('username', isLessThanOrEqualTo: '${searchQuery}\uf8ff')
           .get();
 
       final List results = [];
@@ -113,7 +130,7 @@ class _SearchFriendsPageState extends State<SearchFriendsPage> {
       });
     }
   }
-
+  
   Future _handleAddFriend(String friendUid) async {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
@@ -174,6 +191,7 @@ class _SearchFriendsPageState extends State<SearchFriendsPage> {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     try {
+      // Step 1: Remove the pending friend request
       final requestSnapshot = await FirebaseFirestore.instance
           .collection('friendships')
           .where('sender', isEqualTo: friendUid)
@@ -185,10 +203,31 @@ class _SearchFriendsPageState extends State<SearchFriendsPage> {
         await doc.reference.delete();
       }
 
+      // Step 2: Add both users to the friendships collection
       await FirebaseFirestore.instance.collection('friendships').add({
         'users': [currentUserId, friendUid],
         'timestamp': FieldValue.serverTimestamp(),
       });
+
+      try {
+        // Add the current user to the friend's 'friends' array
+        await FirebaseFirestore.instance.collection('users').doc(friendUid).update({
+          'friends': FieldValue.arrayUnion([currentUserId]),
+          'updatedAt': Timestamp.now(),
+        });
+      } catch (e) {
+        print('Error updating friend array for friendUid: $friendUid, Error: $e');
+      }
+
+      try {
+        // Add the friend to the current user's 'friends' array
+        await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+          'friends': FieldValue.arrayUnion([friendUid]),
+          'updatedAt': Timestamp.now(),
+        });
+      } catch (e) {
+        print('Error updating friend array for currentUserId: $currentUserId, Error: $e');
+      }
 
       Fluttertoast.showToast(
         msg: 'تم قبول طلب الصداقة!',
@@ -199,11 +238,13 @@ class _SearchFriendsPageState extends State<SearchFriendsPage> {
         fontSize: 17.0,
       );
 
+      // Refresh the search results after accepting the request
       _searchForFriends();
     } catch (e) {
       print('Error accepting friend request: $e');
     }
   }
+
 
   Future _handleDeclineRequest(String friendUid) async {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
@@ -239,22 +280,35 @@ class _SearchFriendsPageState extends State<SearchFriendsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      floatingActionButton: FloatingActionButton(
+      appBar: AppBar(
         backgroundColor: MainTheme.primaryColor,
-        onPressed: () => Navigator.pop(context),
-        child: Icon(
-          Icons.arrow_back,
-          color: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white,),
+          onPressed: () => Navigator.pop(context),
         ),
+        title: Text("ختمتـــــــي",
+          style: TextStyle(
+            fontFamily: 'Amiri',
+            fontWeight: FontWeight.bold,
+            fontSize: 28,
+            color: Colors.white,
+            shadows: const [
+              Shadow(
+                  offset: Offset(0, 4),
+                  blurRadius: 2.5,
+                  color: Color(0x3F000000)),
+            ],
+          ),
+        ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              TopPageBox(),
-              SizedBox(height: 25),
-              IntroductiveComponent(text: "البــحث عـــن صــديق(ة)"),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
+              Center(child: IntroductiveComponent(text: "البــحث عـــن صــديق(ة)")),
+              SizedBox(height: 20),
               Container(
                 width: MediaQuery.of(context).size.width - 40,
                 height: 45,
@@ -271,7 +325,7 @@ class _SearchFriendsPageState extends State<SearchFriendsPage> {
                   ),
                   decoration: InputDecoration(
                     contentPadding:
-                        EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
@@ -284,29 +338,47 @@ class _SearchFriendsPageState extends State<SearchFriendsPage> {
               ),
               SizedBox(height: 20),
               _isLoading
-                  ? CircularProgressIndicator()
+                  ? Center(child: CircularProgressIndicator())
                   : SizedBox(
-                      height: MediaQuery.of(context).size.height *
-                          0.6, // Adjust for the keyboard
-                      child: ListView.builder(
-                        itemCount: _searchResults.length,
-                        itemBuilder: (context, index) {
-                          final friendData = _searchResults[index];
-                          return FriendAdditionComponent(
-                            username: friendData['username'] ?? 'Username',
-                            email: friendData['email'] ?? '',
-                            status: friendData['status'] ?? 'none',
-                            onAdd: () => _handleAddFriend(friendData['uid']),
-                            onRemove: () =>
-                                _handleRemoveRequest(friendData['uid']),
-                            onAccept: () =>
-                                _handleAcceptRequest(friendData['uid']),
-                            onDecline: () =>
-                                _handleDeclineRequest(friendData['uid']),
-                          );
-                        },
-                      ),
-                    ),
+                height: MediaQuery.of(context).size.height * 0.6, // Adjust for the keyboard
+                child: ListView.builder(
+                  itemCount: _searchResults.length + 1,
+                  itemBuilder: (context, index) {
+                    if (_searchResults.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Center(
+                          child: Text(
+                            'لا يوجد شخص بهذا الاسم',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Amiri',
+                              fontSize: 24,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    if (index == _searchResults.length) {
+                      return SizedBox(height: 80);
+                    }
+                    final friendData = _searchResults[index];
+                    return FriendAdditionComponent(
+                      username: friendData['username'] ?? 'Username',
+                      email: friendData['email'] ?? '',
+                      status: friendData['status'] ?? 'none',
+                      onAdd: () => _handleAddFriend(friendData['uid']),
+                      onRemove: () => _handleRemoveRequest(friendData['uid']),
+                      onAccept: () => _handleAcceptRequest(friendData['uid']),
+                      onDecline: () =>
+                          _handleDeclineRequest(friendData['uid']),
+                    );
+                  },
+                ),
+              ),
+
             ],
           ),
         ),

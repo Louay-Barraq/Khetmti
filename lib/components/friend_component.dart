@@ -4,8 +4,9 @@ import '../themes/main_theme.dart';
 
 class FriendComponent extends StatelessWidget {
   final String username;
+  final int level;
 
-  const FriendComponent({required this.username, super.key});
+  const FriendComponent({required this.username, super.key, required this.level});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +54,7 @@ class FriendComponent extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          "25",
+                          level.toString(),
                           style: TextStyle(
                               fontFamily: 'Roboto',
                               fontWeight: FontWeight.bold,
