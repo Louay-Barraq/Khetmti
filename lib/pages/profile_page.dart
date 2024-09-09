@@ -8,6 +8,8 @@ import 'package:khetmti/components/profile_top_page_box.dart';
 import '../auth/auth_service.dart';
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
@@ -23,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _fetchProfileTopData();
     _dataFuture =
-        _fetchData(); // Fetch data for the first view (Friends by default)
+        _fetchData();
   }
 
   Future<void> _fetchProfileTopData() async {
@@ -110,11 +112,15 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
 
                     return ListView.builder(
-                      itemCount: data.length,
+                      itemCount: data.length + 1,
                       itemBuilder: (context, index) {
+                        if (index == data.length) {
+                          return SizedBox(height: 40);
+                        }
                         if (_currentView == 'Your Friends') {
                           return FriendComponent(
                             username: data[index]['username'] ?? 'Unknown',
+                            level: data[index]['level'] ?? '0',
                           );
                         } else {
                           return KhetmaComponent(
@@ -140,16 +146,27 @@ class _ProfilePageState extends State<ProfilePage> {
 
 Future<List<Map<String, dynamic>>> _fetchFriends() async {
   final userId = FirebaseAuth.instance.currentUser?.uid;
-  if (userId == null) return [];
-
   try {
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
-        .collection('friends')
         .get();
 
-    return snapshot.docs.map((doc) => doc.data()).toList();
+    List<dynamic> friendsUids = snapshot.data()?['friends'] ?? [];
+
+    if (friendsUids.isEmpty) {
+      return [];
+    }
+
+    List<Map<String, dynamic>> friendsList = [];
+    for (String friendUid in friendsUids) {
+      DocumentSnapshot friendDoc = await FirebaseFirestore.instance.collection('users').doc(friendUid).get();
+      if (friendDoc.exists && friendDoc.data() != null) {
+        friendsList.add(friendDoc.data() as Map<String, dynamic>);
+      }
+    }
+
+    return friendsList;
   } catch (e) {
     print("Error fetching friends: $e");
     return [];

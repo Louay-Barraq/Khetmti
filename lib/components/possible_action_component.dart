@@ -4,7 +4,7 @@ import '../themes/main_theme.dart';
 class PossibleActionComponent extends StatelessWidget {
   final String actionText;
 
-  PossibleActionComponent({super.key, required this.actionText});
+  const PossibleActionComponent({super.key, required this.actionText});
 
   @override
   Widget build(BuildContext context) {

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:khetmti/components/introductive_component.dart';
 import 'package:khetmti/components/settings_component.dart';
 import 'package:khetmti/pages/login_page.dart';
-import 'package:khetmti/themes/main_theme.dart';
 import '../auth/auth_service.dart';
 import '../components/top_page_box.dart';
 

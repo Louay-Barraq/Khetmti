@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../themes/main_theme.dart';
 
-import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
 
 class StateSwitch extends StatefulWidget {
   const StateSwitch({super.key});
