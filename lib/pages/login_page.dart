@@ -3,10 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:khetmti/auth/auth_service.dart';
-import 'package:khetmti/components/custom_authentication_button.dart';
-import 'package:khetmti/components/custom_authentication_textfield.dart';
+import 'package:khetmti/components/custom_button.dart';
+import 'package:khetmti/components/custom_textfield.dart';
 import 'package:khetmti/pages/register_page.dart';
-import 'package:khetmti/themes/main_theme.dart';
 
 import '../components/top_page_box.dart';
 import 'index_page.dart';
@@ -102,24 +101,27 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 25),
-              CustomAuthenticationTextfield(
+              CustomTextfield(
                 fieldController: emailController,
                 fieldTitle: " : البريد الإلكتروني",
                 inArabic: false,
                 isPassword: false,
+                onlyNumber: false,
               ),
               SizedBox(height: 40),
-              CustomAuthenticationTextfield(
-                  fieldController: passwordController,
-                  fieldTitle: " : كلمة السر",
-                  inArabic: false,
-                  isPassword: true),
+              CustomTextfield(
+                fieldController: passwordController,
+                fieldTitle: " : كلمة السر",
+                inArabic: false,
+                isPassword: true,
+                onlyNumber: false,
+              ),
               SizedBox(height: 50),
               GestureDetector(
                   onTap: () {
                     login();
                   },
-                  child: CustomAuthenticationButton(text: "تسجيل الدخول")),
+                  child: CustomButton(text: "تسجيل الدخول")),
               SizedBox(height: 20),
               GestureDetector(
                 onTap: () {

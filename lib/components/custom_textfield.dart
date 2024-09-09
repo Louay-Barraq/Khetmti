@@ -2,25 +2,27 @@
 import 'package:flutter/material.dart';
 import 'package:khetmti/themes/main_theme.dart';
 
-class CustomAuthenticationTextfield extends StatefulWidget {
+class CustomTextfield extends StatefulWidget {
   TextEditingController fieldController;
   String fieldTitle;
   bool inArabic;
   bool isPassword;
-  CustomAuthenticationTextfield(
+  bool onlyNumber;
+  CustomTextfield(
       {super.key,
       required this.fieldController,
       required this.fieldTitle,
       required this.inArabic,
-      required this.isPassword});
+      required this.isPassword,
+      required this.onlyNumber});
 
   @override
-  State<CustomAuthenticationTextfield> createState() =>
-      _CustomAuthenticationTextfieldState();
+  State<CustomTextfield> createState() =>
+      _CustomTextfieldState();
 }
 
-class _CustomAuthenticationTextfieldState
-    extends State<CustomAuthenticationTextfield> {
+class _CustomTextfieldState
+    extends State<CustomTextfield> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.sizeOf(context).width;
@@ -65,6 +67,7 @@ class _CustomAuthenticationTextfieldState
                 borderRadius: BorderRadius.circular(15),
               ),
               child: TextFormField(
+                keyboardType: widget.onlyNumber == true ? TextInputType.number : TextInputType.text,
                 controller: widget.fieldController,
                 textDirection: widget.inArabic == true
                     ? TextDirection.rtl
@@ -75,6 +78,7 @@ class _CustomAuthenticationTextfieldState
                   fontSize: 18,
                 ),
                 decoration: InputDecoration(
+
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,

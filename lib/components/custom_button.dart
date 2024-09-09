@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../themes/main_theme.dart';
 
-class CustomAuthenticationButton extends StatelessWidget {
+class CustomButton extends StatelessWidget {
   String text;
-  CustomAuthenticationButton({super.key, required this.text});
+  CustomButton({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {

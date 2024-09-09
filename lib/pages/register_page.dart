@@ -5,8 +5,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:khetmti/auth/auth_service.dart';
 import 'package:khetmti/pages/index_page.dart';
 import 'package:khetmti/pages/login_page.dart';
-import '../components/custom_authentication_button.dart';
-import '../components/custom_authentication_textfield.dart';
+import '../components/custom_button.dart';
+import '../components/custom_textfield.dart';
 import '../components/top_page_box.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -114,32 +114,35 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
               SizedBox(height: 20),
-              CustomAuthenticationTextfield(
+              CustomTextfield(
                 fieldController: usernameController,
                 fieldTitle: "الإسم و اللقب : ( بالعربية ) ",
                 inArabic: true,
                 isPassword: false,
+                onlyNumber: false,
               ),
               SizedBox(height: 20),
-              CustomAuthenticationTextfield(
+              CustomTextfield(
                 fieldController: emailController,
                 fieldTitle: " : البريد الإلكتروني",
                 inArabic: false,
                 isPassword: false,
+                onlyNumber: false,
               ),
               SizedBox(height: 20),
-              CustomAuthenticationTextfield(
+              CustomTextfield(
                 fieldController: passwordController,
                 fieldTitle: " : كلمة السر",
                 inArabic: false,
                 isPassword: true,
+                onlyNumber: false,
               ),
               SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
                   register();
                 },
-                child: CustomAuthenticationButton(text: "إنشاء حساب"),
+                child: CustomButton(text: "إنشاء حساب"),
               ),
               SizedBox(height: 20),
               GestureDetector(
