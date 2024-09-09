@@ -22,7 +22,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   width: 30, height: 30)
               : Image.asset("assets/icons/Home-Outlined.png",
                   width: 30, height: 30),
-          label: 'Home',
+          label: 'الرئيسية',
         ),
         BottomNavigationBarItem(
           icon: selectedIndex == 1
@@ -30,7 +30,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   width: 30, height: 30)
               : Image.asset("assets/icons/Menu-Outlined.png",
                   width: 30, height: 30),
-          label: 'Menu',
+          label: 'القائمة',
         ),
         BottomNavigationBarItem(
           icon: selectedIndex == 2
@@ -38,7 +38,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   width: 25, height: 25)
               : Image.asset("assets/icons/Settings-Outlined-1.png",
                   width: 30, height: 30),
-          label: 'Settings',
+          label: 'الإعدادات',
         ),
         BottomNavigationBarItem(
           icon: selectedIndex == 3
@@ -46,7 +46,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   width: 30, height: 30)
               : Image.asset("assets/icons/Profile-Outlined.png",
                   width: 30, height: 30),
-          label: 'Profile',
+          label: 'الحساب',
         ),
       ],
       currentIndex: selectedIndex,
@@ -85,6 +85,25 @@ class _MyDraggableSheetState extends State<MyDraggableSheet> {
     final currentSize = controller.size;
   }
 
+  void collapse() => animateSheet(getSheet.snapSizes!.first);
+
+  void anchor() => animateSheet(getSheet.snapSizes!.last);
+
+  void expand() => animateSheet(getSheet.maxChildSize);
+
+  void hide() => animateSheet(getSheet.minChildSize);
+
+  void animateSheet(double size) {
+    controller.animateTo(
+      size,
+      duration: const Duration(milliseconds: 50),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  DraggableScrollableSheet get getSheet =>
+      (sheet.currentWidget as DraggableScrollableSheet);
+
   @override
   void dispose() {
     controller.dispose();
@@ -97,7 +116,7 @@ class _MyDraggableSheetState extends State<MyDraggableSheet> {
       key: sheet,
       initialChildSize: 0.04,
       maxChildSize: 0.65,
-      minChildSize: 0.03,
+      minChildSize: 0.04,
       expand: true,
       controller: controller,
       builder: (BuildContext context, ScrollController scrollController) {

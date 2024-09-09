@@ -11,7 +11,7 @@ class TopPageBox extends StatelessWidget {
     double screenWidth = MediaQuery.sizeOf(context).width;
     return Container(
       width: screenWidth,
-      height: 200,
+      height: 180,
       decoration: BoxDecoration(
         color: MainTheme.primaryColor,
         borderRadius: BorderRadius.only(

@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:khetmti/components/bottom_nav_bar_with_draggable_sheet.dart';
+import 'package:flutter/services.dart';
+import 'package:khetmti/auth/auth_page.dart';
 import 'package:khetmti/pages/index_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:khetmti/pages/search_friends_page.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,16 +29,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const MyWidget(),
+      home: AuthPage(),
     );
-  }
-}
-
-class MyWidget extends StatelessWidget {
-  const MyWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const IndexPage();
   }
 }

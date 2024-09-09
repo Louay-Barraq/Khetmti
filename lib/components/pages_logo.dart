@@ -21,9 +21,9 @@ class PagesLogo extends StatelessWidget {
             )
           ]),
       child: Image.asset(
-        "assets/icons/Coran-Filled.png",
-        width: 55,
-        height: 61,
+        "assets/icons/Coran-Filled-100.png",
+        height: 55,
+        width: 61,
       ),
     );
   }
