@@ -36,11 +36,13 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [MainTheme.primaryColor, MainTheme.secondaryColor],
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft),
+          gradient: LinearGradient(colors: [
+            MainTheme.primaryColor.withOpacity(0.75),
+            MainTheme.secondaryColor.withOpacity(0.75)
+          ], begin: Alignment.topRight, end: Alignment.bottomLeft),
         ),
+        child:
+            Center(child: Image.asset("assets/images/Khetmti - App Logo.png")),
       ),
     );
   }
