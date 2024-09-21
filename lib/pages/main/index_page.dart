@@ -2,11 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:khetmti/components/bottom_nav_bar_with_draggable_sheet.dart';
-import 'package:khetmti/pages/home_page.dart';
-import 'package:khetmti/pages/profile_page.dart';
-import 'package:khetmti/pages/settings_page.dart';
-
+import 'package:khetmti/pages/main/settings_page.dart';
+import 'home_page.dart';
 import 'menu_page.dart';
+import 'profile_page.dart';
 
 class IndexPage extends StatefulWidget {
   const IndexPage({super.key});
@@ -49,7 +48,21 @@ class _IndexPageState extends State<IndexPage> {
           ),
           MyDraggableSheet(
             child: Column(
-              children: List.generate(3, (_) => BottomSheetDummyUI()),
+              children: const [
+                SizedBox(height: 200),
+                Center(
+                  child: Text(
+                    'ميــزة غيــر متاحــة حــاليا',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Amiri',
+                      fontSize: 28,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

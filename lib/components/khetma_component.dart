@@ -38,70 +38,10 @@ class _KhetmaComponentState extends State<KhetmaComponent> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        textDirection: TextDirection.rtl,
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  widget.title,
-                  style: TextStyle(
-                      fontFamily: 'Amiri',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  // mainAxisAlignment: MainAxisAlignment.,
-                  children: [
-                    Container(
-                      height: 26,
-                      width: 26,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "${widget.participantsCount}",
-                          style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Container(
-                      height: 25,
-                      padding: EdgeInsets.symmetric(horizontal: 45),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        "عدد المشاركين",
-                        style: TextStyle(
-                            fontFamily: 'Amiri',
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          VerticalDivider(
-            thickness: 1,
-            color: Color(0x33000000),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 5),
             child: CircularPercentIndicator(
               radius: 40,
               percent: widget.progress,
@@ -135,6 +75,87 @@ class _KhetmaComponentState extends State<KhetmaComponent> {
                 ),
               ),
             ),
+          ),
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              VerticalDivider(
+                thickness: 1,
+                color: Color(0x33000000),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      textDirection: TextDirection.rtl,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          " ختمــة لفــائدة",
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Amiri',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
+                        Text(
+                          widget.title,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Amiri',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 26,
+                          width: 26,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              "${widget.participantsCount}",
+                              style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Container(
+                          height: 25,
+                          padding: EdgeInsets.symmetric(horizontal: 45),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            "عدد المشاركين",
+                            style: TextStyle(
+                                fontFamily: 'Amiri',
+                                fontWeight: FontWeight.normal,
+                                fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

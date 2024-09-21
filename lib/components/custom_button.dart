@@ -31,6 +31,14 @@ class CustomButton extends StatelessWidget {
               fontFamily: 'Amiri',
               fontWeight: FontWeight.bold,
               fontSize: 25,
+              color: Colors.white,
+              shadows: const [
+                Shadow(
+                  offset: Offset(0, 2),
+                  blurRadius: 2.5,
+                  color: Color(0x3F000000),
+                ),
+              ],
             ),
           ),
         ),

@@ -25,7 +25,7 @@ class FriendAdditionComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      height: 90,
+      height: 100,
       decoration: BoxDecoration(
         color: MainTheme.greyishColor,
         borderRadius: BorderRadius.circular(12),

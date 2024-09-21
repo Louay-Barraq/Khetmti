@@ -13,9 +13,8 @@ class ProfileTopPageBox extends StatelessWidget {
   });
 
   double _calculateFontSize(String text, double maxWidth) {
-    // Calculate a reasonable font size based on the length of the text
     double baseFontSize = 40;
-    double textWidth = (text.length / 10) * baseFontSize; // Rough approximation
+    double textWidth = (text.length / 10) * baseFontSize;
     return (textWidth > maxWidth)
         ? (baseFontSize * maxWidth / textWidth)
         : baseFontSize;
@@ -48,7 +47,7 @@ class ProfileTopPageBox extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
                 Padding(
-                  padding: EdgeInsets.all(16.0), // Add padding around the logo
+                  padding: EdgeInsets.all(16.0),
                   child: ProfilePageLogo(),
                 ),
                 SizedBox(width: 20),

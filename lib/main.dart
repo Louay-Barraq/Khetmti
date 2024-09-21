@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:khetmti/auth/auth_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:khetmti/pages/onboarding/splash_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -13,7 +13,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: AuthPage(),
+      home: SplashScreen(),
     );
   }
 }

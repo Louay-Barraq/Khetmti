@@ -30,8 +30,8 @@ class _ProfileStateSwitchState extends State<ProfileStateSwitch> {
           GestureDetector(
             onTap: () {
               setState(() {
-                _isActive = 'Your Khatms'; // Update to 'Your Khatms'
-                widget.onSwitchChanged(_isActive); // Notify parent
+                _isActive = 'Your Khatms';
+                widget.onSwitchChanged(_isActive);
               });
             },
             child: Container(
@@ -61,8 +61,8 @@ class _ProfileStateSwitchState extends State<ProfileStateSwitch> {
           GestureDetector(
             onTap: () {
               setState(() {
-                _isActive = 'Your Friends'; // Update to 'Your Friends'
-                widget.onSwitchChanged(_isActive); // Notify parent
+                _isActive = 'Your Friends';
+                widget.onSwitchChanged(_isActive);
               });
             },
             child: Container(

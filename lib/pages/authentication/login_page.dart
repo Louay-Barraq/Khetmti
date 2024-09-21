@@ -1,23 +1,25 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: prefer_const_literals_to_create_immutables
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:khetmti/auth/auth_service.dart';
-import 'package:khetmti/pages/index_page.dart';
-import 'package:khetmti/pages/login_page.dart';
-import '../components/custom_button.dart';
-import '../components/custom_textfield.dart';
-import '../components/top_page_box.dart';
+import 'package:khetmti/components/custom_button.dart';
+import 'package:khetmti/components/custom_textfield.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+import '../../components/top_page_box.dart';
+import '../main/index_page.dart';
+import 'register_page.dart';
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final usernameController = TextEditingController();
+class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _authService = AuthService();
@@ -45,19 +47,55 @@ class _RegisterPageState extends State<RegisterPage> {
     Navigator.of(context).pop();
   }
 
-  void register() async {
-    if (usernameController.text.trim().length < 5) {
-      Fluttertoast.showToast(
-        msg: 'يجب أن يتكون طول اسم المستخدم من 5 أحرف على الأقل',
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.redAccent,
-        textColor: Colors.white,
-        fontSize: 17.0,
-      );
-      return;
+  Future<void> updateEmailInFirestore(String userId, String newEmail) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({'email': newEmail});
+      print('Email updated in Firestore.');
+    } catch (e) {
+      print('Error updating email in Firestore: $e');
     }
+  }
 
+  Future<void> checkEmailVerificationAndUpdateFirestore() async {
+    final auth = FirebaseAuth.instance;
+    if (auth != null) {
+      await auth.currentUser?.reload();
+      final user = auth.currentUser;
+
+      print("Email Verified: ${user?.emailVerified}");
+      final userData = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .get();
+      if (userData.data()?['emailUpdated'] == true) {
+        if (user.emailVerified) {
+          await updateEmailInFirestore(user.uid, user.email!);
+          print("updated");
+        } else {
+          Fluttertoast.showToast(
+            msg: 'يرجى التحقق من الإيميل ثم تسجيل الدخول مرة أخرى.',
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.SNACKBAR,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 17.0,
+          );
+
+          await FirebaseAuth.instance.signOut();
+          await Future.delayed(Duration(seconds: 2));
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => LoginPage()),
+            (route) => false,
+          );
+        }
+      }
+    }
+  }
+
+  void login() async {
     if (!isValidEmail(emailController.text.trim())) {
       Fluttertoast.showToast(
         msg: 'عنوان البريد الإلكتروني غير صالح',
@@ -72,12 +110,17 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       showLoadingDialog();
-      var userCredential = await _authService.signUpWithEmailAndPwd(
+      var userCredential = await _authService.signInWithEmailAndPwd(
           email: emailController.text.trim(),
-          username: usernameController.text.trim(),
           password: passwordController.text.trim());
       dismissLoadingDialog();
+
       if (userCredential != null) {
+        emailController.clear();
+        passwordController.clear();
+        // After login, check if email is verified and update Firestore
+        await checkEmailVerificationAndUpdateFirestore();
+
         await Future.delayed(Duration(seconds: 1));
         Navigator.pushReplacement(
           context,
@@ -88,6 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
       }
     } catch (e) {
       print('Error: $e');
+      dismissLoadingDialog();
     }
   }
 
@@ -102,10 +146,10 @@ class _RegisterPageState extends State<RegisterPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TopPageBox(),
-              SizedBox(height: 25),
+              SizedBox(height: 15),
               Center(
                 child: Text(
-                  "إنشاء حساب جديد",
+                  "تسجيل الدخول",
                   style: TextStyle(
                     fontFamily: 'Amiri',
                     fontWeight: FontWeight.bold,
@@ -113,15 +157,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              CustomTextfield(
-                fieldController: usernameController,
-                fieldTitle: "الإسم و اللقب : ( بالعربية ) ",
-                inArabic: true,
-                isPassword: false,
-                onlyNumber: false,
+              SizedBox(height: 5),
+              Center(
+                child: Text(
+                  "(لـــديك حســـاب)",
+                  style: TextStyle(
+                    fontFamily: 'Amiri',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 25,
+                  ),
+                ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 25),
               CustomTextfield(
                 fieldController: emailController,
                 fieldTitle: " : البريد الإلكتروني",
@@ -129,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 isPassword: false,
                 onlyNumber: false,
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 40),
               CustomTextfield(
                 fieldController: passwordController,
                 fieldTitle: " : كلمة السر",
@@ -137,22 +184,21 @@ class _RegisterPageState extends State<RegisterPage> {
                 isPassword: true,
                 onlyNumber: false,
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 50),
               GestureDetector(
-                onTap: () {
-                  register();
-                },
-                child: CustomButton(text: "إنشاء حساب"),
-              ),
+                  onTap: () {
+                    login();
+                  },
+                  child: CustomButton(text: "تسجيل الدخول")),
               SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => LoginPage()));
+                      MaterialPageRoute(builder: (context) => RegisterPage()));
                 },
                 child: Center(
                   child: Text(
-                    'لديك حساب ؟ أنقر هنا',
+                    'ليس لديك حساب ؟ أنقر هنا',
                     style: TextStyle(
                       fontFamily: 'Amiri',
                       fontWeight: FontWeight.bold,
@@ -161,7 +207,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
             ],
           ),
         ),

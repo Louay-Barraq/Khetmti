@@ -65,7 +65,7 @@ class AuthService {
       await _auth.signOut();
       Fluttertoast.showToast(
         msg: 'تم تسجيل الخروج بنجاح!',
-        toastLength: Toast.LENGTH_LONG,
+        toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         backgroundColor: Colors.green,
         textColor: Colors.white,

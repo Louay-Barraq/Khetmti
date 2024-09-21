@@ -6,4 +6,5 @@ class MainTheme {
   static Color tertiaryColor = Color(0xFF9DB2CE);
   static Color blackishColor = Color(0xFF253237);
   static Color greyishColor = Color(0xFFD9D9D9);
+  static Color redishColor = Color(0xFFFA5252);
 }

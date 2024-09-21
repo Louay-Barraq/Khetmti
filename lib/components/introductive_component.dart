@@ -13,6 +13,14 @@ class IntroductiveComponent extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.circular(100),
+        boxShadow: const [
+          BoxShadow(
+            offset: Offset(0, 2),
+            blurRadius: 2,
+            spreadRadius: 2,
+            color: Color(0x3F000000),
+          )
+        ],
       ),
       child: Center(
         child: Text(

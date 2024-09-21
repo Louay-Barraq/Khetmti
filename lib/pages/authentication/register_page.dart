@@ -1,23 +1,23 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables
+// ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:khetmti/auth/auth_service.dart';
-import 'package:khetmti/components/custom_button.dart';
-import 'package:khetmti/components/custom_textfield.dart';
-import 'package:khetmti/pages/register_page.dart';
+import 'package:khetmti/pages/main/index_page.dart';
+import 'package:khetmti/pages/authentication/login_page.dart';
+import '../../components/custom_button.dart';
+import '../../components/custom_textfield.dart';
+import '../../components/top_page_box.dart';
 
-import '../components/top_page_box.dart';
-import 'index_page.dart';
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
+  final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _authService = AuthService();
@@ -45,7 +45,19 @@ class _LoginPageState extends State<LoginPage> {
     Navigator.of(context).pop();
   }
 
-  void login() async {
+  void register() async {
+    if (usernameController.text.trim().length < 5) {
+      Fluttertoast.showToast(
+        msg: 'يجب أن يتكون طول اسم المستخدم من 5 أحرف على الأقل',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.SNACKBAR,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.white,
+        fontSize: 17.0,
+      );
+      return;
+    }
+
     if (!isValidEmail(emailController.text.trim())) {
       Fluttertoast.showToast(
         msg: 'عنوان البريد الإلكتروني غير صالح',
@@ -60,8 +72,9 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       showLoadingDialog();
-      var userCredential = await _authService.signInWithEmailAndPwd(
+      var userCredential = await _authService.signUpWithEmailAndPwd(
           email: emailController.text.trim(),
+          username: usernameController.text.trim(),
           password: passwordController.text.trim());
       dismissLoadingDialog();
       if (userCredential != null) {
@@ -89,10 +102,10 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TopPageBox(),
-              SizedBox(height: 25),
+              SizedBox(height: 15),
               Center(
                 child: Text(
-                  "تسجيل الدخول",
+                  "إنشاء حساب جديد",
                   style: TextStyle(
                     fontFamily: 'Amiri',
                     fontWeight: FontWeight.bold,
@@ -100,7 +113,25 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 25),
+              Center(
+                child: Text(
+                  "(لـــيس لـــديك حســـاب)",
+                  style: TextStyle(
+                    fontFamily: 'Amiri',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                  ),
+                ),
+              ),
+              SizedBox(height: 15),
+              CustomTextfield(
+                fieldController: usernameController,
+                fieldTitle: "الإسم و اللقب : ( بالعربية ) ",
+                inArabic: true,
+                isPassword: false,
+                onlyNumber: false,
+              ),
+              SizedBox(height: 20),
               CustomTextfield(
                 fieldController: emailController,
                 fieldTitle: " : البريد الإلكتروني",
@@ -108,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                 isPassword: false,
                 onlyNumber: false,
               ),
-              SizedBox(height: 40),
+              SizedBox(height: 20),
               CustomTextfield(
                 fieldController: passwordController,
                 fieldTitle: " : كلمة السر",
@@ -116,21 +147,22 @@ class _LoginPageState extends State<LoginPage> {
                 isPassword: true,
                 onlyNumber: false,
               ),
-              SizedBox(height: 50),
-              GestureDetector(
-                  onTap: () {
-                    login();
-                  },
-                  child: CustomButton(text: "تسجيل الدخول")),
               SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
+                  register();
+                },
+                child: CustomButton(text: "إنشاء حساب"),
+              ),
+              SizedBox(height: 18),
+              GestureDetector(
+                onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => RegisterPage()));
+                      MaterialPageRoute(builder: (context) => LoginPage()));
                 },
                 child: Center(
                   child: Text(
-                    'ليس لديك حساب ؟ أنقر هنا',
+                    'لديك حساب ؟ أنقر هنا',
                     style: TextStyle(
                       fontFamily: 'Amiri',
                       fontWeight: FontWeight.bold,
@@ -139,6 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+              SizedBox(height: 20),
             ],
           ),
         ),
