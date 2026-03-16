@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "735524959191",
+    "project_id": "khetmti",
+    "storage_bucket": "khetmti.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:735524959191:android:3c1439867135595d3a1192",
+        "android_client_info": {
+          "package_name": "com.example.khetmti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBopOBTHtbdc9S5xABckXdbg9B8JtmR4cA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
