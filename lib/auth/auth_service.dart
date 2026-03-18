@@ -1,36 +1,28 @@
-// ignore_for_file: avoid_print
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:khetmti/utils/helpers.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  final _storage = FirebaseStorage.instance;
 
-  Future<UserCredential?> signUpWithEmailAndPwd(
-      {required String email,
-      required String username,
-      required String password}) async {
+  Future<UserCredential?> signUpWithEmailAndPwd({
+    required String email,
+    required String username,
+    required String password,
+  }) async {
     try {
       var userCredential = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-
-      await updateUsernameAndCreateUserDocument(
-          user: userCredential.user!, username: username);
-
-      Fluttertoast.showToast(
-        msg: 'تم إنشاء الحساب بنجاح!',
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 17.0,
+        email: email,
+        password: password,
       );
 
+      await updateUsernameAndCreateUserDocument(
+        user: userCredential.user!,
+        username: username,
+      );
+
+      showSuccessToast('تم إنشاء الحساب بنجاح!');
       return userCredential;
     } on FirebaseAuthException catch (e) {
       _handleAuthException(e);
@@ -38,21 +30,17 @@ class AuthService {
     }
   }
 
-  Future<UserCredential?> signInWithEmailAndPwd(
-      {required String email, required String password}) async {
+  Future<UserCredential?> signInWithEmailAndPwd({
+    required String email,
+    required String password,
+  }) async {
     try {
       var userCredential = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-
-      Fluttertoast.showToast(
-        msg: 'تم تسجيل الدخول بنجاح!',
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 17.0,
+        email: email,
+        password: password,
       );
 
+      showSuccessToast('تم تسجيل الدخول بنجاح!');
       return userCredential;
     } on FirebaseAuthException catch (e) {
       _handleAuthException(e);
@@ -63,31 +51,18 @@ class AuthService {
   Future<void> logout() async {
     try {
       await _auth.signOut();
-      Fluttertoast.showToast(
-        msg: 'تم تسجيل الخروج بنجاح!',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 17.0,
-      );
+      showSuccessToast('تم تسجيل الخروج بنجاح!');
     } catch (e) {
-      Fluttertoast.showToast(
-        msg: 'حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى.',
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.redAccent,
-        textColor: Colors.white,
-        fontSize: 17.0,
-      );
+      showErrorToast('حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى.');
     }
   }
 
-  Future<void> updateUsernameAndCreateUserDocument(
-      {required User user, required String username}) async {
+  Future<void> updateUsernameAndCreateUserDocument({
+    required User user,
+    required String username,
+  }) async {
     try {
       await user.updateDisplayName(username);
-      // the user data to be stored
       Map<String, dynamic> userData = {
         'uid': user.uid,
         'email': user.email,
@@ -102,26 +77,18 @@ class AuthService {
 
       await _firestore.collection('users').doc(user.uid).set(userData);
     } catch (e) {
-      Fluttertoast.showToast(
-        msg: 'حدث خطأ أثناء إنشاء مستند المستخدم. يرجى المحاولة مرة أخرى.',
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.redAccent,
-        textColor: Colors.white,
-        fontSize: 17.0,
+      showErrorToast(
+        'حدث خطأ أثناء إنشاء مستند المستخدم. يرجى المحاولة مرة أخرى.',
       );
     }
   }
 
   Future<Map<String, dynamic>> getUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _auth.currentUser;
 
     if (user != null) {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-          .instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      DocumentSnapshot<Map<String, dynamic>> snapshot =
+          await _firestore.collection('users').doc(user.uid).get();
 
       if (snapshot.exists) {
         return snapshot.data()!;
@@ -134,7 +101,7 @@ class AuthService {
   }
 
   void _handleAuthException(FirebaseAuthException e) {
-    String message = '';
+    String message;
     switch (e.code) {
       case 'invalid-email':
         message = 'عنوان البريد الإلكتروني غير صالح.';
@@ -167,13 +134,6 @@ class AuthService {
       default:
         message = e.code;
     }
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.SNACKBAR,
-      backgroundColor: Colors.redAccent,
-      textColor: Colors.white,
-      fontSize: 17.0,
-    );
+    showErrorToast(message);
   }
 }

@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:khetmti/pages/errors/no_internet_page.dart';
 import 'package:khetmti/pages/onboarding/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -10,14 +13,57 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(MyApp());
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      
+      // Enable Firestore offline persistence
+      FirebaseFirestore.instance.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      );
+    }
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      debugPrint('Firebase already initialized: $e');
+    } else {
+      rethrow;
+    }
+  }
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isOffline = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectivity();
+    Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      _updateStatus(results);
+    });
+  }
+
+  Future<void> _checkConnectivity() async {
+    final results = await Connectivity().checkConnectivity();
+    _updateStatus(results);
+  }
+
+  void _updateStatus(List<ConnectivityResult> results) {
+    setState(() {
+      _isOffline = results.isEmpty || results.every((r) => r == ConnectivityResult.none);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +72,31 @@ class MyApp extends StatelessWidget {
       title: 'Khetmti',
       theme: ThemeData(
         useMaterial3: true,
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          },
+        ),
       ),
-      home: SplashScreen(),
+      builder: (context, child) {
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          child: _isOffline
+              ? NoInternetPage(
+                  key: const ValueKey('offline'),
+                  onRetry: _checkConnectivity,
+                )
+              : KeyedSubtree(
+                  key: const ValueKey('online'),
+                  child: child!,
+                ),
+        );
+      },
+      home: const SplashScreen(),
     );
   }
 }
