@@ -13,22 +13,33 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3), () async {
-      // Checking the onboarding variable
+    _timer = Timer(const Duration(seconds: 3), () async {
       final prefs = await SharedPreferences.getInstance();
       final onboarding = prefs.getBool("onboarding") ?? false;
 
-      if (onboarding == true) {
-        Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (_) => AuthPage()));
+      if (!mounted) return;
+
+      if (onboarding) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AuthPage()),
+        );
       } else {
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => OnboardingPage()));
+          MaterialPageRoute(builder: (_) => const OnboardingPage()),
+        );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -36,13 +47,21 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [
-            MainTheme.primaryColor.withOpacity(0.75),
-            MainTheme.secondaryColor.withOpacity(0.75)
-          ], begin: Alignment.topRight, end: Alignment.bottomLeft),
+          gradient: LinearGradient(
+            colors: [
+              MainTheme.primaryColor.withOpacity(0.75),
+              MainTheme.secondaryColor.withOpacity(0.75),
+            ],
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+          ),
         ),
-        child:
-            Center(child: Image.asset("assets/images/Khetmti - App Logo.png")),
+        child: Center(
+          child: Image.asset(
+            'assets/images/Khetmti - App Logo.png',
+            width: 200,
+          ),
+        ),
       ),
     );
   }

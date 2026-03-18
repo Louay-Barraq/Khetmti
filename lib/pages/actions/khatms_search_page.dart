@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:khetmti/components/khetma_component.dart';
 import 'package:khetmti/components/introductive_component.dart';
+import '../../components/khetmti_app_bar.dart';
 import '../../themes/main_theme.dart';
 import '../Khetma/Khetma_page.dart';
 
@@ -25,13 +26,11 @@ class _KhatmsSearchPageState extends State<KhatmsSearchPage> {
       return Stream.value([]);
     }
 
-    // Listening for user's khatmsJoined in real-time
     final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
 
     return userDoc.snapshots().asyncMap((snapshot) async {
       List<dynamic> khatmsJoinedUids = snapshot.data()?['khatmsJoined'] ?? [];
 
-      // Fetch all khatms that the user hasn't joined
       QuerySnapshot allKhatmsSnapshot =
           await FirebaseFirestore.instance.collection('khatms').get();
 
@@ -63,58 +62,43 @@ class _KhatmsSearchPageState extends State<KhatmsSearchPage> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: MainTheme.primaryColor,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "ختمتـــــــي",
-          style: TextStyle(
-            fontFamily: 'Amiri',
-            fontWeight: FontWeight.bold,
-            fontSize: 28,
-            color: Colors.white,
-            shadows: const [
-              Shadow(
-                  offset: Offset(0, 4),
-                  blurRadius: 2.5,
-                  color: Color(0x3F000000)),
-            ],
-          ),
-        ),
-        centerTitle: true,
-      ),
+      appBar: const KhetmtiAppBar(),
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 20),
-            Center(
+            const SizedBox(height: 20),
+            const Center(
               child: IntroductiveComponent(text: "الإنضمام لختمة موجودة"),
             ),
-            SizedBox(height: 20),
-            _searchField(), // Search bar to filter khatms
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+            _searchField(),
+            const SizedBox(height: 20),
             Expanded(
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream:
-                    _getKhatmsStream(), // Use StreamBuilder to show data in real-time
+                stream: _getKhatmsStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
-                    return Center(child: Text("Error loading data"));
+                    return const Center(
+                      child: Text(
+                        "حدث خطأ أثناء تحميل البيانات",
+                        style: TextStyle(fontFamily: 'Amiri', fontSize: 20),
+                      ),
+                    );
                   } else if (snapshot.hasData) {
                     final data = snapshot.data!;
                     if (data.isEmpty) {
-                      return Center(
+                      return const Center(
                         child: Text(
                           "لا يوجد ختمة مطابقة للبحث",
                           textAlign: TextAlign.center,
@@ -128,33 +112,40 @@ class _KhatmsSearchPageState extends State<KhatmsSearchPage> {
                       );
                     }
 
-                    // Display the list of khatms
                     return ListView.builder(
                       itemCount: data.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => KhetmaPage(
-                                        khetmaUid: data[index]['khetmaId']
-                                                ?.toString() ??
-                                            '')));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => KhetmaPage(
+                                  khetmaUid:
+                                      data[index]['khetmaId']?.toString() ?? '',
+                                ),
+                              ),
+                            );
                           },
                           child: KhetmaComponent(
                             title: data[index]['name'] ?? 'Unknown',
                             participantsCount:
                                 data[index]['currentParticipantsNumber'] ?? 0,
-                            progress: (data[index]['completionPercent'] as num?)
-                                    ?.toDouble() ??
-                                0.0,
+                            progress:
+                                (data[index]['completionPercent'] as num?)
+                                        ?.toDouble() ??
+                                    0.0,
                           ),
                         );
                       },
                     );
                   } else {
-                    return Center(child: Text("No data available"));
+                    return const Center(
+                      child: Text(
+                        "لا توجد بيانات",
+                        style: TextStyle(fontFamily: 'Amiri', fontSize: 20),
+                      ),
+                    );
                   }
                 },
               ),
@@ -185,18 +176,19 @@ class _KhatmsSearchPageState extends State<KhatmsSearchPage> {
         controller: _controller,
         keyboardType: TextInputType.text,
         textDirection: TextDirection.ltr,
-        style: TextStyle(
+        style: const TextStyle(
           fontFamily: 'Roboto',
           fontSize: 18,
         ),
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           suffixIcon: IconButton(
-            icon: Icon(Icons.search),
-            onPressed: _searchForKhatms, // Trigger search on press
+            icon: const Icon(Icons.search),
+            onPressed: _searchForKhatms,
           ),
         ),
       ),

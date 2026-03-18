@@ -1,119 +1,140 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart' hide TextDirection;
 import '../themes/main_theme.dart';
 
 class FriendComponent extends StatelessWidget {
   final String username;
   final int level;
+  final Timestamp? lastSeen;
+  final Widget? trailing;
 
-  const FriendComponent({required this.username, super.key, required this.level});
+  const FriendComponent({
+    required this.username,
+    required this.level,
+    this.lastSeen,
+    this.trailing,
+    super.key,
+  });
+
+  String _formatLastSeen(Timestamp? timestamp) {
+    if (timestamp == null) return "غير معروف";
+    
+    final now = DateTime.now();
+    final date = timestamp.toDate();
+    final difference = now.difference(date);
+
+    if (difference.inSeconds < 60) {
+      return "متصل الآن";
+    } else if (difference.inMinutes < 60) {
+      return "منذ ${difference.inMinutes} دقيقة";
+    } else if (difference.inHours < 24) {
+      return "منذ ${difference.inHours} ساعة";
+    } else if (difference.inDays < 7) {
+      return "منذ ${difference.inDays} أيام";
+    } else {
+      return DateFormat('yyyy/MM/dd').format(date);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      height: 90,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: MainTheme.greyishColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
           BoxShadow(
-            offset: Offset(0, 4),
-            blurRadius: 4,
-            spreadRadius: 0,
-            color: Color(0x3F000000),
-          )
+            color: Colors.black.withOpacity(0.03),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  username,
-                  style: TextStyle(
-                      fontFamily: 'Amiri',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      height: 26,
-                      width: 26,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              textDirection: TextDirection.rtl,
+              children: [
+                // Friend Avatar
+                Container(
+                  height: 60,
+                  width: 60,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFF1F5F9),
+                  ),
+                  child: Center(
+                    child: Text(
+                      username.isNotEmpty ? username[0].toUpperCase() : "U",
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: MainTheme.primaryColor,
                       ),
-                      child: Center(
-                        child: Text(
-                          level.toString(),
-                          style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      Text(
+                        username,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: 'Amiri',
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: MainTheme.textPrimary,
                         ),
                       ),
-                    ),
-                    SizedBox(width: 10),
-                    Container(
-                      height: 25,
-                      padding: EdgeInsets.symmetric(horizontal: 60),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                      const SizedBox(height: 4),
+                      Text(
+                        "آخر ظهور: ${_formatLastSeen(lastSeen)}",
+                        style: const TextStyle(
+                          fontFamily: 'Amiri',
+                          fontSize: 12,
+                          color: MainTheme.textSecondary,
+                        ),
                       ),
-                      child: Text(
-                        "المــستوى",
-                        style: TextStyle(
-                            fontFamily: 'Amiri',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          VerticalDivider(
-            thickness: 1,
-            color: Color(0x33000000),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Container(
-              height: 70,
-              width: 70,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: const [
-                  BoxShadow(
-                    offset: Offset(0, 0),
-                    blurRadius: 15,
-                    spreadRadius: 4,
-                    color: Color(0x3F000000),
+                    ],
                   ),
-                ],
-              ),
-              child: Center(
-                child: Image.asset(
-                  "assets/icons/Profile_User-Filled.png",
-                  height: 45,
-                  width: 45,
                 ),
-              ),
+                // Level Badge or Trailing
+                if (trailing != null)
+                  trailing!
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      "مستوى $level",
+                      style: const TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: MainTheme.secondaryColor,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

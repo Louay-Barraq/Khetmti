@@ -1,28 +1,27 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables
 import 'package:flutter/material.dart';
 import 'package:khetmti/themes/main_theme.dart';
 
 class CustomTextfield extends StatefulWidget {
-  TextEditingController fieldController;
-  String fieldTitle;
-  bool inArabic;
-  bool isPassword;
-  bool onlyNumber;
-  CustomTextfield(
-      {super.key,
-      required this.fieldController,
-      required this.fieldTitle,
-      required this.inArabic,
-      required this.isPassword,
-      required this.onlyNumber});
+  final TextEditingController fieldController;
+  final String fieldTitle;
+  final bool inArabic;
+  final bool isPassword;
+  final bool onlyNumber;
+
+  const CustomTextfield({
+    super.key,
+    required this.fieldController,
+    required this.fieldTitle,
+    required this.inArabic,
+    required this.isPassword,
+    required this.onlyNumber,
+  });
 
   @override
-  State<CustomTextfield> createState() =>
-      _CustomTextfieldState();
+  State<CustomTextfield> createState() => _CustomTextfieldState();
 }
 
-class _CustomTextfieldState
-    extends State<CustomTextfield> {
+class _CustomTextfieldState extends State<CustomTextfield> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.sizeOf(context).width;
@@ -31,7 +30,7 @@ class _CustomTextfieldState
         height: 90,
         width: screenWidth - 40,
         decoration: BoxDecoration(
-          color: MainTheme.secondaryColor.withOpacity(0.75),
+          color: const Color(0xFFE0F2FE),
           borderRadius: BorderRadius.circular(15),
           boxShadow: const [
             BoxShadow(
@@ -52,10 +51,11 @@ class _CustomTextfieldState
                   padding: const EdgeInsets.only(right: 20),
                   child: Text(
                     widget.fieldTitle,
-                    style: TextStyle(
-                        fontFamily: 'Amiri',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22),
+                    style: const TextStyle(
+                      fontFamily: 'Amiri',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
                   ),
                 ),
               ),
@@ -67,18 +67,18 @@ class _CustomTextfieldState
                 borderRadius: BorderRadius.circular(15),
               ),
               child: TextFormField(
-                keyboardType: widget.onlyNumber == true ? TextInputType.number : TextInputType.text,
+                keyboardType: widget.onlyNumber
+                    ? TextInputType.number
+                    : TextInputType.text,
                 controller: widget.fieldController,
-                textDirection: widget.inArabic == true
-                    ? TextDirection.rtl
-                    : TextDirection.ltr,
-                obscureText: widget.isPassword == true ? true : false,
+                textDirection:
+                    widget.inArabic ? TextDirection.rtl : TextDirection.ltr,
+                obscureText: widget.isPassword,
                 style: TextStyle(
-                  fontFamily: widget.inArabic == true ? 'Amiri' : 'Roboto',
+                  fontFamily: widget.inArabic ? 'Amiri' : 'Roboto',
                   fontSize: 18,
                 ),
-                decoration: InputDecoration(
-
+                decoration: const InputDecoration(
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,

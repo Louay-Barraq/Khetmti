@@ -24,166 +24,136 @@ class FriendAdditionComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      height: 100,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: MainTheme.greyishColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
           BoxShadow(
-            offset: Offset(0, 4),
-            blurRadius: 4,
-            spreadRadius: 0,
-            color: Color(0x3F000000),
-          )
+            color: Colors.black.withOpacity(0.03),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment
-                  .stretch, // Ensure the column takes full width
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    username,
-                    style: TextStyle(
-                      fontFamily: 'Amiri',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          textDirection: TextDirection.rtl,
+          children: [
+            // Avatar
+            Container(
+              height: 50,
+              width: 50,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFF1F5F9),
+              ),
+              child: Center(
+                child: Text(
+                  username.isNotEmpty ? username[0].toUpperCase() : "U",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: MainTheme.primaryColor,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 0),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      email,
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 7),
-              ],
+              ),
             ),
-          ),
-          VerticalDivider(
-            thickness: 1,
-            color: Color(0x33000000),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Container(
-              width: 100,
-              height: 70,
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    offset: Offset(0, 0),
-                    blurRadius: 15,
-                    spreadRadius: 4,
-                    color: Color(0x3F000000),
+            const SizedBox(width: 16),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                textDirection: TextDirection.rtl,
+                children: [
+                  Text(
+                    username,
+                    style: const TextStyle(
+                      fontFamily: 'Amiri',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: MainTheme.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    email,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: MainTheme.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-              child: _getStatusWidget(
-                  status, onAdd, onRemove, onAccept, onDecline),
             ),
-          ),
-        ],
+            // Actions
+            _getStatusWidget(context),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _getStatusWidget(String status, VoidCallback onAdd,
-      VoidCallback onRemove, VoidCallback onAccept, VoidCallback onDecline) {
-    if (status == 'friends') {
-      return Center(
-        child: Text(
-          'أصــــــدقاء',
-          style: TextStyle(
-            color: MainTheme.primaryColor,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Amiri',
-            fontSize: 18
-            ,
+  Widget _getStatusWidget(BuildContext context) {
+    switch (status) {
+      case 'friends':
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F5E9),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ),
-      );
-    } else if (status == 'pending') {
-      return Center(
-        child: IconButton(
-          icon: Icon(
-            Icons.clear,
-            color: Colors.redAccent,
-            size: 30,
+          child: const Text(
+            'أصدقاء',
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Amiri',
+              fontSize: 14,
+            ),
           ),
+        );
+      case 'pending':
+        return ElevatedButton(
           onPressed: onRemove,
-
-        ),
-      );
-    } else if (status == 'received') {
-      return Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red.shade50,
+            foregroundColor: Colors.red,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Amiri', fontSize: 12)),
+        );
+      case 'received':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(
-                Icons.check,
-                color: MainTheme.primaryColor,
-                size: 30,
-              ),
               onPressed: onAccept,
+              icon: const Icon(Icons.check_circle, color: Colors.green),
             ),
             IconButton(
-              icon: Icon(
-                Icons.clear,
-                color: Colors.redAccent,
-                size: 30,
-              ),
               onPressed: onDecline,
+              icon: const Icon(Icons.cancel, color: Colors.red),
             ),
           ],
-        ),
-      );
-    } else if (status == 'none') {
-      return Center(
-        child: IconButton(
-          icon: Icon(
-            Icons.add,
-            color: MainTheme.primaryColor,
-            size: 30,
-          ),
+        );
+      case 'none':
+      default:
+        return ElevatedButton.icon(
           onPressed: onAdd,
-        ),
-      );
-    } else {
-      return Container();
+          icon: const Icon(Icons.person_add_alt_1, size: 16),
+          label: const Text('إضافة', style: TextStyle(fontFamily: 'Amiri', fontSize: 14)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: MainTheme.primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
     }
   }
 }

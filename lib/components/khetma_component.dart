@@ -1,163 +1,147 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:percent_indicator/circular_percent_indicator.dart';
-
 import '../themes/main_theme.dart';
 
-class KhetmaComponent extends StatefulWidget {
+class KhetmaComponent extends StatelessWidget {
   final String title;
   final int participantsCount;
   final double progress;
+  final Timestamp? createdAt;
+  final Timestamp? updatedAt;
+
+  final VoidCallback? onTap;
 
   const KhetmaComponent({
     required this.title,
     required this.participantsCount,
     required this.progress,
+    this.createdAt,
+    this.updatedAt,
+    this.onTap,
     super.key,
   });
 
-  @override
-  State<KhetmaComponent> createState() => _KhetmaComponentState();
-}
+  String _formatDate(Timestamp? timestamp) {
+    if (timestamp == null) return "غير معروف";
+    final date = timestamp.toDate();
+    return intl.DateFormat('yyyy/MM/dd').format(date);
+  }
 
-class _KhetmaComponentState extends State<KhetmaComponent> {
   @override
   Widget build(BuildContext context) {
+    bool isFinished = progress >= 1.0;
+    String dateLabel = isFinished ? "تاريخ الإكمال: " : "تاريخ البدء: ";
+    String dateValue = _formatDate(isFinished ? updatedAt : createdAt);
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      height: 90,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
-        color: MainTheme.greyishColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        color: MainTheme.cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
           BoxShadow(
-            offset: Offset(0, 4),
-            blurRadius: 4,
-            spreadRadius: 0,
-            color: Color(0x3F000000),
-          )
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
         ],
       ),
-      child: Row(
-        textDirection: TextDirection.rtl,
-        children: [
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 5),
-            child: CircularPercentIndicator(
-              radius: 40,
-              percent: widget.progress,
-              backgroundColor: Colors.transparent,
-              progressColor: MainTheme.tertiaryColor,
-              circularStrokeCap: CircularStrokeCap.round,
-              center: Container(
-                height: 70,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: const [
-                    BoxShadow(
-                      offset: Offset(0, 0),
-                      blurRadius: 15,
-                      spreadRadius: 4,
-                      color: Color(0x3F000000),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    "${(widget.progress * 100).toInt()}",
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      color: Colors.black,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              textDirection: TextDirection.rtl,
+              children: [
+                // Circular Progress Indicator
+                CircularPercentIndicator(
+                  radius: 35.0,
+                  lineWidth: 6.0,
+                  percent: progress,
+                  center: Text(
+                    "${(progress * 100).toInt()}%",
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 24,
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
                     ),
                   ),
+                  circularStrokeCap: CircularStrokeCap.round,
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  progressColor: progress >= 1.0 ? Colors.green : MainTheme.primaryColor,
                 ),
-              ),
+                const SizedBox(width: 20),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      Text(
+                        "ختمة لفائدة $title",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: 'Amiri',
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: MainTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          textDirection: TextDirection.rtl,
+                          children: [
+                            // Participants Pill
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                "$participantsCount مشاركين",
+                                style: const TextStyle(
+                                  color: MainTheme.primaryColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Amiri',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Date
+                            const Icon(
+                              Icons.calendar_today_outlined,
+                              size: 14,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "$dateLabel$dateValue",
+                              style: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 12,
+                                fontFamily: 'Amiri',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          Row(
-            textDirection: TextDirection.rtl,
-            children: [
-              VerticalDivider(
-                thickness: 1,
-                color: Color(0x33000000),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      textDirection: TextDirection.rtl,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          " ختمــة لفــائدة",
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Amiri',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                          ),
-                        ),
-                        Text(
-                          widget.title,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Amiri',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 26,
-                          width: 26,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              "${widget.participantsCount}",
-                              style: TextStyle(
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Container(
-                          height: 25,
-                          padding: EdgeInsets.symmetric(horizontal: 45),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            "عدد المشاركين",
-                            style: TextStyle(
-                                fontFamily: 'Amiri',
-                                fontWeight: FontWeight.normal,
-                                fontSize: 16),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

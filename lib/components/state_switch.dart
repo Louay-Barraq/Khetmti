@@ -18,80 +18,64 @@ class _StateSwitchState extends State<StateSwitch> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.sizeOf(context).width;
-
     return Container(
-      width: screenWidth - 60,
-      height: 45,
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(100),
+        color: MainTheme.secondaryColor,
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _isActive = 'In Progress';
-                widget.onSwitchChanged(_isActive);
-              });
-            },
-            child: Container(
-              width: ((screenWidth - 60) / 2) - 10,
-              height: 32,
-              decoration: BoxDecoration(
-                color: _isActive == 'In Progress'
-                    ? MainTheme.greyishColor
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(100),
-              ),
-              child: Center(
-                child: Text(
-                  'ختمـــاتك',
-                  style: TextStyle(
-                    fontFamily: 'Amiri',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: _isActive == 'In Progress'
-                        ? Colors.black
-                        : Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          GestureDetector(
+          _buildSegment(
+            label: 'المكتملة',
+            isActive: _isActive == 'Finished',
             onTap: () {
               setState(() {
                 _isActive = 'Finished';
                 widget.onSwitchChanged(_isActive);
               });
             },
-            child: Container(
-              width: ((screenWidth - 60) / 2) - 10,
-              height: 32,
-              decoration: BoxDecoration(
-                color: _isActive == 'Finished'
-                    ? MainTheme.greyishColor
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(100),
-              ),
-              child: Center(
-                child: Text(
-                  'ليــست ختمـــاتك',
-                  style: TextStyle(
-                    fontFamily: 'Amiri',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color:
-                        _isActive == 'Finished' ? Colors.black : Colors.white,
-                  ),
-                ),
-              ),
-            ),
+          ),
+          _buildSegment(
+            label: 'النشطة',
+            isActive: _isActive == 'In Progress',
+            onTap: () {
+              setState(() {
+                _isActive = 'In Progress';
+                widget.onSwitchChanged(_isActive);
+              });
+            },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSegment({
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? MainTheme.primaryColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Amiri',
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: isActive ? Colors.black : Colors.white,
+          ),
+        ),
       ),
     );
   }

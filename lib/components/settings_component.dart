@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../themes/main_theme.dart';
 
 class SettingsComponent extends StatelessWidget {
-  String title;
-  String imagePath;
-  SettingsComponent({super.key, required this.title, required this.imagePath});
+  final String title;
+  final String imagePath;
+  const SettingsComponent({super.key, required this.title, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
