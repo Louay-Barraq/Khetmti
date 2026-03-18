@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../themes/main_theme.dart';
 
 class CustomButton extends StatelessWidget {
-  String text;
-  CustomButton({super.key, required this.text});
+  final String text;
+  const CustomButton({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,5 @@
-// ignore_for_file: prefer_const_constructors
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:khetmti/components/bottom_nav_bar_with_draggable_sheet.dart';
 import 'package:khetmti/pages/main/settings_page.dart';
@@ -14,22 +14,49 @@ class IndexPage extends StatefulWidget {
   State<IndexPage> createState() => _IndexPageState();
 }
 
-class _IndexPageState extends State<IndexPage> {
-  final PageController _pageController = PageController();
+class _IndexPageState extends State<IndexPage> with WidgetsBindingObserver {
   int _selectedIndex = 0;
 
-  List<Widget> pages = [
-    HomePage(),
-    MenuPage(),
-    SettingsPage(),
-    ProfilePage(),
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _updateLastSeen();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _updateLastSeen();
+    }
+  }
+
+  Future<void> _updateLastSeen() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+        'lastSeen': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  final List<Widget> pages = [
+    const HomePage(),
+    const MenuPage(),
+    const SettingsPage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    _pageController.jumpToPage(index);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
@@ -37,32 +64,20 @@ class _IndexPageState extends State<IndexPage> {
     return Scaffold(
       body: Stack(
         children: [
-          PageView(
-            controller: _pageController,
-            children: pages,
-            onPageChanged: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
             },
-          ),
-          MyDraggableSheet(
-            child: Column(
-              children: const [
-                SizedBox(height: 200),
-                Center(
-                  child: Text(
-                    'ميــزة غيــر متاحــة حــاليا',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Amiri',
-                      fontSize: 28,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+            child: KeyedSubtree(
+              key: ValueKey(_selectedIndex),
+              child: IndexedStack(
+                index: _selectedIndex,
+                children: pages,
+              ),
             ),
           ),
         ],

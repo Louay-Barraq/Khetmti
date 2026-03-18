@@ -1,15 +1,15 @@
-// ignore_for_file: prefer_final_fields
-
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:khetmti/components/custom_button.dart';
 import 'package:khetmti/components/custom_textfield.dart';
+import 'package:khetmti/data/quran_data.dart';
 import 'package:khetmti/pages/Khetma/Khetma_page.dart';
+import 'package:khetmti/utils/helpers.dart';
 import '../../components/introductive_component.dart';
+import 'package:khetmti/components/khetmti_header.dart';
+import 'package:khetmti/pages/actions/notifications_page.dart';
 import '../../themes/main_theme.dart';
 
 class KhetmaCreationPage extends StatefulWidget {
@@ -23,22 +23,6 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
   final _khetmaNameController = TextEditingController();
   final _maxNumberController = TextEditingController();
 
-  void showLoadingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
-  }
-
-  void dismissLoadingDialog() {
-    Navigator.of(context).pop();
-  }
-
   Future<String> _generateUniqueKhetmaCode() async {
     Random random = Random();
     String code = '';
@@ -47,7 +31,6 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
     while (codeExists) {
       code = (random.nextInt(90000) + 10000).toString();
 
-      // Check if the code already exists in the 'khetmas' collection
       final existingKhetma = await FirebaseFirestore.instance
           .collection('khatms')
           .where('code', isEqualTo: code)
@@ -61,33 +44,24 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
     return code;
   }
 
+  String _splitType = 'sura'; // 'sura' or 'juzu'
+
   Future<bool> _addKhetma() async {
-    showLoadingDialog();
+    showLoadingDialog(context);
     final String khetmaName = _khetmaNameController.text.trim();
     final String maxNumber = _maxNumberController.text.trim();
     final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     if (khetmaName.isEmpty || maxNumber.isEmpty) {
-      Fluttertoast.showToast(
-        msg: "يرجى ملء جميع الحقول",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.redAccent,
-        textColor: Colors.white,
-      );
-      dismissLoadingDialog();
+      showErrorToast("يرجى ملء جميع الحقول");
+      if (mounted) dismissLoadingDialog(context);
       return false;
     }
 
     final int? maxNumberInt = int.tryParse(maxNumber);
     if (maxNumberInt == null || maxNumberInt <= 0) {
-      Fluttertoast.showToast(
-        msg: "يرجى إدخال عدد صحيح موجب للمشاركين",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
+      showErrorToast("يرجى إدخال عدد صحيح موجب للمشاركين");
+      if (mounted) dismissLoadingDialog(context);
       return false;
     }
 
@@ -97,20 +71,23 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
       DocumentReference khetmaRef =
           FirebaseFirestore.instance.collection('khatms').doc();
 
+      List<String> items = _splitType == 'sura' ? sourasWithAyahs.keys.toList() : juzusList;
+
       Map<String, dynamic> khetmaData = {
         'name': khetmaName,
-        'code': uniqueCode.toString(),
+        'code': uniqueCode,
         'creatorId': currentUserId,
         'participants': [currentUserId],
         'currentParticipantsNumber': 1,
         'maxParticipantsNumber': maxNumberInt,
-        'souras': souras,
+        'parts': getEmptyPartsMap(items),
+        'splitType': _splitType,
         'completionPercent': 0.0,
-        'finishedSouras': 0,
-        'unfinishedSouras': 114,
-        'finishedAyahs': 0,
+        'finishedParts': 0,
+        'totalParts': items.length,
         'createdAt': FieldValue.serverTimestamp(),
         'khetmaId': khetmaRef.id,
+        'logs': [], // Initial empty logs
       };
 
       await khetmaRef.set(khetmaData);
@@ -122,222 +99,158 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
         'khatmsJoined': FieldValue.arrayUnion([khetmaRef.id]),
       });
 
-      dismissLoadingDialog();
+      if (mounted) dismissLoadingDialog(context);
 
-      Fluttertoast.showToast(
-        msg: "تم إنشاء الختمة بنجاح",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-      );
+      showSuccessToast("تم إنشاء الختمة بنجاح");
 
       _khetmaNameController.clear();
       _maxNumberController.clear();
 
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
 
+      if (!mounted) return true;
       Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => KhetmaPage(khetmaUid: khetmaRef.id)));
+        context,
+        MaterialPageRoute(
+          builder: (context) => KhetmaPage(khetmaUid: khetmaRef.id),
+        ),
+      );
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        print("Error creating khatma: $e");
-      }
-      Fluttertoast.showToast(
-        msg: "حدث خطأ أثناء إنشاء الختمة",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
+      debugPrint("Error creating khatma: $e");
+      if (mounted) dismissLoadingDialog(context);
+      showErrorToast("حدث خطأ أثناء إنشاء الختمة");
       return false;
     }
   }
 
   @override
+  void dispose() {
+    _khetmaNameController.dispose();
+    _maxNumberController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: MainTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: MainTheme.primaryColor,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
+      body: Column(
+        children: [
+          KhetmtiHeader(
+            title: "إنــــشاء ختمــــة",
+            showProfile: false,
+            showBackButton: true,
+            onBackTap: () => Navigator.pop(context),
+            onNotificationTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NotificationsPage()),
+            ),
           ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "ختمتـــــــي",
-          style: TextStyle(
-            fontFamily: 'Amiri',
-            fontWeight: FontWeight.bold,
-            fontSize: 28,
-            color: Colors.white,
-            shadows: const [
-              Shadow(
-                offset: Offset(0, 4),
-                blurRadius: 2.5,
-                color: Color(0x3F000000),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 30),
+                  CustomTextfield(
+                    fieldController: _khetmaNameController,
+                    fieldTitle: "خــــتمة لفائدة (بــالعربية)",
+                    inArabic: true,
+                    isPassword: false,
+                    onlyNumber: false,
+                  ),
+                  const SizedBox(height: 20),
+                  CustomTextfield(
+                    fieldController: _maxNumberController,
+                    fieldTitle: "العـــدد الأقـــصى للمشـــاركين",
+                    inArabic: false,
+                    isPassword: false,
+                    onlyNumber: true,
+                  ),
+                  const SizedBox(height: 20),
+                  const Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      "تقسيم الختمة حسب:",
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: MainTheme.textPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _splitType = 'juzu'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _splitType == 'juzu' ? MainTheme.primaryColor : Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                color: _splitType == 'juzu' ? MainTheme.primaryColor : MainTheme.primaryColor.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Text(
+                              "أجزاء (30 جزء)",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Amiri',
+                                fontWeight: FontWeight.bold,
+                                color: _splitType == 'juzu' ? Colors.white : MainTheme.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _splitType = 'sura'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _splitType == 'sura' ? MainTheme.primaryColor : Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                color: _splitType == 'sura' ? MainTheme.primaryColor : MainTheme.primaryColor.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Text(
+                              "سور (114 سورة)",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Amiri',
+                                fontWeight: FontWeight.bold,
+                                color: _splitType == 'sura' ? Colors.white : MainTheme.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _addKhetma,
+                      borderRadius: BorderRadius.circular(30),
+                      child: const CustomButton(text: "إنــــشاء"),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 20),
-              Center(
-                  child: IntroductiveComponent(
-                      text: "إنــــشاء ختمــــة جـــديدة")),
-              SizedBox(height: 20),
-              CustomTextfield(
-                fieldController: _khetmaNameController,
-                fieldTitle: "خــــتمة لفائدة (بــالعربية)",
-                inArabic: true,
-                isPassword: false,
-                onlyNumber: false,
-              ),
-              SizedBox(height: 20),
-              CustomTextfield(
-                fieldController: _maxNumberController,
-                fieldTitle: "العـــدد الأقـــصى للمشـــاركين",
-                inArabic: false,
-                isPassword: false,
-                onlyNumber: true,
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: _addKhetma,
-                child: CustomButton(text: "إنــــشاء"),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
 }
-
-Map<String, String?> souras = {
-  "الفاتحة": null,
-  "البقرة": null,
-  "آل عمران": null,
-  "النساء": null,
-  "المائدة": null,
-  "الأنعام": null,
-  "الأعراف": null,
-  "الأنفال": null,
-  "التوبة": null,
-  "يونس": null,
-  "هود": null,
-  "يوسف": null,
-  "الرعد": null,
-  "إبراهيم": null,
-  "الحجر": null,
-  "النحل": null,
-  "الإسراء": null,
-  "الكهف": null,
-  "مريم": null,
-  "طه": null,
-  "الأنبياء": null,
-  "الحج": null,
-  "المؤمنون": null,
-  "النور": null,
-  "الفرقان": null,
-  "الشعراء": null,
-  "النمل": null,
-  "القصص": null,
-  "العنكبوت": null,
-  "الروم": null,
-  "لقمان": null,
-  "السجدة": null,
-  "الأحزاب": null,
-  "سبأ": null,
-  "فاطر": null,
-  "يس": null,
-  "الصافات": null,
-  "ص": null,
-  "الزمر": null,
-  "غافر": null,
-  "فصلت": null,
-  "الشورى": null,
-  "الزخرف": null,
-  "الدخان": null,
-  "الجاثية": null,
-  "الأحقاف": null,
-  "محمد": null,
-  "الفتح": null,
-  "الحجرات": null,
-  "ق": null,
-  "الذاريات": null,
-  "الطور": null,
-  "النجم": null,
-  "القمر": null,
-  "الرحمن": null,
-  "الواقعة": null,
-  "الحديد": null,
-  "المجادلة": null,
-  "الحشر": null,
-  "الممتحنة": null,
-  "الصف": null,
-  "الجمعة": null,
-  "المنافقون": null,
-  "التغابن": null,
-  "الطلاق": null,
-  "التحريم": null,
-  "الملك": null,
-  "القلم": null,
-  "الحاقة": null,
-  "المعارج": null,
-  "نوح": null,
-  "الجن": null,
-  "المزمل": null,
-  "المدثر": null,
-  "القيامة": null,
-  "الإنسان": null,
-  "المرسلات": null,
-  "النبأ": null,
-  "النازعات": null,
-  "عبس": null,
-  "التكوير": null,
-  "الانفطار": null,
-  "المطففين": null,
-  "الإنشقاق": null,
-  "البروج": null,
-  "الطارق": null,
-  "الأعلى": null,
-  "الغاشية": null,
-  "الفجر": null,
-  "البلد": null,
-  "الشمس": null,
-  "الليل": null,
-  "الضحى": null,
-  "الشرح": null,
-  "التين": null,
-  "العلق": null,
-  "القدر": null,
-  "البينة": null,
-  "الزلزلة": null,
-  "العاديات": null,
-  "القارعة": null,
-  "التكاثر": null,
-  "العصر": null,
-  "الهمزة": null,
-  "الفيل": null,
-  "قريش": null,
-  "الماعون": null,
-  "الكوثر": null,
-  "الكافرون": null,
-  "النصر": null,
-  "المسد": null,
-  "الإخلاص": null,
-  "الفلق": null,
-  "الناس": null
-};

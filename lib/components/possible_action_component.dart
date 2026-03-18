@@ -3,66 +3,87 @@ import '../themes/main_theme.dart';
 
 class PossibleActionComponent extends StatelessWidget {
   final String actionText;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback? onTap;
 
-  const PossibleActionComponent({super.key, required this.actionText});
+  const PossibleActionComponent({
+    super.key,
+    required this.actionText,
+    required this.subtitle,
+    required this.icon,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 18),
-      child: Container(
-        height: 90,
-        decoration: BoxDecoration(
-          color: MainTheme.tertiaryColor,
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: const [
-            BoxShadow(
-              offset: Offset(0, 4),
-              blurRadius: 4,
-              spreadRadius: 2,
-              color: Color(0x3F000000),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 20),
-              child: Container(
-                height: 45,
-                width: 45,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: const [
-                    BoxShadow(
-                      offset: Offset(0, 0),
-                      blurRadius: 8,
-                      spreadRadius: 4,
-                      color: Color(0x3F000000),
-                    ),
-                  ],
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              textDirection: TextDirection.rtl,
+              children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE8F5E9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: MainTheme.primaryColor, size: 24),
                 ),
-                child: Image.asset("assets/icons/left_arrow.png"),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 22),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    actionText,
-                    style: const TextStyle(
-                      fontFamily: 'Amiri',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 26,
-                    ),
+                const SizedBox(width: 16),
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      Text(
+                        actionText,
+                        style: const TextStyle(
+                          fontFamily: 'Amiri',
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: MainTheme.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontFamily: 'Amiri',
+                          fontSize: 12,
+                          color: MainTheme.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
+                // Chevron
+                const Icon(
+                  Icons.chevron_left,
+                  color: Color(0xFFCBD5E1),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

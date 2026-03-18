@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class IntroductiveComponent extends StatelessWidget {
-  String text;
-  IntroductiveComponent({super.key, required this.text});
+  final String text;
+  const IntroductiveComponent({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
