@@ -13,6 +13,7 @@ import '../../themes/main_theme.dart';
 import '../../components/settings_item_card.dart';
 import '../../components/khetmti_header.dart';
 import '../../utils/helpers.dart';
+import '../../utils/migration_service.dart';
 
 class SettingsPage extends StatelessWidget {
   final bool showBackButton;
@@ -96,6 +97,26 @@ class SettingsPage extends StatelessWidget {
                     iconColor: Colors.red,
                     iconBgColor: Colors.red.withOpacity(0.1),
                     onTap: () => _showDeleteAccountDialog(context),
+                  ),
+                  const SizedBox(height: 10),
+                   SettingsItemCard(
+                    title: "DEBUG: هجرة البيانات إلى Supabase",
+                    icon: Icons.cloud_upload_outlined,
+                    onTap: () async {
+                      showLoadingDialog(context);
+                      try {
+                        await MigrationService.migrateAll();
+                        if (context.mounted) {
+                          dismissLoadingDialog(context);
+                          showSuccessToast('تمت هجرة البيانات بنجاح إلى Supabase');
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          dismissLoadingDialog(context);
+                          showErrorToast('فشلت هجرة البيانات: $e');
+                        }
+                      }
+                    },
                   ),
                 ]),
                 const SizedBox(height: 30),
