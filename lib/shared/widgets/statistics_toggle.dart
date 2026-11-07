@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class StatisticsToggle extends StatefulWidget {
   final void Function(String) onValuesChanged;
@@ -18,7 +18,7 @@ class _StatisticsToggleState extends State<StatisticsToggle> {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: MainTheme.greyishColor,
+        color: AppTheme.greyishColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -61,7 +61,7 @@ class _StatisticsToggleState extends State<StatisticsToggle> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? MainTheme.primaryColor : Colors.transparent,
+          color: isActive ? AppTheme.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(15),
         ),
         child: Text(
@@ -70,7 +70,7 @@ class _StatisticsToggleState extends State<StatisticsToggle> {
             fontFamily: 'Amiri',
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: isActive ? Colors.white : MainTheme.secondaryColor,
+            color: isActive ? Colors.white : AppTheme.secondaryColor,
           ),
         ),
       ),

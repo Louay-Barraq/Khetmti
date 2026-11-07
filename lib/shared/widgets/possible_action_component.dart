@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class PossibleActionComponent extends StatelessWidget {
   final String actionText;
@@ -24,7 +24,7 @@ class PossibleActionComponent extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             offset: const Offset(0, 4),
             blurRadius: 10,
           ),
@@ -47,7 +47,7 @@ class PossibleActionComponent extends StatelessWidget {
                     color: Color(0xFFE8F5E9),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: MainTheme.primaryColor, size: 24),
+                  child: Icon(icon, color: AppTheme.primaryColor, size: 24),
                 ),
                 const SizedBox(width: 16),
                 // Text
@@ -62,7 +62,7 @@ class PossibleActionComponent extends StatelessWidget {
                           fontFamily: 'Amiri',
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: MainTheme.textPrimary,
+                          color: AppTheme.textPrimary,
                         ),
                       ),
                       Text(
@@ -70,7 +70,7 @@ class PossibleActionComponent extends StatelessWidget {
                         style: const TextStyle(
                           fontFamily: 'Amiri',
                           fontSize: 12,
-                          color: MainTheme.textSecondary,
+                          color: AppTheme.textSecondary,
                         ),
                       ),
                     ],

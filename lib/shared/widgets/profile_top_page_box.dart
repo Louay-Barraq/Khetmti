@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:khetmti/components/profile_page_logo.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/shared/widgets/profile_page_logo.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class ProfileTopPageBox extends StatelessWidget {
   final Map<String, dynamic>? userData;
@@ -28,7 +28,7 @@ class ProfileTopPageBox extends StatelessWidget {
       width: screenWidth,
       height: 180,
       decoration: BoxDecoration(
-        color: MainTheme.primaryColor,
+        color: AppTheme.primaryColor,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(20.0),
           bottomRight: Radius.circular(20.0),

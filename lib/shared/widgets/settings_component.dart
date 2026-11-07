@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class SettingsComponent extends StatelessWidget {
   final String title;
@@ -13,7 +13,7 @@ class SettingsComponent extends StatelessWidget {
       child: Container(
         height: 90,
         decoration: BoxDecoration(
-          color: MainTheme.greyishColor,
+          color: AppTheme.greyishColor,
           borderRadius: BorderRadius.circular(15),
           boxShadow: const [
             BoxShadow(

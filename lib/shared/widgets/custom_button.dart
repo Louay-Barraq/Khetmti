@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -14,7 +14,7 @@ class CustomButton extends StatelessWidget {
         width: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: MainTheme.primaryColor,
+          color: AppTheme.primaryColor,
           boxShadow: const [
             BoxShadow(
               offset: Offset(0, 2),

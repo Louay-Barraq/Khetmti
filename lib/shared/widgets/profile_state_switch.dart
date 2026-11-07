@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class ProfileStateSwitch extends StatefulWidget {
   final void Function(String) onSwitchChanged;
@@ -23,7 +23,7 @@ class _ProfileStateSwitchState extends State<ProfileStateSwitch> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 4),
             blurRadius: 10,
           ),
@@ -85,7 +85,7 @@ class _ProfileStateSwitchState extends State<ProfileStateSwitch> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isActive ? MainTheme.primaryColor : Colors.transparent,
+          color: isActive ? AppTheme.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(15),
         ),
         child: Text(
@@ -94,7 +94,7 @@ class _ProfileStateSwitchState extends State<ProfileStateSwitch> {
             fontFamily: 'Amiri',
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: isActive ? Colors.white : MainTheme.secondaryColor,
+            color: isActive ? Colors.white : AppTheme.secondaryColor,
           ),
         ),
       ),

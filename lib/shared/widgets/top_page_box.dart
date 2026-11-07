@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../themes/main_theme.dart';
-import 'pages_logo.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/shared/widgets/pages_logo.dart';
 
 class TopPageBox extends StatelessWidget {
   const TopPageBox({super.key});
@@ -13,7 +13,7 @@ class TopPageBox extends StatelessWidget {
       width: screenWidth,
       height: 160,
       decoration: BoxDecoration(
-        color: MainTheme.primaryColor,
+        color: AppTheme.primaryColor,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(20.0),
           bottomRight: Radius.circular(20.0),

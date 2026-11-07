@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class FriendAdditionComponent extends StatelessWidget {
   final String username;
@@ -30,7 +30,7 @@ class FriendAdditionComponent extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             offset: const Offset(0, 4),
             blurRadius: 10,
           ),
@@ -55,7 +55,7 @@ class FriendAdditionComponent extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: MainTheme.primaryColor,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
               ),
@@ -73,7 +73,7 @@ class FriendAdditionComponent extends StatelessWidget {
                       fontFamily: 'Amiri',
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: MainTheme.textPrimary,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                   Text(
@@ -81,7 +81,7 @@ class FriendAdditionComponent extends StatelessWidget {
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 12,
-                      color: MainTheme.textSecondary,
+                      color: AppTheme.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -148,7 +148,7 @@ class FriendAdditionComponent extends StatelessWidget {
           icon: const Icon(Icons.person_add_alt_1, size: 16),
           label: const Text('إضافة', style: TextStyle(fontFamily: 'Amiri', fontSize: 14)),
           style: ElevatedButton.styleFrom(
-            backgroundColor: MainTheme.primaryColor,
+            backgroundColor: AppTheme.primaryColor,
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

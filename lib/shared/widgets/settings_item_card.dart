@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class SettingsItemCard extends StatelessWidget {
   final String title;
@@ -29,7 +29,7 @@ class SettingsItemCard extends StatelessWidget {
           color: Colors.white,
           border: Border(
             bottom: BorderSide(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -46,7 +46,7 @@ class SettingsItemCard extends StatelessWidget {
               ),
               child: Icon(
                 icon,
-                color: iconColor ?? MainTheme.primaryColor,
+                color: iconColor ?? AppTheme.primaryColor,
                 size: 22,
               ),
             ),
@@ -60,7 +60,7 @@ class SettingsItemCard extends StatelessWidget {
                   fontFamily: 'Amiri',
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: textColor ?? MainTheme.textPrimary,
+                  color: textColor ?? AppTheme.textPrimary,
                 ),
               ),
             ),

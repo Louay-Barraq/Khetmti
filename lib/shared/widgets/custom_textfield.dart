@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:khetmti/themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class CustomTextfield extends StatefulWidget {
   final TextEditingController fieldController;
@@ -63,7 +63,7 @@ class _CustomTextfieldState extends State<CustomTextfield> {
             Container(
               height: 45,
               decoration: BoxDecoration(
-                color: MainTheme.greyishColor,
+                color: AppTheme.greyishColor,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: TextFormField(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class KhetmtiHeader extends StatelessWidget {
   final String title;
@@ -38,7 +38,7 @@ class KhetmtiHeader extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(20, 60, 20, bottom != null ? 10 : 40),
       decoration: const BoxDecoration(
-        color: MainTheme.primaryColor,
+        color: AppTheme.primaryColor,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),

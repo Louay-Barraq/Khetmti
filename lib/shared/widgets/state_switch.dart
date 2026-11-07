@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class StateSwitch extends StatefulWidget {
   final void Function(String) onSwitchChanged;
@@ -21,7 +21,7 @@ class _StateSwitchState extends State<StateSwitch> {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: MainTheme.secondaryColor,
+        color: AppTheme.secondaryColor,
         borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
@@ -64,7 +64,7 @@ class _StateSwitchState extends State<StateSwitch> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? MainTheme.primaryColor : Colors.transparent,
+          color: isActive ? AppTheme.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(

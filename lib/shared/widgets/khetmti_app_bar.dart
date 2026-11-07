@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 /// Shared AppBar used across sub-pages.
 class KhetmtiAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -11,7 +11,7 @@ class KhetmtiAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: MainTheme.primaryColor,
+      backgroundColor: AppTheme.primaryColor,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
