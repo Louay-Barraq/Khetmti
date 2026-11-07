@@ -1,8 +1,8 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/features/auth/models/app_user.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/features/khetma/providers/khetma_provider.dart';
 import 'package:khetmti/features/quran/models/quran_data.dart';
@@ -573,10 +573,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         builder: (context) {
                           int totalXP = userData?.totalXP ?? 0;
                           int currentLevel = userData?.level ?? 1;
-                          double minXP = 5000 *
-                              (math.pow(1.2, currentLevel - 1) - 1);
-                          double maxXP =
-                              5000 * (math.pow(1.2, currentLevel) - 1);
+                          final minXP = xpForLevel(currentLevel);
+                          final maxXP = xpForLevel(currentLevel + 1);
                           double progress =
                               (totalXP - minXP) / (maxXP - minXP);
                           if (progress < 0) progress = 0;
@@ -597,7 +595,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "${(totalXP - minXP).toInt()} / ${(maxXP - minXP).toInt()} XP",
+                                "${totalXP - minXP} / ${maxXP - minXP} XP",
                                 style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
