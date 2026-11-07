@@ -1,12 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/quran_api_service.dart';
-import '../../themes/main_theme.dart';
-import '../../components/khetmti_header.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/features/quran/data/quran_api_service.dart';
+import 'package:khetmti/features/quran/providers/quran_provider.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
-class QuranViewPage extends StatefulWidget {
+class QuranViewPage extends ConsumerStatefulWidget {
   final int id;
   final bool isSurah;
   final String title;
@@ -21,10 +20,10 @@ class QuranViewPage extends StatefulWidget {
   });
 
   @override
-  State<QuranViewPage> createState() => _QuranViewPageState();
+  ConsumerState<QuranViewPage> createState() => _QuranViewPageState();
 }
 
-class _QuranViewPageState extends State<QuranViewPage> {
+class _QuranViewPageState extends ConsumerState<QuranViewPage> {
   Future<Map<String, dynamic>>? _quranDataFuture;
   Set<int> _stops = {};
   final ScrollController _scrollController = ScrollController();
@@ -53,34 +52,12 @@ class _QuranViewPageState extends State<QuranViewPage> {
   }
 
   Future<void> _loadStops() async {
-    final key = _getStopsKey();
-
-    if (widget.khatmaId != null) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final doc = await FirebaseFirestore.instance
-            .collection('khatms')
-            .doc(widget.khatmaId)
-            .collection('progress')
-            .doc(user.uid)
-            .get();
-        if (doc.exists) {
-          final data = doc.data()!;
-          final List<dynamic>? stopsList = data[key];
-          if (stopsList != null) {
-            setState(() {
-              _stops = stopsList.map((e) => e as int).toSet();
-            });
-            return;
-          }
-        }
-      }
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    final stopsList = prefs.getStringList(key) ?? [];
+    final stopsKey = _getStopsKey();
+    final stops = await ref.read(quranRepositoryProvider).loadStops(
+          stopsKey: stopsKey,
+        );
     setState(() {
-      _stops = stopsList.map((e) => int.parse(e)).toSet();
+      _stops = stops;
     });
   }
 
@@ -92,55 +69,43 @@ class _QuranViewPageState extends State<QuranViewPage> {
         _stops.add(ayahNumber);
       }
     });
-    
-    final key = _getStopsKey();
 
-    if (widget.khatmaId != null) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('khatms')
-            .doc(widget.khatmaId)
-            .collection('progress')
-            .doc(user.uid)
-            .set({
-          key: _stops.toList(),
-          'lastReadPart': widget.title,
-          'lastReadTime': Timestamp.now(),
-        }, SetOptions(merge: true));
-        return;
-      }
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      key,
-      _stops.map((e) => e.toString()).toList(),
-    );
+    final stopsKey = _getStopsKey();
+    await ref.read(quranRepositoryProvider).saveStops(
+          stopsKey: stopsKey,
+          stops: _stops,
+        );
   }
 
   String _getStopsKey() {
-    return widget.isSurah ? 'stops_surah_${widget.id}' : 'stops_juz_${widget.id}';
+    return widget.isSurah
+        ? 'stops_surah_${widget.id}'
+        : 'stops_juz_${widget.id}';
   }
 
-  // Convert English numerals to Arabic numerals
   String _toArabicNumerals(int number) {
     const englishToArabicNumerals = {
       '0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤',
       '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩',
     };
-    return number.toString().split('').map((digit) => englishToArabicNumerals[digit] ?? digit).join();
+    return number
+        .toString()
+        .split('')
+        .map((digit) => englishToArabicNumerals[digit] ?? digit)
+        .join();
   }
 
   void _showInfoDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (ctx) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
           title: const Text(
             'حفظ التقدم',
-            style: TextStyle(fontFamily: 'Amiri', color: MainTheme.primaryColor),
+            style: TextStyle(
+                fontFamily: 'Amiri', color: AppTheme.primaryColor),
             textAlign: TextAlign.center,
           ),
           content: const Text(
@@ -151,12 +116,15 @@ class _QuranViewPageState extends State<QuranViewPage> {
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
-                backgroundColor: MainTheme.primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                backgroundColor: AppTheme.primaryColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('حسناً', style: TextStyle(fontFamily: 'Amiri', color: Colors.white)),
+              child: const Text('حسناً',
+                  style: TextStyle(
+                      fontFamily: 'Amiri', color: Colors.white)),
             ),
           ],
         );
@@ -167,7 +135,7 @@ class _QuranViewPageState extends State<QuranViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           KhetmtiHeader(
@@ -188,7 +156,8 @@ class _QuranViewPageState extends State<QuranViewPage> {
               builder: (context, snapshot) {
                 return AnimatedSwitcher(
                   duration: const Duration(milliseconds: 600),
-                  transitionBuilder: (Widget child, Animation<double> animation) {
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
                     return FadeTransition(
                       opacity: animation,
                       child: SlideTransition(
@@ -204,10 +173,12 @@ class _QuranViewPageState extends State<QuranViewPage> {
                     );
                   },
                   child: () {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+                    if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return const Center(
                         key: ValueKey('loading'),
-                        child: CircularProgressIndicator(color: MainTheme.primaryColor),
+                        child: CircularProgressIndicator(
+                            color: AppTheme.primaryColor),
                       );
                     }
 
@@ -215,25 +186,32 @@ class _QuranViewPageState extends State<QuranViewPage> {
                       return Center(
                         key: const ValueKey('error'),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment:
+                              MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.error_outline, size: 50, color: Colors.red),
+                            const Icon(Icons.error_outline,
+                                size: 50, color: Colors.red),
                             const SizedBox(height: 16),
                             const Text(
                               'عذراً، حدث خطأ أثناء جلب البيانات',
-                              style: TextStyle(fontFamily: 'Amiri', fontSize: 18),
+                              style: TextStyle(
+                                  fontFamily: 'Amiri',
+                                  fontSize: 18),
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _fetchData,
-                              child: const Text('إعادة المحاولة', style: TextStyle(fontFamily: 'Amiri')),
+                              child: const Text('إعادة المحاولة',
+                                  style: TextStyle(
+                                      fontFamily: 'Amiri')),
                             ),
                           ],
                         ),
                       );
                     }
 
-                    if (!snapshot.hasData || snapshot.data == null) {
+                    if (!snapshot.hasData ||
+                        snapshot.data == null) {
                       return const Center(
                         key: ValueKey('no_data'),
                         child: Text('لا توجد بيانات'),
@@ -241,16 +219,23 @@ class _QuranViewPageState extends State<QuranViewPage> {
                     }
 
                     final data = snapshot.data!;
-                    final List<dynamic> ayahs = data['ayahs'] ?? [];
+                    final List<dynamic> ayahs =
+                        data['ayahs'] ?? [];
 
-                    // Trigger scroll after build if needed
-                    if (!_hasAutoScrolled && _stops.isNotEmpty && widget.khatmaId != null) {
-                      int maxStop = _stops.reduce((a, b) => a > b ? a : b);
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (_ayahKeys.containsKey(maxStop) && _ayahKeys[maxStop]!.currentContext != null) {
+                    if (!_hasAutoScrolled &&
+                        _stops.isNotEmpty &&
+                        widget.khatmaId != null) {
+                      int maxStop = _stops.reduce(
+                          (a, b) => a > b ? a : b);
+                      WidgetsBinding.instance
+                          .addPostFrameCallback((_) {
+                        if (_ayahKeys.containsKey(maxStop) &&
+                            _ayahKeys[maxStop]!.currentContext !=
+                                null) {
                           Scrollable.ensureVisible(
                             _ayahKeys[maxStop]!.currentContext!,
-                            duration: const Duration(milliseconds: 800),
+                            duration: const Duration(
+                                milliseconds: 800),
                             curve: Curves.easeInOut,
                           );
                           _hasAutoScrolled = true;
@@ -261,19 +246,8 @@ class _QuranViewPageState extends State<QuranViewPage> {
                     return Container(
                       key: const ValueKey('content'),
                       width: double.infinity,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white,
-                        /*borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, -5),
-                          ),
-                        ],*/
                       ),
                       child: ClipRRect(
                         borderRadius: const BorderRadius.only(
@@ -282,7 +256,8 @@ class _QuranViewPageState extends State<QuranViewPage> {
                         ),
                         child: SingleChildScrollView(
                           controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 30),
                           child: Column(
                             children: [
                               ..._buildQuranContent(ayahs),
@@ -292,7 +267,7 @@ class _QuranViewPageState extends State<QuranViewPage> {
                                 style: TextStyle(
                                   fontFamily: 'Amiri',
                                   fontSize: 22,
-                                  color: MainTheme.primaryColor,
+                                  color: AppTheme.primaryColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -333,16 +308,22 @@ class _QuranViewPageState extends State<QuranViewPage> {
     }
 
     for (var ayah in ayahs) {
-      int surahId = widget.isSurah ? widget.id : (ayah['surah'] != null ? ayah['surah']['number'] : widget.id);
-      String surahName = ayah['surah'] != null ? ayah['surah']['name'] : '';
+      int surahId = widget.isSurah
+          ? widget.id
+          : (ayah['surah'] != null
+              ? ayah['surah']['number']
+              : widget.id);
+      String surahName =
+          ayah['surah'] != null ? ayah['surah']['name'] : '';
 
       if (surahId != currentSurahId) {
         flushWrap();
 
         if (currentSurahId != null) {
-          // It's a split between surahs in a Juz
           content.add(const SizedBox(height: 30));
-          content.add(Divider(color: MainTheme.primaryColor.withValues(alpha: 0.2), thickness: 1));
+          content.add(Divider(
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              thickness: 1));
           content.add(const SizedBox(height: 20));
           content.add(
             Text(
@@ -350,7 +331,7 @@ class _QuranViewPageState extends State<QuranViewPage> {
               style: const TextStyle(
                 fontFamily: 'Amiri',
                 fontSize: 26,
-                color: MainTheme.primaryColor,
+                color: AppTheme.primaryColor,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -358,14 +339,13 @@ class _QuranViewPageState extends State<QuranViewPage> {
           );
           content.add(const SizedBox(height: 20));
         } else if (!widget.isSurah && surahName.isNotEmpty) {
-          // Very first surah shown in this Juz
           content.add(
             Text(
               surahName,
               style: const TextStyle(
                 fontFamily: 'Amiri',
                 fontSize: 26,
-                color: MainTheme.primaryColor,
+                color: AppTheme.primaryColor,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -374,30 +354,34 @@ class _QuranViewPageState extends State<QuranViewPage> {
           content.add(const SizedBox(height: 20));
         }
 
-        // Add Basmalah if it's the start
         bool isStartOfSurah = ayah['numberInSurah'] == 1;
-        bool showBismillah = isStartOfSurah && surahId != 1 && surahId != 9;
-        
-        // Also if we are viewing a single complete Surah from the beginning
-        if (widget.isSurah && currentSurahId == null && surahId != 1 && surahId != 9) {
+        bool showBismillah =
+            isStartOfSurah && surahId != 1 && surahId != 9;
+
+        if (widget.isSurah &&
+            currentSurahId == null &&
+            surahId != 1 &&
+            surahId != 9) {
           showBismillah = true;
         }
 
         if (showBismillah) {
           content.add(
             const Text(
-              'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+              'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
               style: TextStyle(
                 fontFamily: 'Amiri',
                 fontSize: 24,
-                color: MainTheme.primaryColor,
+                color: AppTheme.primaryColor,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
           );
           content.add(const SizedBox(height: 20));
-          content.add(Divider(color: MainTheme.primaryColor.withValues(alpha: 0.2), thickness: 1));
+          content.add(Divider(
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              thickness: 1));
           content.add(const SizedBox(height: 20));
         }
 
@@ -405,18 +389,25 @@ class _QuranViewPageState extends State<QuranViewPage> {
       }
 
       String ayahText = ayah['text'];
-      String cleanedText = ayahText.replaceAll('\ufeff', ''); // remove zero width space
-      
-      if (surahId != 1 && surahId != 9 && ayah['numberInSurah'] == 1) {
-        const String b1 = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
-        const String b2 = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+      String cleanedText = ayahText.replaceAll('﻿', '');
+
+      if (surahId != 1 &&
+          surahId != 9 &&
+          ayah['numberInSurah'] == 1) {
+        const String b1 =
+            'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
+        const String b2 =
+            'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
         const String b3 = 'بسم الله الرحمن الرحيم';
         if (cleanedText.startsWith(b1)) {
-          cleanedText = cleanedText.substring(b1.length).trim();
+          cleanedText =
+              cleanedText.substring(b1.length).trim();
         } else if (cleanedText.startsWith(b2)) {
-          cleanedText = cleanedText.substring(b2.length).trim();
+          cleanedText =
+              cleanedText.substring(b2.length).trim();
         } else if (cleanedText.startsWith(b3)) {
-          cleanedText = cleanedText.substring(b3.length).trim();
+          cleanedText =
+              cleanedText.substring(b3.length).trim();
         }
       }
       ayahText = cleanedText;
@@ -424,7 +415,8 @@ class _QuranViewPageState extends State<QuranViewPage> {
       final int ayahNum = ayah['numberInSurah'];
       final bool isStop = _stops.contains(ayahNum);
 
-      currentWrapChildren.add(_buildAyah(ayahText, ayahNum, isStop));
+      currentWrapChildren
+          .add(_buildAyah(ayahText, ayahNum, isStop));
     }
 
     flushWrap();
@@ -443,7 +435,9 @@ class _QuranViewPageState extends State<QuranViewPage> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: isStop ? MainTheme.primaryColor.withValues(alpha: 0.1) : Colors.transparent,
+          color: isStop
+              ? AppTheme.primaryColor.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: RichText(
@@ -457,21 +451,26 @@ class _QuranViewPageState extends State<QuranViewPage> {
                   fontFamily: 'Amiri',
                   fontSize: 22,
                   height: 2.2,
-                  color: MainTheme.textPrimary,
+                  color: AppTheme.textPrimary,
                 ),
               ),
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 4),
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
                     image: const DecorationImage(
-                      image: AssetImage('assets/images/ayah_end.png'), // Will add a placeholder gracefully if not found
+                      image: AssetImage(
+                          'assets/images/ayah_end.png'),
                       fit: BoxFit.contain,
                     ),
-                    color: isStop ? MainTheme.primaryColor.withValues(alpha: 0.2) : Colors.transparent,
+                    color: isStop
+                        ? AppTheme.primaryColor
+                            .withValues(alpha: 0.2)
+                        : Colors.transparent,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -480,8 +479,12 @@ class _QuranViewPageState extends State<QuranViewPage> {
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: 14,
-                        color: isStop ? MainTheme.primaryColor : MainTheme.textSecondary,
-                        fontWeight: isStop ? FontWeight.bold : FontWeight.normal,
+                        color: isStop
+                            ? AppTheme.primaryColor
+                            : AppTheme.textSecondary,
+                        fontWeight: isStop
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
