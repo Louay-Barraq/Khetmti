@@ -1,28 +1,20 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/pages/actions/change_email_page.dart';
-import 'package:khetmti/pages/actions/change_password_page.dart';
-import 'package:khetmti/pages/actions/change_username_page.dart';
-import 'package:khetmti/pages/actions/notifications_page.dart';
-import 'package:khetmti/pages/authentication/login_page.dart';
-import 'package:khetmti/pages/main/profile_page.dart';
-import 'package:khetmti/pages/main/about_page.dart';
-import 'package:khetmti/pages/main/help_page.dart';
-import '../../auth/auth_service.dart';
-import '../../themes/main_theme.dart';
-import '../../components/settings_item_card.dart';
-import '../../components/khetmti_header.dart';
-import '../../utils/helpers.dart';
-import '../../utils/migration_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/features/auth/providers/auth_provider.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/settings_item_card.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends ConsumerWidget {
   final bool showBackButton;
   const SettingsPage({super.key, this.showBackButton = false});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Standardized Header
@@ -30,8 +22,8 @@ class SettingsPage extends StatelessWidget {
             title: 'الإعدادات',
             showProfile: true,
             showBackButton: showBackButton,
-            onNotificationTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage())),
-            onProfileTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage())),
+            onNotificationTap: () => context.push('/notifications'),
+            onProfileTap: () => context.push('/profile'),
           ),
           Expanded(
             child: ListView(
@@ -44,7 +36,7 @@ class SettingsPage extends StatelessWidget {
                     fontFamily: 'Amiri',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: MainTheme.textPrimary,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -52,17 +44,17 @@ class SettingsPage extends StatelessWidget {
                   SettingsItemCard(
                     title: "تغيير إسم المستخدم",
                     icon: Icons.person_outline,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangeUsernamePage())),
+                    onTap: () => context.push('/settings/username'),
                   ),
                   SettingsItemCard(
                     title: "تغيير البريد الإلكتروني",
                     icon: Icons.email_outlined,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangeEmailPage())),
+                    onTap: () => context.push('/settings/email'),
                   ),
                   SettingsItemCard(
                     title: "تغيير كلمة السر",
                     icon: Icons.lock_outline,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangePasswordPage())),
+                    onTap: () => context.push('/settings/password'),
                   ),
                   /*
                   SettingsItemCard(
@@ -81,13 +73,12 @@ class SettingsPage extends StatelessWidget {
                     icon: Icons.logout,
                     textColor: Colors.red,
                     iconColor: Colors.red,
-                    iconBgColor: Colors.red.withOpacity(0.1),
-                    onTap: () {
-                      AuthService().logout();
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
-                        (route) => false,
-                      );
+                    iconBgColor: Colors.red.withValues(alpha: 0.1),
+                    onTap: () async {
+                      await ref.read(authRepositoryProvider).signOut();
+                      if (context.mounted) {
+                        context.go('/login');
+                      }
                     },
                   ),
                   SettingsItemCard(
@@ -95,29 +86,10 @@ class SettingsPage extends StatelessWidget {
                     icon: Icons.delete_forever,
                     textColor: Colors.red,
                     iconColor: Colors.red,
-                    iconBgColor: Colors.red.withOpacity(0.1),
-                    onTap: () => _showDeleteAccountDialog(context),
+                    iconBgColor: Colors.red.withValues(alpha: 0.1),
+                    onTap: () => _showDeleteAccountDialog(context, ref),
                   ),
                   const SizedBox(height: 10),
-                   SettingsItemCard(
-                    title: "DEBUG: هجرة البيانات إلى Supabase",
-                    icon: Icons.cloud_upload_outlined,
-                    onTap: () async {
-                      showLoadingDialog(context);
-                      try {
-                        await MigrationService.migrateAll();
-                        if (context.mounted) {
-                          dismissLoadingDialog(context);
-                          showSuccessToast('تمت هجرة البيانات بنجاح إلى Supabase');
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          dismissLoadingDialog(context);
-                          showErrorToast('فشلت هجرة البيانات: $e');
-                        }
-                      }
-                    },
-                  ),
                 ]),
                 const SizedBox(height: 30),
                 const Text(
@@ -127,7 +99,7 @@ class SettingsPage extends StatelessWidget {
                     fontFamily: 'Amiri',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: MainTheme.textPrimary,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -135,12 +107,12 @@ class SettingsPage extends StatelessWidget {
                   SettingsItemCard(
                     title: "مركز المساعدة",
                     icon: Icons.help_outline,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpPage())),
+                    onTap: () => context.push('/help'),
                   ),
                   SettingsItemCard(
                     title: "عن تطبيق ختمتي",
                     icon: Icons.info_outline,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutPage())),
+                    onTap: () => context.push('/about'),
                   ),
                 ]),
               ],
@@ -151,7 +123,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  void _showDeleteAccountDialog(BuildContext context) {
+  void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -168,15 +140,9 @@ class SettingsPage extends StatelessWidget {
           TextButton(
             onPressed: () async {
               try {
-                final user = FirebaseAuth.instance.currentUser;
-                if (user != null) {
-                  await user.delete();
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
-                      (route) => false,
-                    );
-                  }
+                await ref.read(authRepositoryProvider).deleteAccount();
+                if (context.mounted) {
+                  context.go('/login');
                 }
               } catch (e) {
                 if (context.mounted) Navigator.pop(context);
@@ -197,7 +163,7 @@ class SettingsPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 4),
             blurRadius: 10,
           ),

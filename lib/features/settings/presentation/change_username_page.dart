@@ -1,22 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/components/custom_button.dart';
-import 'package:khetmti/components/custom_textfield.dart';
-import 'package:khetmti/utils/helpers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/features/auth/providers/auth_provider.dart';
+import 'package:khetmti/features/settings/providers/settings_provider.dart';
+import 'package:khetmti/shared/widgets/custom_button.dart';
+import 'package:khetmti/shared/widgets/custom_textfield.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
-import '../../components/introductive_component.dart';
-import 'package:khetmti/components/khetmti_header.dart';
-import '../../themes/main_theme.dart';
-
-class ChangeUsernamePage extends StatefulWidget {
+class ChangeUsernamePage extends ConsumerStatefulWidget {
   const ChangeUsernamePage({super.key});
 
   @override
-  State<ChangeUsernamePage> createState() => _ChangeUsernamePageState();
+  ConsumerState<ChangeUsernamePage> createState() => _ChangeUsernamePageState();
 }
 
-class _ChangeUsernamePageState extends State<ChangeUsernamePage> {
+class _ChangeUsernamePageState extends ConsumerState<ChangeUsernamePage> {
   final _oldUsernameController = TextEditingController();
   final _newUsernameController = TextEditingController();
 
@@ -39,8 +39,7 @@ class _ChangeUsernamePageState extends State<ChangeUsernamePage> {
       return;
     }
 
-    final auth = FirebaseAuth.instance;
-    final currentUsername = auth.currentUser!.displayName;
+    final currentUsername = ref.read(authRepositoryProvider).currentUsername;
     if (currentUsername != null && currentUsername != oldUsername) {
       showErrorToast("إسم المستخــدم القديـــم غير صحيح");
       return;
@@ -48,16 +47,12 @@ class _ChangeUsernamePageState extends State<ChangeUsernamePage> {
 
     try {
       showLoadingDialog(context);
-      final currentUser = auth.currentUser!;
-      await currentUser.updateDisplayName(newUsername);
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid)
-          .update({'username': newUsername});
+      await ref.read(settingsRepositoryProvider).changeUsername(
+        oldUsername: oldUsername,
+        newUsername: newUsername,
+      );
 
       if (mounted) dismissLoadingDialog(context);
-      showSuccessToast("تم تـــغيير إسم المستخــدم بنجـــاح");
 
       _newUsernameController.clear();
       _oldUsernameController.clear();
@@ -77,7 +72,7 @@ class _ChangeUsernamePageState extends State<ChangeUsernamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
@@ -85,7 +80,7 @@ class _ChangeUsernamePageState extends State<ChangeUsernamePage> {
             title: "تغيــــر الإسم",
             showProfile: false,
             showBackButton: true,
-            onBackTap: () => Navigator.pop(context),
+            onBackTap: () => context.pop(),
           ),
           Expanded(
             child: SingleChildScrollView(

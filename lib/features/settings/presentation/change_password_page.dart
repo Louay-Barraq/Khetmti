@@ -1,20 +1,22 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/utils/helpers.dart';
-import '../../components/custom_button.dart';
-import '../../components/custom_textfield.dart';
-import '../../components/introductive_component.dart';
-import 'package:khetmti/components/khetmti_header.dart';
-import '../../themes/main_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/features/settings/providers/settings_provider.dart';
+import 'package:khetmti/shared/widgets/custom_button.dart';
+import 'package:khetmti/shared/widgets/custom_textfield.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ChangePasswordPage extends StatefulWidget {
+class ChangePasswordPage extends ConsumerStatefulWidget {
   const ChangePasswordPage({super.key});
 
   @override
-  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
+  ConsumerState<ChangePasswordPage> createState() => _ChangePasswordPageState();
 }
 
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
+class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
 
@@ -37,31 +39,26 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       return;
     }
 
-    final auth = FirebaseAuth.instance;
-    User? user = auth.currentUser;
-
     try {
       showLoadingDialog(context);
-      AuthCredential credential = EmailAuthProvider.credential(
-        email: user!.email!,
-        password: oldPassword,
+      await ref.read(settingsRepositoryProvider).changePassword(
+        currentPassword: oldPassword,
+        newPassword: newPassword,
       );
 
-      try {
-        await user.reauthenticateWithCredential(credential);
-      } catch (e) {
-        if (mounted) dismissLoadingDialog(context);
-        showErrorToast("كلمة السر القديمة غير صحيحة");
-        _oldPasswordController.clear();
-        return;
-      }
-      await user.updatePassword(newPassword);
-
       if (mounted) dismissLoadingDialog(context);
-      showSuccessToast("تم تغيير كلمة السر بنجاح");
 
       _newPasswordController.clear();
       _oldPasswordController.clear();
+    } on AuthException catch (e) {
+      if (mounted) dismissLoadingDialog(context);
+      if (e.message.toLowerCase().contains('password') ||
+          e.message.toLowerCase().contains('credential')) {
+        showErrorToast("كلمة السر القديمة غير صحيحة");
+        _oldPasswordController.clear();
+      } else {
+        showErrorToast("حدث خطأ أثناء العملية");
+      }
     } catch (e) {
       if (mounted) dismissLoadingDialog(context);
       showErrorToast("حدث خطأ أثناء العملية");
@@ -78,7 +75,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
@@ -86,7 +83,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             title: "تغيــــر كلمة السر",
             showProfile: false,
             showBackButton: true,
-            onBackTap: () => Navigator.pop(context),
+            onBackTap: () => context.pop(),
           ),
           Expanded(
             child: SingleChildScrollView(

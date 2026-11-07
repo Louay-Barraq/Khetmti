@@ -1,22 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/pages/authentication/login_page.dart';
-import 'package:khetmti/utils/helpers.dart';
-import '../../components/custom_button.dart';
-import '../../components/custom_textfield.dart';
-import '../../components/introductive_component.dart';
-import 'package:khetmti/components/khetmti_header.dart';
-import '../../themes/main_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/features/auth/providers/auth_provider.dart';
+import 'package:khetmti/features/settings/providers/settings_provider.dart';
+import 'package:khetmti/shared/widgets/custom_button.dart';
+import 'package:khetmti/shared/widgets/custom_textfield.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
-class ChangeEmailPage extends StatefulWidget {
+class ChangeEmailPage extends ConsumerStatefulWidget {
   const ChangeEmailPage({super.key});
 
   @override
-  State<ChangeEmailPage> createState() => _ChangeEmailPageState();
+  ConsumerState<ChangeEmailPage> createState() => _ChangeEmailPageState();
 }
 
-class _ChangeEmailPageState extends State<ChangeEmailPage> {
+class _ChangeEmailPageState extends ConsumerState<ChangeEmailPage> {
   final _oldEmailController = TextEditingController();
   final _newEmailController = TextEditingController();
 
@@ -44,8 +44,8 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
       return;
     }
 
-    final auth = FirebaseAuth.instance;
-    final currentEmail = auth.currentUser!.email;
+    final authRepo = ref.read(authRepositoryProvider);
+    final currentEmail = authRepo.currentUser!.email;
     if (currentEmail != null && currentEmail != oldEmail) {
       showErrorToast("البريد الإلكتروني القديـــم غير صحيح");
       return;
@@ -53,26 +53,17 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
 
     try {
       showLoadingDialog(context);
-      final currentUser = FirebaseAuth.instance.currentUser!;
-      await currentUser.verifyBeforeUpdateEmail(newEmail);
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid)
-          .update({'emailUpdated': true});
+      await ref.read(settingsRepositoryProvider).changeEmail(newEmail: newEmail);
 
       if (mounted) dismissLoadingDialog(context);
       showSuccessToast('تم إرسال بريد إلكتروني للتحقق.');
       await Future.delayed(const Duration(seconds: 4));
       showSuccessToast('يرجى التحقق وتسجيل الدخول مرة أخرى.');
 
-      await FirebaseAuth.instance.signOut();
+      await authRepo.signOut();
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-        (route) => false,
-      );
+      context.go('/login');
     } catch (e) {
       if (mounted) dismissLoadingDialog(context);
       debugPrint('Error changing email: $e');
@@ -90,7 +81,7 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
@@ -98,7 +89,7 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
             title: "تغيــــر البريد",
             showProfile: false,
             showBackButton: true,
-            onBackTap: () => Navigator.pop(context),
+            onBackTap: () => context.pop(),
           ),
           Expanded(
             child: SingleChildScrollView(
