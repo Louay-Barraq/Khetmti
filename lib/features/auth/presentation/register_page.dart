@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:khetmti/auth/auth_service.dart';
-import 'package:khetmti/pages/main/index_page.dart';
-import 'package:khetmti/pages/authentication/login_page.dart';
-import 'package:khetmti/utils/helpers.dart';
-import '../../components/custom_button.dart';
-import '../../components/custom_textfield.dart';
-import '../../components/top_page_box.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/features/auth/providers/auth_provider.dart';
+import 'package:khetmti/shared/widgets/custom_button.dart';
+import 'package:khetmti/shared/widgets/custom_textfield.dart';
+import 'package:khetmti/shared/widgets/top_page_box.dart';
+import 'package:khetmti/core/utils/helpers.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final _authService = AuthService();
 
   void register() async {
     if (usernameController.text.trim().length < 5) {
@@ -33,7 +32,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       showLoadingDialog(context);
-      var userCredential = await _authService.signUpWithEmailAndPwd(
+      var userCredential = await ref.read(authRepositoryProvider).signUp(
         email: emailController.text.trim(),
         username: usernameController.text.trim(),
         password: passwordController.text.trim(),
@@ -43,12 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
       dismissLoadingDialog(context);
 
       if (userCredential != null) {
-        await Future.delayed(const Duration(seconds: 1));
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const IndexPage()),
-        );
+        // Router redirect handles navigation to /home when auth state updates
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -134,11 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginPage()),
-                    );
+                    context.push('/login');
                   },
                   borderRadius: BorderRadius.circular(10),
                   child: const Padding(

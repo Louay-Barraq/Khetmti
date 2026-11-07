@@ -1,65 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/auth/auth_service.dart';
-import 'package:khetmti/components/custom_button.dart';
-import 'package:khetmti/components/custom_textfield.dart';
-import 'package:khetmti/utils/helpers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/features/auth/providers/auth_provider.dart';
+import 'package:khetmti/shared/widgets/custom_button.dart';
+import 'package:khetmti/shared/widgets/custom_textfield.dart';
+import 'package:khetmti/shared/widgets/top_page_box.dart';
+import 'package:khetmti/core/utils/helpers.dart';
 
-import '../../components/top_page_box.dart';
-import '../main/index_page.dart';
-import 'register_page.dart';
-
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final _authService = AuthService();
-
-  Future<void> updateEmailInFirestore(String userId, String newEmail) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .update({'email': newEmail});
-    } catch (e) {
-      debugPrint('Error updating email in Firestore: $e');
-    }
-  }
-
-  Future<void> checkEmailVerificationAndUpdateFirestore() async {
-    final auth = FirebaseAuth.instance;
-    await auth.currentUser?.reload();
-    final user = auth.currentUser;
-    if (user == null) return;
-
-    final userData = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
-
-    if (userData.data()?['emailUpdated'] == true) {
-      if (user.emailVerified) {
-        await updateEmailInFirestore(user.uid, user.email!);
-      } else {
-        showWarningToast('يرجى التحقق من الإيميل ثم تسجيل الدخول مرة أخرى.');
-
-        await FirebaseAuth.instance.signOut();
-        await Future.delayed(const Duration(seconds: 2));
-        if (!mounted) return;
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    }
-  }
 
   void login() async {
     if (!isValidEmail(emailController.text.trim())) {
@@ -69,7 +26,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       showLoadingDialog(context);
-      var userCredential = await _authService.signInWithEmailAndPwd(
+      final authRepository = ref.read(authRepositoryProvider);
+      var userCredential = await authRepository.signIn(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
@@ -80,14 +38,8 @@ class _LoginPageState extends State<LoginPage> {
       if (userCredential != null) {
         emailController.clear();
         passwordController.clear();
-        await checkEmailVerificationAndUpdateFirestore();
-
-        await Future.delayed(const Duration(seconds: 1));
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const IndexPage()),
-        );
+        await ref.read(authRepositoryProvider).checkEmailVerificationAndUpdate();
+        // Router redirect handles navigation to /home when auth state updates
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -108,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       showLoadingDialog(context);
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      await ref.read(authRepositoryProvider).resetPassword(email);
       if (mounted) dismissLoadingDialog(context);
       showSuccessToast('تم إرسال رابط إعادة تعيين كلمة السر إلى بريدك الإلكتروني');
     } catch (e) {
@@ -206,11 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const RegisterPage()),
-                    );
+                    context.push('/register');
                   },
                   borderRadius: BorderRadius.circular(10),
                   child: const Padding(
