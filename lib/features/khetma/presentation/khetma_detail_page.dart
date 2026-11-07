@@ -34,8 +34,7 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
             newStatus: newStatus,
           );
     } catch (e) {
-      debugPrint("Error updating part status: $e");
-      showErrorToast("حدث خطأ أثناء تحديث الحالة");
+      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) {
         setState(() {
