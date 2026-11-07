@@ -34,7 +34,7 @@ class _ChangeUsernamePageState extends ConsumerState<ChangeUsernamePage> {
       return;
     }
 
-    if (newUsername.length < 3) {
+    if (newUsername.length < minUsernameLength) {
       showErrorToast("إسم المستخــدم الجــديد قصير");
       return;
     }

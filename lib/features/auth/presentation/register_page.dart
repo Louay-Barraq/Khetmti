@@ -20,8 +20,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final passwordController = TextEditingController();
 
   void register() async {
-    if (usernameController.text.trim().length < 5) {
-      showErrorToast('يجب أن يتكون طول اسم المستخدم من 5 أحرف على الأقل');
+    if (usernameController.text.trim().length < minUsernameLength) {
+      showErrorToast('يجب أن يتكون طول اسم المستخدم من $minUsernameLength أحرف على الأقل');
       return;
     }
 

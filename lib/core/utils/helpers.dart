@@ -73,6 +73,9 @@ void dismissLoadingDialog(BuildContext context) {
   Navigator.of(context).pop();
 }
 
+/// Shortest username allowed at sign-up and when renaming.
+const minUsernameLength = 3;
+
 bool isValidEmail(String email) {
   final RegExp emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
