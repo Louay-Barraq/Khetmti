@@ -1,15 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import '../themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class KhetmaComponent extends StatelessWidget {
   final String title;
   final int participantsCount;
   final double progress;
-  final Timestamp? createdAt;
-  final Timestamp? updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   final VoidCallback? onTap;
 
@@ -23,9 +22,8 @@ class KhetmaComponent extends StatelessWidget {
     super.key,
   });
 
-  String _formatDate(Timestamp? timestamp) {
-    if (timestamp == null) return "غير معروف";
-    final date = timestamp.toDate();
+  String _formatDate(DateTime? date) {
+    if (date == null) return "غير معروف";
     return intl.DateFormat('yyyy/MM/dd').format(date);
   }
 
@@ -38,11 +36,11 @@ class KhetmaComponent extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
-        color: MainTheme.cardColor,
+        color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 4),
             blurRadius: 10,
           ),
@@ -73,7 +71,7 @@ class KhetmaComponent extends StatelessWidget {
                   ),
                   circularStrokeCap: CircularStrokeCap.round,
                   backgroundColor: const Color(0xFFF1F5F9),
-                  progressColor: progress >= 1.0 ? Colors.green : MainTheme.primaryColor,
+                  progressColor: progress >= 1.0 ? Colors.green : AppTheme.primaryColor,
                 ),
                 const SizedBox(width: 20),
                 // Content
@@ -90,7 +88,7 @@ class KhetmaComponent extends StatelessWidget {
                           fontFamily: 'Amiri',
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: MainTheme.textPrimary,
+                          color: AppTheme.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -109,7 +107,7 @@ class KhetmaComponent extends StatelessWidget {
                               child: Text(
                                 "$participantsCount مشاركين",
                                 style: const TextStyle(
-                                  color: MainTheme.primaryColor,
+                                  color: AppTheme.primaryColor,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Amiri',

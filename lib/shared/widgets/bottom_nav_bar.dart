@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:khetmti/themes/main_theme.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -18,7 +18,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -51,7 +51,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isSelected ? MainTheme.primaryColor : MainTheme.textSecondary,
+            color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
             size: 28,
           ),
           const SizedBox(height: 4),
@@ -61,7 +61,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
               fontFamily: 'Amiri',
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? MainTheme.primaryColor : MainTheme.textSecondary,
+              color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
@@ -72,7 +72,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             width: 4,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected ? MainTheme.primaryColor : Colors.transparent,
+              color: isSelected ? AppTheme.primaryColor : Colors.transparent,
             ),
           ),
         ],
