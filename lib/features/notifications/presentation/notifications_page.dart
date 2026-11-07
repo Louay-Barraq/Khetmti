@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../themes/main_theme.dart';
-import '../../components/khetmti_header.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
@@ -8,10 +8,10 @@ class NotificationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          KhetmtiHeader(
+          const KhetmtiHeader(
             title: 'الإشعارات',
             showProfile: false,
             showBackButton: true,
@@ -25,7 +25,7 @@ class NotificationsPage extends StatelessWidget {
                   Icon(
                     Icons.notifications_off_outlined,
                     size: 80,
-                    color: MainTheme.textSecondary.withOpacity(0.5),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -33,7 +33,7 @@ class NotificationsPage extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Amiri',
                       fontSize: 20,
-                      color: MainTheme.textSecondary,
+                      color: AppTheme.textSecondary,
                     ),
                   ),
                 ],
