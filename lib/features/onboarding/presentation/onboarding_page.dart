@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:khetmti/auth/auth_page.dart';
-import 'package:khetmti/themes/main_theme.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'onboarding_items.dart';
@@ -31,70 +31,69 @@ class _OnboardingPageState extends State<OnboardingPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              child: isLastPage
-                  ? getStarted()
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                          onPressed: () => pageController
-                              .jumpToPage(controller.items.length - 1),
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: Text(
-                              "تـــخطي",
-                              style: TextStyle(
-                                color: MainTheme.primaryColor,
-                                fontFamily: 'Amiri',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
+            isLastPage
+                ? getStarted()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => pageController
+                            .jumpToPage(controller.items.length - 1),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Text(
+                            "تـــخطي",
+                            style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontFamily: 'Amiri',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
                           ),
                         ),
-                        SmoothPageIndicator(
-                          controller: pageController,
-                          count: controller.items.length,
-                          onDotClicked: (index) => pageController.animateToPage(
-                            index,
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.easeIn,
-                          ),
-                          effect: WormEffect(
-                            dotHeight: 12,
-                            dotWidth: 12,
-                            activeDotColor: MainTheme.primaryColor,
-                          ),
+                      ),
+                      SmoothPageIndicator(
+                        controller: pageController,
+                        count: controller.items.length,
+                        onDotClicked: (index) =>
+                            pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeIn,
                         ),
-                        TextButton(
-                          onPressed: () => pageController.nextPage(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeIn,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: Text(
-                              "التـــالي",
-                              style: TextStyle(
-                                color: MainTheme.primaryColor,
-                                fontFamily: 'Amiri',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
+                        effect: WormEffect(
+                          dotHeight: 12,
+                          dotWidth: 12,
+                          activeDotColor: AppTheme.primaryColor,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeIn,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Text(
+                            "التـــالي",
+                            style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontFamily: 'Amiri',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: 10), // Small white space at the bottom
+                      ),
+                    ],
+                  ),
+            const SizedBox(height: 10),
           ],
         ),
       ),
       body: PageView.builder(
-        onPageChanged: (index) =>
-            setState(() => isLastPage = controller.items.length - 1 == index),
+        onPageChanged: (index) => setState(
+            () => isLastPage = controller.items.length - 1 == index),
         itemCount: controller.items.length,
         controller: pageController,
         itemBuilder: (context, index) {
@@ -123,7 +122,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     ),
                     const SizedBox(height: 25),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0),
                       child: Text(
                         controller.items[index].descriptions,
                         textAlign: TextAlign.center,
@@ -149,7 +149,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: MainTheme.primaryColor,
+        color: AppTheme.primaryColor,
       ),
       width: MediaQuery.of(context).size.width * .9,
       height: 55,
@@ -159,10 +159,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           pres.setBool("onboarding", true);
 
           if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const AuthPage()),
-          );
+          context.go('/login');
         },
         child: const Text(
           "البدء",

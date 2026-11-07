@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:khetmti/auth/auth_page.dart';
-import 'package:khetmti/pages/onboarding/onboarding_page.dart';
-import 'package:khetmti/themes/main_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   Timer? _timer;
 
   @override
@@ -24,15 +25,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (!mounted) return;
 
-      if (onboarding) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AuthPage()),
-        );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const OnboardingPage()),
-        );
+      if (!onboarding) {
+        context.go('/onboarding');
+        return;
       }
+
+      final isLoggedIn = ref.read(authRepositoryProvider).currentUser != null;
+      context.go(isLoggedIn ? '/home' : '/login');
     });
   }
 
@@ -49,8 +48,8 @@ class _SplashScreenState extends State<SplashScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              MainTheme.primaryColor.withOpacity(0.75),
-              MainTheme.secondaryColor.withOpacity(0.75),
+              AppTheme.primaryColor.withValues(alpha: 0.75),
+              AppTheme.secondaryColor.withValues(alpha: 0.75),
             ],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
