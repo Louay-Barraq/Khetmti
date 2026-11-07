@@ -41,10 +41,7 @@ class AuthRepository {
         data: {'username': username},
       );
 
-      final user = response.user;
-      if (user != null) {
-        await _upsertProfile(user: user, username: username);
-      }
+      // The database creates the profile row (trigger on_auth_user_created).
 
       showSuccessToast('تم إنشاء الحساب بنجاح!');
       return response;
@@ -98,49 +95,6 @@ class AuthRepository {
     await _supabase.from('users').update({
       'lastSeen': DateTime.now().toIso8601String(),
     }).eq('doc_id', user.id);
-  }
-
-  Future<void> checkEmailVerificationAndUpdate() async {
-    final user = currentUser;
-    if (user == null) return;
-
-    final row = await _supabase
-        .from('users')
-        .select('emailUpdated')
-        .eq('doc_id', user.id)
-        .maybeSingle();
-
-    if (row != null && row['emailUpdated'] == true) {
-      await _supabase.from('users').update({
-        'email': user.email ?? '',
-        'emailUpdated': false,
-      }).eq('doc_id', user.id);
-    }
-  }
-
-  Future<Map<String, dynamic>> getUserData() async {
-    final user = currentUser;
-    if (user == null) throw Exception('No user logged in');
-
-    return _supabase.from('users').select().eq('doc_id', user.id).single();
-  }
-
-  Future<void> _upsertProfile({
-    required User user,
-    required String username,
-  }) async {
-    await _supabase.from('users').upsert({
-      'doc_id': user.id,
-      'username': username,
-      'email': user.email ?? '',
-      'totalXP': 0,
-      'level': 1,
-      'lastSeen': DateTime.now().toIso8601String(),
-      'createdAt': DateTime.now().toIso8601String(),
-      'readingStats': {},
-      'khatmsJoined': [],
-      'friends': [],
-    });
   }
 
   void _handleAuthException(AuthException e) {

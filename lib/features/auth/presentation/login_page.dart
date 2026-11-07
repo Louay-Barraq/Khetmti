@@ -38,7 +38,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (userCredential != null) {
         emailController.clear();
         passwordController.clear();
-        await ref.read(authRepositoryProvider).checkEmailVerificationAndUpdate();
         // Router redirect handles navigation to /home when auth state updates
       }
     } catch (e) {

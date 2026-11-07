@@ -47,10 +47,9 @@ class _ChangeUsernamePageState extends ConsumerState<ChangeUsernamePage> {
 
     try {
       showLoadingDialog(context);
-      await ref.read(settingsRepositoryProvider).changeUsername(
-        oldUsername: oldUsername,
-        newUsername: newUsername,
-      );
+      await ref
+          .read(settingsRepositoryProvider)
+          .changeUsername(newUsername: newUsername);
 
       if (mounted) dismissLoadingDialog(context);
 
