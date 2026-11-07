@@ -1,81 +1,26 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/components/khetmti_header.dart';
-import 'package:khetmti/themes/main_theme.dart';
-import 'package:khetmti/utils/helpers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/features/social/models/friendship.dart';
+import 'package:khetmti/features/social/providers/social_provider.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
-class FriendRequestsPage extends StatefulWidget {
+class FriendRequestsPage extends ConsumerStatefulWidget {
   const FriendRequestsPage({super.key});
 
   @override
-  State<FriendRequestsPage> createState() => _FriendRequestsPageState();
+  ConsumerState<FriendRequestsPage> createState() => _FriendRequestsPageState();
 }
 
-class _FriendRequestsPageState extends State<FriendRequestsPage> {
-  final String _currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
-  Stream<List<Map<String, dynamic>>> _fetchFriendRequests() {
-    return FirebaseFirestore.instance
-        .collection('friendships')
-        .where('receiver', isEqualTo: _currentUserId)
-        .where('status', isEqualTo: 'pending')
-        .snapshots()
-        .asyncMap((snapshot) async {
-      List<Map<String, dynamic>> requests = [];
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final senderId = data['sender'];
-        
-        // Fetch sender details
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(senderId)
-            .get();
-        
-        if (userDoc.exists) {
-          final userData = userDoc.data()!;
-          requests.add({
-            'requestId': doc.id,
-            'senderId': senderId,
-            'username': userData['username'] ?? 'Unknown',
-            'email': userData['email'] ?? '',
-          });
-        }
-      }
-      return requests;
-    });
-  }
-
+class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
   Future<void> _acceptRequest(String requestId, String senderId) async {
     try {
       showLoadingDialog(context);
-      
-      // 1. Delete the request
-      await FirebaseFirestore.instance
-          .collection('friendships')
-          .doc(requestId)
-          .delete();
-
-      // 2. Add to friendships collection (confirmed friends)
-      await FirebaseFirestore.instance.collection('friendships').add({
-        'users': [_currentUserId, senderId],
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      // 3. Update both users' friends lists
-      await FirebaseFirestore.instance.collection('users').doc(_currentUserId).update({
-        'friends': FieldValue.arrayUnion([senderId]),
-      });
-      await FirebaseFirestore.instance.collection('users').doc(senderId).update({
-        'friends': FieldValue.arrayUnion([_currentUserId]),
-      });
-
+      await ref.read(socialRepositoryProvider).acceptFriendRequest(requestId, senderId);
       if (mounted) dismissLoadingDialog(context);
-      showSuccessToast("تم قبول طلب الصداقة بنجاح");
     } catch (e) {
       if (mounted) dismissLoadingDialog(context);
-      showErrorToast("حدث خطأ أثناء قبول الطلب");
       debugPrint("Error accepting friend request: $e");
     }
   }
@@ -83,24 +28,20 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
   Future<void> _declineRequest(String requestId) async {
     try {
       showLoadingDialog(context);
-      await FirebaseFirestore.instance
-          .collection('friendships')
-          .doc(requestId)
-          .delete();
-
+      await ref.read(socialRepositoryProvider).declineFriendRequest(requestId);
       if (mounted) dismissLoadingDialog(context);
-      showSuccessToast("تم رفض طلب الصداقة");
     } catch (e) {
       if (mounted) dismissLoadingDialog(context);
-      showErrorToast("حدث خطأ أثناء رفض الطلب");
       debugPrint("Error declining friend request: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final requestsAsync = ref.watch(friendRequestsProvider);
+
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           KhetmtiHeader(
@@ -109,15 +50,19 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
             showBackButton: true,
           ),
           Expanded(
-            child: StreamBuilder<List<Map<String, dynamic>>>(
-              stream: _fetchFriendRequests(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
-                final requests = snapshot.data ?? [];
-                
+            child: requestsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Text(
+                  "حدث خطأ أثناء تحميل الطلبات",
+                  style: const TextStyle(
+                    fontFamily: 'Amiri',
+                    fontSize: 18,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ),
+              data: (requests) {
                 if (requests.isEmpty) {
                   return const Center(
                     child: Text(
@@ -125,7 +70,7 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: 18,
-                        color: MainTheme.textSecondary,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                   );
@@ -147,7 +92,7 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
     );
   }
 
-  Widget _buildRequestCard(Map<String, dynamic> request) {
+  Widget _buildRequestCard(FriendRequest request) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
@@ -156,7 +101,7 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -169,12 +114,12 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
             children: [
               CircleAvatar(
                 radius: 25,
-                backgroundColor: MainTheme.primaryColor.withOpacity(0.1),
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                 child: Text(
-                  request['username'][0].toUpperCase(),
+                  request.username[0].toUpperCase(),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: MainTheme.primaryColor,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
               ),
@@ -184,19 +129,19 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      request['username'],
+                      request.username,
                       style: const TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: MainTheme.textPrimary,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     Text(
-                      request['email'],
+                      request.email,
                       style: const TextStyle(
                         fontSize: 13,
-                        color: MainTheme.textSecondary,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                   ],
@@ -210,9 +155,9 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _acceptRequest(request['requestId'], request['senderId']),
+                  onPressed: () => _acceptRequest(request.requestId, request.senderId),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: MainTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -227,7 +172,7 @@ class _FriendRequestsPageState extends State<FriendRequestsPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _declineRequest(request['requestId']),
+                  onPressed: () => _declineRequest(request.requestId),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.red,
                     side: const BorderSide(color: Colors.red),
