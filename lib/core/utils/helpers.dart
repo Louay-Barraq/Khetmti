@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:ui';
 
-/// Shows a success toast with green background.
 void showSuccessToast(String msg) {
   Fluttertoast.showToast(
     msg: msg,
@@ -14,7 +13,6 @@ void showSuccessToast(String msg) {
   );
 }
 
-/// Shows an error toast with red background.
 void showErrorToast(String msg) {
   Fluttertoast.showToast(
     msg: msg,
@@ -26,7 +24,6 @@ void showErrorToast(String msg) {
   );
 }
 
-/// Shows a warning toast with orange background.
 void showWarningToast(String msg) {
   Fluttertoast.showToast(
     msg: msg,
@@ -38,14 +35,11 @@ void showWarningToast(String msg) {
   );
 }
 
-
-
-/// Shows a loading dialog (non-dismissible spinner) with blurred background.
 void showLoadingDialog(BuildContext context) {
   showDialog(
     context: context,
     barrierDismissible: false,
-    barrierColor: Colors.black.withOpacity(0.05),
+    barrierColor: Colors.black.withValues(alpha: 0.05),
     builder: (BuildContext context) {
       return BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -57,7 +51,7 @@ void showLoadingDialog(BuildContext context) {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -73,12 +67,10 @@ void showLoadingDialog(BuildContext context) {
   );
 }
 
-/// Dismisses the loading dialog.
 void dismissLoadingDialog(BuildContext context) {
   Navigator.of(context).pop();
 }
 
-/// Validates an email address format.
 bool isValidEmail(String email) {
   final RegExp emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
