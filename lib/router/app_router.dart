@@ -28,13 +28,20 @@ import 'package:khetmti/shared/widgets/bottom_nav_bar.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Built once. Auth changes re-run [GoRouter.redirect] through
+/// `refreshListenable` instead of rebuilding the router, which would reset
+/// navigation to /splash (e.g. after changing the username).
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authChanged = ValueNotifier(0);
+  ref.listen(authStateProvider, (_, __) => authChanged.value++);
+  ref.onDispose(authChanged.dispose);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
+    refreshListenable: authChanged,
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
       final isLoading = authState.isLoading;
       final isLoggedIn = authState.valueOrNull != null;
       final isAuthRoute = state.matchedLocation == '/login' ||
