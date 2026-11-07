@@ -22,14 +22,4 @@ class KhetmaLog {
       timestamp: DateTime.tryParse('${data['timestamp'] ?? ''}') ?? DateTime.now(),
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'username': username,
-      'uid': uid,
-      'part': part,
-      'action': action,
-      'timestamp': timestamp.toIso8601String(),
-    };
-  }
 }
