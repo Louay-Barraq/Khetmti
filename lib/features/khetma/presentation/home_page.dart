@@ -1,70 +1,41 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/components/khetma_component.dart';
-import 'package:khetmti/components/khetmti_header.dart';
-import 'package:khetmti/components/state_switch.dart';
-import 'package:khetmti/pages/Khetma/Khetma_page.dart';
-import 'package:khetmti/pages/actions/khetma_creation_page.dart';
-import 'package:khetmti/pages/actions/notifications_page.dart';
-import 'package:khetmti/pages/main/rankings_page.dart';
-import '../../themes/main_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/features/khetma/models/khetma.dart';
+import 'package:khetmti/features/khetma/providers/khetma_provider.dart';
+import 'package:khetmti/shared/widgets/khetma_card.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/state_switch.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   String _currentView = 'In Progress';
-  Stream<List<Map<String, dynamic>>>? _inProgressStream;
-  Stream<List<Map<String, dynamic>>>? _completedStream;
-
-  @override
-  void initState() {
-    super.initState();
-    _inProgressStream = _buildKhatmsStream('In Progress');
-    _completedStream = _buildKhatmsStream('Completed');
-  }
-
-  Stream<List<Map<String, dynamic>>> _buildKhatmsStream(String view) {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (view == 'In Progress') {
-      return FirebaseFirestore.instance
-          .collection('khatms')
-          .where('participants', arrayContains: userId)
-          .where('completionPercent', isLessThan: 1.0)
-          .snapshots()
-          .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
-    } else {
-      return FirebaseFirestore.instance
-          .collection('khatms')
-          .where('participants', arrayContains: userId)
-          .where('completionPercent', isEqualTo: 1.0)
-          .snapshots()
-          .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final inProgressAsync = ref.watch(userKhetmasProvider(false));
+    final completedAsync = ref.watch(userKhetmasProvider(true));
+
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       body: Stack(
         children: [
           Column(
             children: [
-              // Standardized Header
               KhetmtiHeader(
                 title: 'ختمـتي',
                 showProfile: true,
                 showBackButton: false,
                 icon: Icons.emoji_events,
-                onNotificationTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage())),
-                onProfileTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RankingsPage())),
+                onNotificationTap: () => context.push('/notifications'),
+                onProfileTap: () => context.push('/rankings'),
                 bottom: StateSwitch(
                   onSwitchChanged: (value) {
                     setState(() {
@@ -74,7 +45,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 10),
-              // Section Title
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Row(
@@ -90,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                           fontFamily: 'Amiri',
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: MainTheme.textPrimary,
+                          color: AppTheme.textPrimary,
                         ),
                       ),
                     ),
@@ -100,7 +70,7 @@ class _HomePageState extends State<HomePage> {
                         'عرض الكل',
                         style: TextStyle(
                           fontFamily: 'Amiri',
-                          color: MainTheme.primaryColor,
+                          color: AppTheme.primaryColor,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -109,16 +79,16 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              // Khatmas List
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 400),
-                  child: _buildKhatmsList(),
+                  child: _buildKhatmsList(
+                    _currentView == 'In Progress' ? inProgressAsync : completedAsync,
+                  ),
                 ),
               ),
             ],
           ),
-          // Floating Bottom Button
           Positioned(
             bottom: 30,
             left: 0,
@@ -132,35 +102,36 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildKhatmsList() {
-    final stream = _currentView == 'In Progress' ? _inProgressStream : _completedStream;
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      key: ValueKey(_currentView),
-      stream: stream,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text("Error loading data"));
-        }
-        final data = snapshot.data ?? [];
-        if (data.isEmpty) {
+  Widget _buildKhatmsList(AsyncValue<List<Khetma>> asyncKhetmas) {
+    return asyncKhetmas.when(
+      loading: () => const Center(
+        key: ValueKey('loading'),
+        child: CircularProgressIndicator(),
+      ),
+      error: (_, __) => const Center(
+        key: ValueKey('error'),
+        child: Text("Error loading data"),
+      ),
+      data: (khetmas) {
+        if (khetmas.isEmpty) {
           return Center(
+            key: ValueKey('empty-$_currentView'),
             child: Text(
               _currentView == 'In Progress' ? 'لا توجد ختمات نشطة' : 'لا توجد ختمات مكتملة',
               style: const TextStyle(
                 fontFamily: 'Amiri',
                 fontSize: 18,
-                color: MainTheme.textSecondary,
+                color: AppTheme.textSecondary,
               ),
             ),
           );
         }
         return ListView.builder(
+          key: ValueKey('list-$_currentView'),
           padding: const EdgeInsets.only(bottom: 100),
-          itemCount: data.length,
+          itemCount: khetmas.length,
           itemBuilder: (context, index) {
+            final khetma = khetmas[index];
             return TweenAnimationBuilder<double>(
               key: ValueKey('home-anim-$index'),
               tween: Tween(begin: 0.0, end: 1.0),
@@ -176,20 +147,13 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               child: KhetmaComponent(
-                title: data[index]['name'] ?? 'Unknown',
-                progress: (data[index]['completionPercent'] as num?)?.toDouble() ?? 0.0,
-                participantsCount: data[index]['currentParticipantsNumber'] ?? 0,
-                createdAt: data[index]['createdAt'] as Timestamp?,
-                updatedAt: data[index]['updatedAt'] as Timestamp?,
+                title: khetma.name,
+                progress: khetma.completionPercent,
+                participantsCount: khetma.currentParticipantsNumber,
+                createdAt: khetma.createdAt,
+                updatedAt: khetma.updatedAt,
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => KhetmaPage(
-                        khetmaUid: data[index]['khetmaId']?.toString() ?? '',
-                      ),
-                    ),
-                  );
+                  context.push('/khetma/${khetma.khetmaId}');
                 },
               ),
             );
@@ -202,11 +166,11 @@ class _HomePageState extends State<HomePage> {
   Widget _buildCreateButton() {
     return Container(
       decoration: BoxDecoration(
-        color: MainTheme.primaryColor,
+        color: AppTheme.primaryColor,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: MainTheme.primaryColor.withValues(alpha: 0.4),
+            color: AppTheme.primaryColor.withValues(alpha: 0.4),
             offset: const Offset(0, 8),
             blurRadius: 15,
           ),
@@ -217,17 +181,14 @@ class _HomePageState extends State<HomePage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(30),
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const KhetmaCreationPage()),
-            );
+            context.push('/khetma/create');
           },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               textDirection: TextDirection.rtl,
-              children: const [
+              children: [
                 Icon(Icons.add, color: Colors.white),
                 SizedBox(width: 10),
                 Text(

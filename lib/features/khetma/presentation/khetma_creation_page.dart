@@ -1,103 +1,50 @@
-import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:khetmti/components/custom_button.dart';
-import 'package:khetmti/components/custom_textfield.dart';
-import 'package:khetmti/data/quran_data.dart';
-import 'package:khetmti/pages/Khetma/Khetma_page.dart';
-import 'package:khetmti/utils/helpers.dart';
-import '../../components/introductive_component.dart';
-import 'package:khetmti/components/khetmti_header.dart';
-import 'package:khetmti/pages/actions/notifications_page.dart';
-import '../../themes/main_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/features/khetma/providers/khetma_provider.dart';
+import 'package:khetmti/shared/widgets/custom_button.dart';
+import 'package:khetmti/shared/widgets/custom_textfield.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
-class KhetmaCreationPage extends StatefulWidget {
+class KhetmaCreationPage extends ConsumerStatefulWidget {
   const KhetmaCreationPage({super.key});
 
   @override
-  State<KhetmaCreationPage> createState() => _KhetmaCreationPageState();
+  ConsumerState<KhetmaCreationPage> createState() =>
+      _KhetmaCreationPageState();
 }
 
-class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
+class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
   final _khetmaNameController = TextEditingController();
   final _maxNumberController = TextEditingController();
+  String _splitType = 'sura';
 
-  Future<String> _generateUniqueKhetmaCode() async {
-    Random random = Random();
-    String code = '';
-
-    bool codeExists = true;
-    while (codeExists) {
-      code = (random.nextInt(90000) + 10000).toString();
-
-      final existingKhetma = await FirebaseFirestore.instance
-          .collection('khatms')
-          .where('code', isEqualTo: code)
-          .get();
-
-      if (existingKhetma.docs.isEmpty) {
-        codeExists = false;
-      }
-    }
-
-    return code;
-  }
-
-  String _splitType = 'sura'; // 'sura' or 'juzu'
-
-  Future<bool> _addKhetma() async {
-    showLoadingDialog(context);
+  Future<void> _addKhetma() async {
     final String khetmaName = _khetmaNameController.text.trim();
     final String maxNumber = _maxNumberController.text.trim();
-    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     if (khetmaName.isEmpty || maxNumber.isEmpty) {
       showErrorToast("يرجى ملء جميع الحقول");
-      if (mounted) dismissLoadingDialog(context);
-      return false;
+      return;
     }
 
     final int? maxNumberInt = int.tryParse(maxNumber);
     if (maxNumberInt == null || maxNumberInt <= 0) {
       showErrorToast("يرجى إدخال عدد صحيح موجب للمشاركين");
-      if (mounted) dismissLoadingDialog(context);
-      return false;
+      return;
     }
 
     try {
-      String uniqueCode = await _generateUniqueKhetmaCode();
+      showLoadingDialog(context);
 
-      DocumentReference khetmaRef =
-          FirebaseFirestore.instance.collection('khatms').doc();
-
-      List<String> items = _splitType == 'sura' ? sourasWithAyahs.keys.toList() : juzusList;
-
-      Map<String, dynamic> khetmaData = {
-        'name': khetmaName,
-        'code': uniqueCode,
-        'creatorId': currentUserId,
-        'participants': [currentUserId],
-        'currentParticipantsNumber': 1,
-        'maxParticipantsNumber': maxNumberInt,
-        'parts': getEmptyPartsMap(items),
-        'splitType': _splitType,
-        'completionPercent': 0.0,
-        'finishedParts': 0,
-        'totalParts': items.length,
-        'createdAt': FieldValue.serverTimestamp(),
-        'khetmaId': khetmaRef.id,
-        'logs': [], // Initial empty logs
-      };
-
-      await khetmaRef.set(khetmaData);
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUserId)
-          .update({
-        'khatmsJoined': FieldValue.arrayUnion([khetmaRef.id]),
-      });
+      final khetmaId =
+          await ref.read(khetmaRepositoryProvider).createKhetma(
+                name: khetmaName,
+                splitType: _splitType,
+                maxParticipants: maxNumberInt,
+              );
 
       if (mounted) dismissLoadingDialog(context);
 
@@ -108,19 +55,12 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
 
       await Future.delayed(const Duration(seconds: 1));
 
-      if (!mounted) return true;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => KhetmaPage(khetmaUid: khetmaRef.id),
-        ),
-      );
-      return true;
+      if (!mounted) return;
+      context.push('/khetma/$khetmaId');
     } catch (e) {
       debugPrint("Error creating khatma: $e");
       if (mounted) dismissLoadingDialog(context);
       showErrorToast("حدث خطأ أثناء إنشاء الختمة");
-      return false;
     }
   }
 
@@ -134,7 +74,7 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
@@ -142,11 +82,8 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
             title: "إنــــشاء ختمــــة",
             showProfile: false,
             showBackButton: true,
-            onBackTap: () => Navigator.pop(context),
-            onNotificationTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const NotificationsPage()),
-            ),
+            onBackTap: () => context.pop(),
+            onNotificationTap: () => context.push('/notifications'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -178,7 +115,7 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
                         fontFamily: 'Amiri',
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: MainTheme.textPrimary,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                   ),
@@ -191,10 +128,15 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: _splitType == 'juzu' ? MainTheme.primaryColor : Colors.white,
+                              color: _splitType == 'juzu'
+                                  ? AppTheme.primaryColor
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(
-                                color: _splitType == 'juzu' ? MainTheme.primaryColor : MainTheme.primaryColor.withOpacity(0.3),
+                                color: _splitType == 'juzu'
+                                    ? AppTheme.primaryColor
+                                    : AppTheme.primaryColor
+                                        .withValues(alpha: 0.3),
                               ),
                             ),
                             child: Text(
@@ -203,7 +145,9 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
                               style: TextStyle(
                                 fontFamily: 'Amiri',
                                 fontWeight: FontWeight.bold,
-                                color: _splitType == 'juzu' ? Colors.white : MainTheme.textPrimary,
+                                color: _splitType == 'juzu'
+                                    ? Colors.white
+                                    : AppTheme.textPrimary,
                               ),
                             ),
                           ),
@@ -216,10 +160,15 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: _splitType == 'sura' ? MainTheme.primaryColor : Colors.white,
+                              color: _splitType == 'sura'
+                                  ? AppTheme.primaryColor
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(
-                                color: _splitType == 'sura' ? MainTheme.primaryColor : MainTheme.primaryColor.withOpacity(0.3),
+                                color: _splitType == 'sura'
+                                    ? AppTheme.primaryColor
+                                    : AppTheme.primaryColor
+                                        .withValues(alpha: 0.3),
                               ),
                             ),
                             child: Text(
@@ -228,7 +177,9 @@ class _KhetmaCreationPageState extends State<KhetmaCreationPage> {
                               style: TextStyle(
                                 fontFamily: 'Amiri',
                                 fontWeight: FontWeight.bold,
-                                color: _splitType == 'sura' ? Colors.white : MainTheme.textPrimary,
+                                color: _splitType == 'sura'
+                                    ? Colors.white
+                                    : AppTheme.textPrimary,
                               ),
                             ),
                           ),
