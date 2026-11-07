@@ -1,39 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:ui';
 
-void showSuccessToast(String msg) {
-  Fluttertoast.showToast(
-    msg: msg,
-    toastLength: Toast.LENGTH_LONG,
-    gravity: ToastGravity.SNACKBAR,
-    backgroundColor: Colors.green,
-    textColor: Colors.white,
-    fontSize: 17.0,
-  );
+/// Attached to [MaterialApp] so toasts can be shown without a BuildContext
+/// (e.g. from repositories).
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+void _showToast(String msg, Color color, Duration duration) {
+  final messenger = scaffoldMessengerKey.currentState;
+  if (messenger == null) return;
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          msg,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        backgroundColor: color,
+        duration: duration,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(24, 0, 24, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 2,
+      ),
+    );
 }
 
-void showErrorToast(String msg) {
-  Fluttertoast.showToast(
-    msg: msg,
-    toastLength: Toast.LENGTH_LONG,
-    gravity: ToastGravity.SNACKBAR,
-    backgroundColor: Colors.redAccent,
-    textColor: Colors.white,
-    fontSize: 17.0,
-  );
-}
+void showSuccessToast(String msg) =>
+    _showToast(msg, Colors.green, const Duration(milliseconds: 3500));
 
-void showWarningToast(String msg) {
-  Fluttertoast.showToast(
-    msg: msg,
-    toastLength: Toast.LENGTH_SHORT,
-    gravity: ToastGravity.SNACKBAR,
-    backgroundColor: Colors.orange,
-    textColor: Colors.white,
-    fontSize: 17.0,
-  );
-}
+void showErrorToast(String msg) =>
+    _showToast(msg, Colors.redAccent, const Duration(milliseconds: 3500));
+
+void showWarningToast(String msg) =>
+    _showToast(msg, Colors.orange, const Duration(seconds: 2));
 
 void showLoadingDialog(BuildContext context) {
   showDialog(

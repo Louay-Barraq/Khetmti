@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/router/app_router.dart';
 
 class KhetmtiApp extends ConsumerWidget {
@@ -22,6 +23,7 @@ class KhetmtiApp extends ConsumerWidget {
           },
         ),
       ),
+      scaffoldMessengerKey: scaffoldMessengerKey,
       routerConfig: router,
     );
   }
