@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/features/social/data/social_repository.dart';
 import 'package:khetmti/features/social/models/friendship.dart';
 import 'package:khetmti/features/social/providers/social_provider.dart';
 import 'package:khetmti/shared/widgets/friend_addition_component.dart';
@@ -17,32 +18,13 @@ class PersonSearchPage extends ConsumerStatefulWidget {
 class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
   final _controller = TextEditingController();
 
-  Future<void> _handleAddFriend(String friendUid) async {
-    await ref.read(socialRepositoryProvider).sendFriendRequest(friendUid);
-  }
+  /// The submitted search; typing alone does not query the database.
+  String _query = '';
 
-  Future<void> _handleRemoveRequest(String friendUid) async {
-    await ref.read(socialRepositoryProvider).cancelFriendRequest(friendUid);
-  }
-
-  Future<void> _handleAcceptRequest(String friendUid) async {
-    // Accept requires requestId, but from search results we only have the uid.
-    // The repository's sendFriendRequest / cancelFriendRequest work by uid,
-    // but acceptFriendRequest needs a requestId. For the search page the
-    // "received" action is typically a shortcut — we use sendFriendRequest
-    // which the repository handles correctly for the received case.
-    // However, the original code manually looked up the request doc by
-    // sender/receiver. We replicate that via acceptFriendRequest with a
-    // lookup. For now, delegate to the repository which already handles toasts.
-    final socialRepo = ref.read(socialRepositoryProvider);
-    // We need the requestId — query it the same way the old code did.
-    // The personSearchProvider already re-fetches on stream changes, so
-    // after accept the list will update automatically.
-    await socialRepo.sendFriendRequest(friendUid);
-  }
-
-  Future<void> _handleDeclineRequest(String friendUid) async {
-    await ref.read(socialRepositoryProvider).cancelFriendRequest(friendUid);
+  /// Runs a friendship action, then reloads the results so buttons update.
+  Future<void> _act(Future<void> Function(SocialRepository repo) action) async {
+    await action(ref.read(socialRepositoryProvider));
+    ref.invalidate(personSearchProvider(_query));
   }
 
   @override
@@ -53,7 +35,7 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final query = _controller.text.trim();
+    final query = _query;
     final searchAsync = query.isNotEmpty
         ? ref.watch(personSearchProvider(query))
         : const AsyncValue<List<FriendSearchResult>>.data([]);
@@ -105,12 +87,16 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
                     final result = results[index];
                     return FriendAdditionComponent(
                       username: result.username,
-                      email: result.email,
+                      subtitle: 'المستوى ${result.level}',
                       status: result.status.name,
-                      onAdd: () => _handleAddFriend(result.uid),
-                      onRemove: () => _handleRemoveRequest(result.uid),
-                      onAccept: () => _handleAcceptRequest(result.uid),
-                      onDecline: () => _handleDeclineRequest(result.uid),
+                      onAdd: () =>
+                          _act((r) => r.sendFriendRequest(result.uid)),
+                      onRemove: () =>
+                          _act((r) => r.cancelFriendRequest(result.uid)),
+                      onAccept: () =>
+                          _act((r) => r.acceptFriendRequest(result.requestId!)),
+                      onDecline: () =>
+                          _act((r) => r.declineFriendRequest(result.requestId!)),
                     );
                   },
                 );
@@ -139,7 +125,9 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
       child: TextField(
         controller: _controller,
         textDirection: TextDirection.rtl,
-        onChanged: (val) => setState(() {}),
+        textInputAction: TextInputAction.search,
+        onChanged: (_) => setState(() {}),
+        onSubmitted: (val) => setState(() => _query = val.trim()),
         style: const TextStyle(fontFamily: 'Amiri', fontSize: 18),
         decoration: InputDecoration(
           hintText: 'ابحث عن اسم المستخدم...',
@@ -150,7 +138,7 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     _controller.clear();
-                    setState(() {});
+                    setState(() => _query = '');
                   },
                 )
               : null,

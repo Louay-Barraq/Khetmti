@@ -14,10 +14,10 @@ class FriendRequestsPage extends ConsumerStatefulWidget {
 }
 
 class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
-  Future<void> _acceptRequest(String requestId, String senderId) async {
+  Future<void> _acceptRequest(String requestId) async {
     try {
       showLoadingDialog(context);
-      await ref.read(socialRepositoryProvider).acceptFriendRequest(requestId, senderId);
+      await ref.read(socialRepositoryProvider).acceptFriendRequest(requestId);
       if (mounted) dismissLoadingDialog(context);
     } catch (e) {
       if (mounted) dismissLoadingDialog(context);
@@ -138,7 +138,7 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
                       ),
                     ),
                     Text(
-                      request.email,
+                      'المستوى ${request.level}',
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppTheme.textSecondary,
@@ -155,7 +155,7 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _acceptRequest(request.requestId, request.senderId),
+                  onPressed: () => _acceptRequest(request.requestId),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,

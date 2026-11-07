@@ -16,7 +16,9 @@ final friendRequestsProvider = StreamProvider<List<FriendRequest>>((ref) {
   return ref.watch(socialRepositoryProvider).friendRequestsStream();
 });
 
-final personSearchProvider =
-    FutureProvider.family<List<FriendSearchResult>, String>((ref, query) {
+/// Search results are dropped when the search page closes; invalidate after
+/// an action so the buttons show the new state.
+final personSearchProvider = FutureProvider.autoDispose
+    .family<List<FriendSearchResult>, String>((ref, query) {
   return ref.watch(socialRepositoryProvider).searchUsers(query);
 });

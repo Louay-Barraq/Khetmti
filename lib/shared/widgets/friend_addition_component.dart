@@ -3,7 +3,7 @@ import 'package:khetmti/core/theme/app_theme.dart';
 
 class FriendAdditionComponent extends StatelessWidget {
   final String username;
-  final String email;
+  final String subtitle;
   final String status;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
@@ -13,7 +13,7 @@ class FriendAdditionComponent extends StatelessWidget {
   const FriendAdditionComponent({
     super.key,
     required this.username,
-    required this.email,
+    required this.subtitle,
     required this.status,
     required this.onAdd,
     required this.onRemove,
@@ -77,7 +77,7 @@ class FriendAdditionComponent extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    email,
+                    subtitle,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 12,
