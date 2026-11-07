@@ -56,6 +56,7 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
     final stops = await ref.read(quranRepositoryProvider).loadStops(
           stopsKey: stopsKey,
         );
+    if (!mounted) return;
     setState(() {
       _stops = stops;
     });
