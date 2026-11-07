@@ -150,7 +150,7 @@ lib/
 
 ### Prerequisites
 - Flutter SDK ≥ 3.4.3
-- Firebase project configured (see `firebase_options.dart`)
+- A Supabase project
 - Android SDK / Xcode for iOS
 
 ### Setup
@@ -162,17 +162,21 @@ cd Khetmti
 # Install dependencies
 flutter pub get
 
+# Add your Supabase URL + anon key (config/env.json is gitignored)
+cp config/env.example.json config/env.json
+
 # Run on a connected device
-flutter run
+flutter run --dart-define-from-file=config/env.json
 ```
+VS Code picks the flag up from `.vscode/launch.json`. Pass the same flag to `flutter build`.
 
 ### Build
 ```bash
 # Android APK
-flutter build apk --debug
+flutter build apk --debug --dart-define-from-file=config/env.json
 
 # iOS (requires Mac + Xcode)
-flutter build ios --no-codesign --debug
+flutter build ios --no-codesign --debug --dart-define-from-file=config/env.json
 ```
 
 ---
