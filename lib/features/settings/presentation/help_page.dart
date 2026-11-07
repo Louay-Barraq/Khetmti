@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../themes/main_theme.dart';
-import '../../components/khetmti_header.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
@@ -10,7 +11,7 @@ class HelpPage extends StatelessWidget {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
       path: 'louaybarraq@gmail.com',
-      query: encodeQueryParameters(<String, String>{
+      query: _encodeQueryParameters(<String, String>{
         'subject': 'دعم تطبيق ختمتي',
       }),
     );
@@ -19,7 +20,7 @@ class HelpPage extends StatelessWidget {
     }
   }
 
-  String? encodeQueryParameters(Map<String, String> params) {
+  String? _encodeQueryParameters(Map<String, String> params) {
     return params.entries
         .map((MapEntry<String, String> e) =>
             '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
@@ -29,14 +30,14 @@ class HelpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MainTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           KhetmtiHeader(
             title: 'المساعدة والدعم',
             showBackButton: true,
-            showNotification: false,
             showProfile: false,
+            onBackTap: () => context.pop(),
           ),
           Expanded(
             child: ListView(
@@ -48,7 +49,7 @@ class HelpPage extends StatelessWidget {
                     fontFamily: 'Amiri',
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: MainTheme.textPrimary,
+                    color: AppTheme.textPrimary,
                   ),
                   textDirection: TextDirection.rtl,
                 ),
@@ -63,7 +64,7 @@ class HelpPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           offset: const Offset(0, 5),
                           blurRadius: 15,
                         ),
@@ -75,23 +76,24 @@ class HelpPage extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: MainTheme.primaryColor.withOpacity(0.1),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.email_outlined, color: MainTheme.primaryColor, size: 30),
+                          child: const Icon(Icons.email_outlined,
+                              color: AppTheme.primaryColor, size: 30),
                         ),
                         const SizedBox(width: 20),
-                        Expanded(
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
-                            children: const [
+                            children: [
                               Text(
                                 "عبر البريد الإلكتروني",
                                 style: TextStyle(
                                   fontFamily: 'Amiri',
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: MainTheme.textPrimary,
+                                  color: AppTheme.textPrimary,
                                 ),
                               ),
                               SizedBox(height: 5),
@@ -99,13 +101,14 @@ class HelpPage extends StatelessWidget {
                                 "louaybarraq@gmail.com",
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: MainTheme.textSecondary,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_back_ios, size: 16, color: MainTheme.textSecondary),
+                        const Icon(Icons.arrow_back_ios,
+                            size: 16, color: AppTheme.textSecondary),
                       ],
                     ),
                   ),
@@ -117,34 +120,40 @@ class HelpPage extends StatelessWidget {
                     fontFamily: 'Amiri',
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: MainTheme.textPrimary,
+                    color: AppTheme.textPrimary,
                   ),
                   textDirection: TextDirection.rtl,
                 ),
                 const SizedBox(height: 15),
                 _buildFaqItem(
                   question: "كيف يمكنني إنشاء ختمة جديدة؟",
-                  answer: "يمكنك إنشاء ختمة جديدة من خلال الصفحة الرئيسية بالضغط على زر '+'، ثم تحديد نوع التقسيم (أجزاء أو سور) وعدد المشاركين المطلوب.",
+                  answer:
+                      "يمكنك إنشاء ختمة جديدة من خلال الصفحة الرئيسية بالضغط على زر '+'، ثم تحديد نوع التقسيم (أجزاء أو سور) وعدد المشاركين المطلوب.",
                 ),
                 _buildFaqItem(
                   question: "كيف أنضم لختمة موجودة؟",
-                  answer: "اطلب رمز الانضمام من منشئ الختمة، ثم من الصفحة الرئيسية اختر 'الانضمام لختمة' وأدخل الرمز.",
+                  answer:
+                      "اطلب رمز الانضمام من منشئ الختمة، ثم من الصفحة الرئيسية اختر 'الانضمام لختمة' وأدخل الرمز.",
                 ),
                 _buildFaqItem(
                   question: "كيف يمكنني حجز جزء للقراءة؟",
-                  answer: "بعد الدخول إلى الختمة، ستجد قائمة بالأجزاء أو السور، اضغط على زر الحجز بجانب الجزء المتاح (غير المحجوز) ليصبح باسمك.",
+                  answer:
+                      "بعد الدخول إلى الختمة، ستجد قائمة بالأجزاء أو السور، اضغط على زر الحجز بجانب الجزء المتاح (غير المحجوز) ليصبح باسمك.",
                 ),
                 _buildFaqItem(
                   question: "هل يمكنني قراءة القرآن داخل التطبيق؟",
-                  answer: "نعم! عند دخولك لأي سورة أو جزء في الختمة أو من ملفك الشخصي، سيفتح لك التطبيق المصحف لقراءته مباشرة.",
+                  answer:
+                      "نعم! عند دخولك لأي سورة أو جزء في الختمة أو من ملفك الشخصي، سيفتح لك التطبيق المصحف لقراءته مباشرة.",
                 ),
                 _buildFaqItem(
                   question: "هل يمكنني القراءة بدون إنترنت؟",
-                  answer: "يحتاج التطبيق لاتصال بالإنترنت عند فتح الصفحة لأول مرة، لكننا نعمل على توفير ميزة الحفظ التلقائي للقراءة دون إنترنت قريباً.",
+                  answer:
+                      "يحتاج التطبيق لاتصال بالإنترنت عند فتح الصفحة لأول مرة، لكننا نعمل على توفير ميزة الحفظ التلقائي للقراءة دون إنترنت قريباً.",
                 ),
                 _buildFaqItem(
                   question: "كيف يمكن معرفة إحصائيات قراءتي؟",
-                  answer: "من خلال صفحة الملف الشخصي (الحساب)، ستجد تبويب 'الإحصائيات' الذي يعرض لك عدد الأجزاء والسور التي قرأتها.",
+                  answer:
+                      "من خلال صفحة الملف الشخصي (الحساب)، ستجد تبويب 'الإحصائيات' الذي يعرض لك عدد الأجزاء والسور التي قرأتها.",
                 ),
                 const SizedBox(height: 40),
               ],
@@ -163,7 +172,7 @@ class HelpPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             offset: const Offset(0, 4),
             blurRadius: 10,
           ),
@@ -177,11 +186,12 @@ class HelpPage extends StatelessWidget {
             fontFamily: 'Amiri',
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: MainTheme.textPrimary,
+            color: AppTheme.textPrimary,
           ),
         ),
-        iconColor: MainTheme.primaryColor,
-        collapsedIconColor: MainTheme.textSecondary,
+        iconColor: AppTheme.primaryColor,
+        collapsedIconColor: AppTheme.textSecondary,
+        backgroundColor: Colors.transparent,
         childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         children: [
           Text(
@@ -190,7 +200,7 @@ class HelpPage extends StatelessWidget {
             style: const TextStyle(
               fontFamily: 'Amiri',
               fontSize: 16,
-              color: MainTheme.textSecondary,
+              color: AppTheme.textSecondary,
               height: 1.5,
             ),
           ),
