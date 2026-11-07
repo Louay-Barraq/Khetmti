@@ -168,7 +168,7 @@ cp config/env.example.json config/env.json
 # Run on a connected device
 flutter run --dart-define-from-file=config/env.json
 ```
-VS Code picks the flag up from `.vscode/launch.json`. Pass the same flag to `flutter build`.
+VS Code picks the flag up from `.vscode/launch.json`; in Zed, use the `Flutter: run` / `Flutter: build …` tasks (`task: spawn`) from `.zed/tasks.json`. Pass the same flag to any manual `flutter build`.
 
 ### Build
 ```bash
