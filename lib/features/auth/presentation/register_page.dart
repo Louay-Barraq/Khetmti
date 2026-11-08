@@ -35,7 +35,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       var userCredential = await ref.read(authRepositoryProvider).signUp(
         email: emailController.text.trim(),
         username: usernameController.text.trim(),
-        password: passwordController.text.trim(),
+        password: passwordController.text,
       );
 
       if (!mounted) return;

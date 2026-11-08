@@ -29,7 +29,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final authRepository = ref.read(authRepositoryProvider);
       var userCredential = await authRepository.signIn(
         email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+        password: passwordController.text,
       );
 
       if (!mounted) return;

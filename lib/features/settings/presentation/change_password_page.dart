@@ -21,8 +21,8 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
   final _newPasswordController = TextEditingController();
 
   void changePassword() async {
-    String oldPassword = _oldPasswordController.text.trim();
-    String newPassword = _newPasswordController.text.trim();
+    String oldPassword = _oldPasswordController.text;
+    String newPassword = _newPasswordController.text;
 
     if (newPassword.isEmpty || oldPassword.isEmpty) {
       showErrorToast("يرجى ملء جميع الحقول");
