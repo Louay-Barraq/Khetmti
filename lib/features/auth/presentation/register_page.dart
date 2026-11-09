@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:khetmti/features/auth/providers/auth_provider.dart';
-import 'package:khetmti/shared/widgets/custom_button.dart';
-import 'package:khetmti/shared/widgets/custom_textfield.dart';
-import 'package:khetmti/shared/widgets/top_page_box.dart';
 import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/features/auth/presentation/widgets/auth_scaffold.dart';
+import 'package:khetmti/features/auth/providers/auth_provider.dart';
+import 'package:khetmti/shared/widgets/app_text_field.dart';
+import 'package:khetmti/shared/widgets/primary_button.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -15,142 +15,113 @@ class RegisterPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
-  final usernameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final _username = TextEditingController();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  bool _loading = false;
 
-  void register() async {
-    if (usernameController.text.trim().length < minUsernameLength) {
-      showErrorToast('يجب أن يتكون طول اسم المستخدم من $minUsernameLength أحرف على الأقل');
+  Future<void> _register() async {
+    final username = _username.text.trim();
+    final email = _email.text.trim();
+
+    if (username.length < minUsernameLength) {
+      showErrorToast(
+          'يجب أن يتكون اسم المستخدم من $minUsernameLength أحرف على الأقل');
       return;
     }
-
-    if (!isValidEmail(emailController.text.trim())) {
+    if (!isValidEmail(email)) {
       showErrorToast('عنوان البريد الإلكتروني غير صالح');
       return;
     }
+    if (_password.text.length < minPasswordLength) {
+      showErrorToast(
+          'يجب أن تتكون كلمة السر من $minPasswordLength أحرف على الأقل');
+      return;
+    }
 
-    try {
-      showLoadingDialog(context);
-      var userCredential = await ref.read(authRepositoryProvider).signUp(
-        email: emailController.text.trim(),
-        username: usernameController.text.trim(),
-        password: passwordController.text,
-      );
+    FocusScope.of(context).unfocus();
+    setState(() => _loading = true);
+    // On success the router redirect opens /home.
+    await ref.read(authRepositoryProvider).signUp(
+          email: email,
+          username: username,
+          password: _password.text,
+        );
+    if (mounted) setState(() => _loading = false);
+  }
 
-      if (!mounted) return;
-      dismissLoadingDialog(context);
-
-      if (userCredential != null) {
-        // Router redirect handles navigation to /home when auth state updates
-      }
-    } catch (e) {
-      debugPrint('Error: $e');
-      if (mounted) dismissLoadingDialog(context);
+  void _toLogin() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/login');
     }
   }
 
   @override
   void dispose() {
-    usernameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
+    _username.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
+    return AuthScaffold(
+      title: 'حساب جديد',
+      subtitle: 'أنشئ حسابك وشارك أصدقاءك في ختم القرآن',
+      onBack: context.canPop() ? _toLogin : null,
+      footer: AuthFooterLink(
+        question: 'لديك حساب؟',
+        action: 'سجّل الدخول',
+        onTap: _toLogin,
+      ),
+      children: [
+        AutofillGroup(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const TopPageBox(),
-              const SizedBox(height: 15),
-              const Center(
-                child: Text(
-                  "إنشاء حساب جديد",
-                  style: TextStyle(
-                    fontFamily: 'Amiri',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 36,
-                  ),
-                ),
-              ),
-              const Center(
-                child: Text(
-                  "(لـــيس لـــديك حســـاب)",
-                  style: TextStyle(
-                    fontFamily: 'Amiri',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              CustomTextfield(
-                fieldController: usernameController,
-                fieldTitle: "الإسم و اللقب : ( بالعربية ) ",
-                inArabic: true,
-                isPassword: false,
-                onlyNumber: false,
-              ),
-              const SizedBox(height: 20),
-              CustomTextfield(
-                fieldController: emailController,
-                fieldTitle: " : البريد الإلكتروني",
-                inArabic: false,
-                isPassword: false,
-                onlyNumber: false,
-              ),
-              const SizedBox(height: 20),
-              CustomTextfield(
-                fieldController: passwordController,
-                fieldTitle: " : كلمة السر",
-                inArabic: false,
-                isPassword: true,
-                onlyNumber: false,
-              ),
-              const SizedBox(height: 20),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: register,
-                  borderRadius: BorderRadius.circular(30),
-                  child: const CustomButton(text: "إنشاء حساب"),
-                ),
+              AppTextField(
+                controller: _username,
+                label: 'الاسم واللقب',
+                hint: 'بالعربية، كما سيراه أصدقاؤك',
+                icon: Icons.person_outline_rounded,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.name],
               ),
               const SizedBox(height: 18),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    context.push('/login');
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Center(
-                      child: Text(
-                        'لديك حساب ؟ أنقر هنا',
-                        style: TextStyle(
-                          fontFamily: 'Amiri',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              AppTextField(
+                controller: _email,
+                label: 'البريد الإلكتروني',
+                icon: Icons.alternate_email_rounded,
+                latin: true,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.email],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
+              AppTextField(
+                controller: _password,
+                label: 'كلمة السر',
+                hint: '$minPasswordLength أحرف على الأقل',
+                icon: Icons.lock_outline_rounded,
+                isPassword: true,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _register(),
+                autofillHints: const [AutofillHints.newPassword],
+              ),
             ],
           ),
         ),
-      ),
+        const SizedBox(height: 26),
+        PrimaryButton(
+          label: 'إنشاء الحساب',
+          icon: Icons.person_add_alt_1_rounded,
+          loading: _loading,
+          onPressed: _register,
+        ),
+      ],
     );
   }
 }

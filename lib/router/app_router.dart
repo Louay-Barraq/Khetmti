@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:khetmti/core/providers/supabase_providers.dart';
+import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/features/auth/presentation/login_page.dart';
 import 'package:khetmti/features/auth/presentation/register_page.dart';
+import 'package:khetmti/features/auth/presentation/reset_password_page.dart';
 import 'package:khetmti/features/khetma/presentation/home_page.dart';
 import 'package:khetmti/features/khetma/presentation/menu_page.dart';
 import 'package:khetmti/features/khetma/presentation/khetma_detail_page.dart';
@@ -24,86 +29,69 @@ import 'package:khetmti/features/onboarding/presentation/splash_screen.dart';
 import 'package:khetmti/features/onboarding/presentation/onboarding_page.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/shared/widgets/bottom_nav_bar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorKey = GlobalKey<NavigatorState>();
+
+const _authRoutes = {'/login', '/register'};
+const _openRoutes = {'/splash', '/onboarding'};
+
+/// Where to send the user, or null to stay. Kept free of Flutter types so
+/// it can be unit tested.
+String? authRedirect({
+  required String location,
+  required bool authLoading,
+  required bool loggedIn,
+}) {
+  if (_openRoutes.contains(location) || authLoading) return null;
+  final onAuthRoute = _authRoutes.contains(location);
+  if (!loggedIn) return onAuthRoute ? null : '/login';
+  if (onAuthRoute) return '/home';
+  return null;
+}
 
 /// Built once. Auth changes re-run [GoRouter.redirect] through
 /// `refreshListenable` instead of rebuilding the router, which would reset
 /// navigation to /splash (e.g. after changing the username).
 final routerProvider = Provider<GoRouter>((ref) {
   final authChanged = ValueNotifier(0);
-  ref.listen(authStateProvider, (_, __) => authChanged.value++);
+  // Not on token refreshes: only when loading ends or the user changes.
+  ref.listen(
+    authStateProvider.select((s) => (s.isLoading, s.valueOrNull?.id)),
+    (_, __) => authChanged.value++,
+  );
   ref.onDispose(authChanged.dispose);
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: authChanged,
     redirect: (context, state) {
-      final authState = ref.read(authStateProvider);
-      final isLoading = authState.isLoading;
-      final isLoggedIn = authState.valueOrNull != null;
-      final isAuthRoute = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
-      final isSplash = state.matchedLocation == '/splash';
-      final isOnboarding = state.matchedLocation == '/onboarding';
-
-      if (isSplash || isOnboarding) return null;
-
-      // While auth state is loading, don't redirect — stay on current route
-      if (isLoading) return null;
-
-      if (!isLoggedIn && !isAuthRoute) return '/login';
-      if (isLoggedIn && isAuthRoute) return '/home';
-
-      return null;
+      final auth = ref.read(authStateProvider);
+      return authRedirect(
+        location: state.matchedLocation,
+        authLoading: auth.isLoading,
+        loggedIn: auth.valueOrNull != null,
+      );
     },
     routes: [
+      GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
+      GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingPage()),
+      GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
+      GoRoute(path: '/register', builder: (_, __) => const RegisterPage()),
       GoRoute(
-        path: '/splash',
-        builder: (_, __) => const SplashScreen(),
+        path: '/reset-password',
+        builder: (_, __) => const ResetPasswordPage(),
       ),
-      GoRoute(
-        path: '/onboarding',
-        builder: (_, __) => const OnboardingPage(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (_, __) => const LoginPage(),
-      ),
-      GoRoute(
-        path: '/register',
-        builder: (_, __) => const RegisterPage(),
-      ),
-      ShellRoute(
-        navigatorKey: _shellNavigatorKey,
-        builder: (_, state, child) => IndexShell(child: child),
-        routes: [
-          GoRoute(
-            path: '/home',
-            pageBuilder: (_, __) => const NoTransitionPage(
-              child: HomePage(),
-            ),
-          ),
-          GoRoute(
-            path: '/menu',
-            pageBuilder: (_, __) => const NoTransitionPage(
-              child: MenuPage(),
-            ),
-          ),
-          GoRoute(
-            path: '/settings',
-            pageBuilder: (_, __) => const NoTransitionPage(
-              child: SettingsPage(),
-            ),
-          ),
-          GoRoute(
-            path: '/profile',
-            pageBuilder: (_, __) => const NoTransitionPage(
-              child: ProfilePage(),
-            ),
-          ),
+      StatefulShellRoute(
+        builder: (_, __, shell) => IndexShell(shell: shell),
+        navigatorContainerBuilder: (_, shell, children) =>
+            _FadingBranches(index: shell.currentIndex, children: children),
+        branches: [
+          _branch('/home', const HomePage()),
+          _branch('/menu', const MenuPage()),
+          _branch('/settings', const SettingsPage()),
+          _branch('/profile', const ProfilePage()),
         ],
       ),
       GoRoute(
@@ -143,10 +131,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/friends/requests',
         builder: (_, __) => const FriendRequestsPage(),
       ),
-      GoRoute(
-        path: '/rankings',
-        builder: (_, __) => const RankingsPage(),
-      ),
+      GoRoute(path: '/rankings', builder: (_, __) => const RankingsPage()),
       GoRoute(
         path: '/settings/username',
         builder: (_, __) => const ChangeUsernamePage(),
@@ -163,55 +148,76 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/notifications',
         builder: (_, __) => const NotificationsPage(),
       ),
-      GoRoute(
-        path: '/help',
-        builder: (_, __) => const HelpPage(),
-      ),
-      GoRoute(
-        path: '/about',
-        builder: (_, __) => const AboutPage(),
-      ),
+      GoRoute(path: '/help', builder: (_, __) => const HelpPage()),
+      GoRoute(path: '/about', builder: (_, __) => const AboutPage()),
     ],
   );
+
+  // The reset-password email link signs the user in with a recovery
+  // session; send them to the page that sets the new password.
+  final StreamSubscription<AuthState> recovery = ref
+      .watch(supabaseClientProvider)
+      .auth
+      .onAuthStateChange
+      .where((s) => s.event == AuthChangeEvent.passwordRecovery)
+      .listen((_) => router.go('/reset-password'));
+  ref.onDispose(recovery.cancel);
+
+  return router;
 });
 
-class IndexShell extends StatefulWidget {
-  final Widget child;
-  const IndexShell({super.key, required this.child});
+StatefulShellBranch _branch(String path, Widget page) => StatefulShellBranch(
+      routes: [GoRoute(path: path, builder: (_, __) => page)],
+    );
+
+/// Keeps every visited tab alive (scroll position, loaded data) and
+/// cross-fades between them.
+class _FadingBranches extends StatelessWidget {
+  final int index;
+  final List<Widget> children;
+
+  const _FadingBranches({required this.index, required this.children});
 
   @override
-  State<IndexShell> createState() => _IndexShellState();
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        for (var i = 0; i < children.length; i++)
+          IgnorePointer(
+            ignoring: i != index,
+            child: TickerMode(
+              enabled: i == index,
+              child: AnimatedOpacity(
+                opacity: i == index ? 1 : 0,
+                duration: AppTheme.fast,
+                curve: Curves.easeOut,
+                child: AnimatedSlide(
+                  offset: i == index ? Offset.zero : const Offset(0, 0.015),
+                  duration: AppTheme.medium,
+                  curve: AppTheme.curve,
+                  child: children[i],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
-class _IndexShellState extends State<IndexShell> {
-  int _selectedIndex = 0;
-
-  static const _routes = ['/home', '/menu', '/settings', '/profile'];
-
-  void _onItemTapped(int index) {
-    if (index != _selectedIndex) {
-      setState(() => _selectedIndex = index);
-      context.go(_routes[index]);
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final location = GoRouterState.of(context).matchedLocation;
-    final idx = _routes.indexOf(location);
-    if (idx != -1 && idx != _selectedIndex) {
-      setState(() => _selectedIndex = idx);
-    }
-  }
+class IndexShell extends StatelessWidget {
+  final StatefulNavigationShell shell;
+  const IndexShell({super.key, required this.shell});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.child,
+      body: shell,
       bottomNavigationBar: CustomBottomNavigationBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+        selectedIndex: shell.currentIndex,
+        // Tapping the current tab again returns it to its first page.
+        onItemTapped: (i) =>
+            shell.goBranch(i, initialLocation: i == shell.currentIndex),
       ),
     );
   }
