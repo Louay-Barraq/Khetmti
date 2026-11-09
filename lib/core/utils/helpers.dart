@@ -76,9 +76,23 @@ void dismissLoadingDialog(BuildContext context) {
 /// Shortest username allowed at sign-up and when renaming.
 const minUsernameLength = 3;
 
+/// Shortest password allowed at sign-up, reset and change (Supabase's
+/// default minimum).
+const minPasswordLength = 6;
+
 bool isValidEmail(String email) {
   final RegExp emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
   return emailRegex.hasMatch(email);
+}
+
+/// 123 → ١٢٣
+String toArabicDigits(int number) {
+  const digits = '٠١٢٣٤٥٦٧٨٩';
+  return number
+      .toString()
+      .split('')
+      .map((d) => digits[int.parse(d)])
+      .join();
 }

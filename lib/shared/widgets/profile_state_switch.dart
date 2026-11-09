@@ -1,102 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/shared/widgets/sliding_segments.dart';
 
 class ProfileStateSwitch extends StatefulWidget {
   final void Function(String) onSwitchChanged;
 
-  const ProfileStateSwitch({required this.onSwitchChanged, super.key});
+  const ProfileStateSwitch({super.key, required this.onSwitchChanged});
 
   @override
   State<ProfileStateSwitch> createState() => _ProfileStateSwitchState();
 }
 
 class _ProfileStateSwitchState extends State<ProfileStateSwitch> {
-  String _isActive = 'Your Friends';
+  static const _values = ['Your Friends', 'Your Khatms', 'Statistics'];
+  int _index = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildSegment(
-              label: 'الإحصائيات',
-              isActive: _isActive == 'Statistics',
-              onTap: () {
-                setState(() {
-                  _isActive = 'Statistics';
-                  widget.onSwitchChanged(_isActive);
-                });
-              },
-            ),
-          ),
-          Expanded(
-            child: _buildSegment(
-              label: 'ختماتك',
-              isActive: _isActive == 'Your Khatms',
-              onTap: () {
-                setState(() {
-                  _isActive = 'Your Khatms';
-                  widget.onSwitchChanged(_isActive);
-                });
-              },
-            ),
-          ),
-          Expanded(
-            child: _buildSegment(
-              label: 'أصدقائك',
-              isActive: _isActive == 'Your Friends',
-              onTap: () {
-                setState(() {
-                  _isActive = 'Your Friends';
-                  widget.onSwitchChanged(_isActive);
-                });
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSegment({
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isActive ? AppTheme.primaryColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Amiri',
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: isActive ? Colors.white : AppTheme.secondaryColor,
-          ),
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: SlidingSegments(
+        labels: const ['أصدقائك', 'ختماتك', 'الإحصائيات'],
+        selected: _index,
+        onChanged: (i) {
+          if (i == _index) return;
+          setState(() => _index = i);
+          widget.onSwitchChanged(_values[i]);
+        },
       ),
     );
   }
