@@ -1,6 +1,5 @@
-/// Shared Quran data constants used across the app.
-///
-/// Contains the 114 Surahs with their Ayah counts and utility methods.
+// Quran data shared across the app: the 114 suras with their ayah counts
+// and the 30 juz.
 
 /// Map of Surah names (Arabic) to their Ayah counts.
 const Map<String, int> sourasWithAyahs = {

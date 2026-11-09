@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/quran/data/quran_api_service.dart';
 import 'package:khetmti/features/quran/providers/quran_provider.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
@@ -82,18 +83,6 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
     return widget.isSurah
         ? 'stops_surah_${widget.id}'
         : 'stops_juz_${widget.id}';
-  }
-
-  String _toArabicNumerals(int number) {
-    const englishToArabicNumerals = {
-      '0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤',
-      '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩',
-    };
-    return number
-        .toString()
-        .split('')
-        .map((digit) => englishToArabicNumerals[digit] ?? digit)
-        .join();
   }
 
   void _showInfoDialog(BuildContext context) {
@@ -414,10 +403,12 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
       ayahText = cleanedText;
 
       final int ayahNum = ayah['numberInSurah'];
-      final bool isStop = _stops.contains(ayahNum);
+      // A juz holds several suras, so "ayah 1" can appear more than once:
+      // there the Quran-wide number identifies the ayah.
+      final int stopId = widget.isSurah ? ayahNum : ayah['number'];
 
-      currentWrapChildren
-          .add(_buildAyah(ayahText, ayahNum, isStop));
+      currentWrapChildren.add(
+          _buildAyah(ayahText, ayahNum, stopId, _stops.contains(stopId)));
     }
 
     flushWrap();
@@ -425,13 +416,10 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
     return content;
   }
 
-  Widget _buildAyah(String text, int number, bool isStop) {
-    if (!_ayahKeys.containsKey(number)) {
-      _ayahKeys[number] = GlobalKey();
-    }
+  Widget _buildAyah(String text, int number, int stopId, bool isStop) {
     return GestureDetector(
-      key: _ayahKeys[number],
-      onTap: () => _toggleStop(number),
+      key: _ayahKeys.putIfAbsent(stopId, GlobalKey.new),
+      onTap: () => _toggleStop(stopId),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(4),
@@ -476,7 +464,7 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
                   ),
                   child: Center(
                     child: Text(
-                      _toArabicNumerals(number),
+                      toArabicDigits(number),
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: 14,
