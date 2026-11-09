@@ -1,43 +1,51 @@
 class OnboardingInfo {
   final String title;
-  final String descriptions;
-  final String image;
+  final String description;
 
+  /// A screenshot of the app, or null for the closing page (shows the logo).
+  final String? image;
+
+  const OnboardingInfo({
+    required this.title,
+    required this.description,
+    this.image,
+  });
+}
+
+const onboardingItems = [
   OnboardingInfo(
-      {required this.title, required this.descriptions, required this.image});
-}
-
-class OnboardingItems {
-  List<OnboardingInfo> items = [
-    OnboardingInfo(
-        title: "إنشـــاء خـــتمة جـــديدة",
-        descriptions:
-            "ابدأ ختمتك الخاصة بكل سهولة. قم بتحديد عدد المشاركين وتقسيم الأجزاء بين الأصدقاء أو المشاركين لإنجاز قراءة القرآن معًا",
-        image: "assets/onboarding/Khetma Creation.jpg"),
-    OnboardingInfo(
-        title: "الإطــلاع عـــلى مـــعطيات الختمة",
-        descriptions:
-            "راقب تقدم الختمة، تابع نسبة الإنجاز وتفاصيل المشاركين والأجزاء التي تمت قراءتها لضمان إتمام الختمة بنجاح",
-        image: "assets/onboarding/Khetma Page - Cropped.jpg"),
-    OnboardingInfo(
-        title: "الإطــلاع عـــلى قـــائمة الأصـــدقاء",
-        descriptions:
-            "تعرف على أصدقائك الذين يشاركون معك في ختماتك. يمكنك دعوة أصدقاء جدد أو متابعة طلبات الصداقة وقبولها",
-        image: "assets/onboarding/Displaying Friends.jpg"),
-    OnboardingInfo(
-        title: "الإطــلاع عـــلى قـــائمة الختمـــات",
-        descriptions:
-            "اكتشف ختمات متعددة يمكنك الانضمام إليها، واستعرض الختمات التي بدأت بها لتتابع إنجازك وتشارك في المزيد",
-        image: "assets/onboarding/Displaying Khetmet.jpg"),
-    OnboardingInfo(
-        title: "البحـــث عــن الأشخـــاص",
-        descriptions:
-            "ابحث عن أصدقائك أو أفراد جدد يمكنهم المشاركة معك في ختمة جديدة، وأرسل طلبات الصداقة أو انضم إلى ختمات مشتركة",
-        image: "assets/onboarding/Friends Search Page - Cropped.jpg"),
-    OnboardingInfo(
-        title: "اِنــطلق و ليكــن اللّه في عــونك",
-        descriptions:
-            "استعد للانطلاق في رحلتك الروحية مع تطبيق ختمتي. سواء كنت تبدأ ختمة أو تشارك في أخرى، قم بإتمام مهمتك بفضل الله",
-        image: "assets/onboarding/Friends Search Page - Cropped.jpg"),
-  ];
-}
+    title: 'أنشئ ختمة جديدة',
+    description:
+        'ابدأ ختمتك بسهولة: اكتب لمن هي، وحدّد عدد المشاركين وطريقة التقسيم بالسور أو بالأجزاء.',
+    image: 'assets/onboarding/create.jpg',
+  ),
+  OnboardingInfo(
+    title: 'تابع تقدّم الختمة',
+    description:
+        'احجز ما ستقرؤه، وأتمّه بلمسة، وتابع نسبة الإنجاز ومن يقرأ ماذا حتى تكتمل الختمة.',
+    image: 'assets/onboarding/khatma.jpg',
+  ),
+  OnboardingInfo(
+    title: 'كل ختماتك في مكان واحد',
+    description:
+        'ختماتك النشطة والمكتملة أمامك، يتحدّث تقدّمها مباشرة كلما قرأ أحد المشاركين.',
+    image: 'assets/onboarding/home.jpg',
+  ),
+  OnboardingInfo(
+    title: 'أصدقاؤك معك',
+    description:
+        'تابع أصدقاءك ومستوياتهم، وتنافسوا في الخير في لوحة المتصدرين.',
+    image: 'assets/onboarding/friends.jpg',
+  ),
+  OnboardingInfo(
+    title: 'ابحث عن الأشخاص',
+    description:
+        'ابحث عن أصدقائك بالاسم، وأرسل طلبات الصداقة أو اقبلها لتشاركوا الختمات معاً.',
+    image: 'assets/onboarding/search.jpg',
+  ),
+  OnboardingInfo(
+    title: 'انطلق، والله في عونك',
+    description:
+        'استعد لرحلتك مع القرآن. سواء بدأت ختمة أو شاركت في أخرى، أتمّ وردك بفضل الله.',
+  ),
+];
