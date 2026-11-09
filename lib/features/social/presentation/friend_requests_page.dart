@@ -46,6 +46,7 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
         children: [
           KhetmtiHeader(
             title: "طلبات الصداقة",
+            showNotification: false,
             showProfile: false,
             showBackButton: true,
           ),

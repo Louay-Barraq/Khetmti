@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:khetmti/features/auth/models/app_user.dart';
-import 'package:khetmti/features/social/models/friendship.dart';
+import 'package:khetmti/core/cache/local_cache.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 
 /// Columns other users may see. Never select '*' for other people's profiles.
@@ -16,69 +16,24 @@ class SocialRepository {
 
   String? get _currentUserId => _supabase.auth.currentUser?.id;
 
-  // --- Friends List ---
+  // --- Friendships ---
 
-  Stream<List<AppUser>> friendsStream() {
-    final userId = _currentUserId;
-    if (userId == null) return Stream.value([]);
-
-    return _supabase
-        .from('friendships')
-        .stream(primaryKey: ['doc_id'])
-        .eq('status', 'accepted')
-        .asyncMap((rows) async {
-      final friendIds = [
-        for (final r in rows)
-          if (r['sender'] == userId) r['receiver'] as String else r['sender'] as String,
-      ];
-      if (friendIds.isEmpty) return <AppUser>[];
-
-      final profiles = await _supabase
-          .from('users')
-          .select(_profileColumns)
-          .inFilter('doc_id', friendIds);
-
-      return profiles.map<AppUser>(AppUser.fromSupabase).toList();
-    });
+  /// Every friendship row of the current user (the database returns only
+  /// rows where they are the sender or the receiver), live. Friends, sent
+  /// and received requests all come from this one subscription.
+  Stream<List<DbRow>> friendshipRows() {
+    return _supabase.from('friendships').stream(primaryKey: ['doc_id']);
   }
 
-  // --- Friend Requests (pending friendships where current user is receiver) ---
-
-  Stream<List<FriendRequest>> friendRequestsStream() {
-    final userId = _currentUserId;
-    if (userId == null) return Stream.value([]);
-
-    return _supabase
-        .from('friendships')
-        .stream(primaryKey: ['doc_id'])
-        .eq('receiver', userId)
-        .asyncMap((rows) async {
-      final pending = rows.where((r) => r['status'] == 'pending').toList();
-      if (pending.isEmpty) return <FriendRequest>[];
-
-      final profiles = await _supabase
-          .from('users')
-          .select(_profileColumns)
-          .inFilter('doc_id', [for (final r in pending) r['sender'] as String]);
-      final profileMap = {
-        for (final p in profiles) p['doc_id'] as String: AppUser.fromSupabase(p),
-      };
-
-      return [
-        for (final r in pending)
-          FriendRequest(
-            requestId: r['doc_id'] as String,
-            senderId: r['sender'] as String,
-            username: profileMap[r['sender']]?.username ?? 'Unknown',
-            level: profileMap[r['sender']]?.level ?? 1,
-          ),
-      ];
-    });
+  Future<List<DbRow>> profileRows(List<String> ids) {
+    return _supabase.from('users').select(_profileColumns).inFilter('doc_id', ids);
   }
 
   // --- Search Users ---
 
-  Future<List<FriendSearchResult>> searchUsers(String query) async {
+  /// Profiles whose name contains [query]. The friendship state of each one
+  /// is read from [friendshipRows], so no second query is needed.
+  Future<List<AppUser>> searchUsers(String query) async {
     final userId = _currentUserId;
     if (query.isEmpty || userId == null) return [];
 
@@ -89,29 +44,7 @@ class SocialRepository {
         .neq('doc_id', userId)
         .limit(20);
 
-    // All of the current user's friendships (the database filters to them).
-    final friendships =
-        await _supabase.from('friendships').select('doc_id, sender, receiver, status');
-    final byOtherUser = {
-      for (final f in friendships)
-        (f['sender'] == userId ? f['receiver'] : f['sender']) as String: f,
-    };
-
-    return [
-      for (final u in users.map(AppUser.fromSupabase))
-        FriendSearchResult(
-          uid: u.uid,
-          username: u.username,
-          level: u.level,
-          requestId: byOtherUser[u.uid]?['doc_id'] as String?,
-          status: switch (byOtherUser[u.uid]) {
-            null => FriendshipStatus.none,
-            {'status': 'accepted'} => FriendshipStatus.friends,
-            {'sender': final String s} when s == userId => FriendshipStatus.pending,
-            _ => FriendshipStatus.received,
-          },
-        ),
-    ];
+    return users.map(AppUser.fromSupabase).toList();
   }
 
   // --- Send Friend Request ---

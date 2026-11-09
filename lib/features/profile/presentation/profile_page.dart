@@ -60,8 +60,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             textAlign: TextAlign.right),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('إلغاء')),
+              onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
           TextButton(
             onPressed: () {
               ref.read(socialRepositoryProvider).unfriend(friendUid);
@@ -82,121 +81,122 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(currentUser),
-            const SizedBox(height: 20),
-            ProfileStateSwitch(
-              onSwitchChanged: (value) {
-                setState(() {
-                  _currentView = value;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            if (_currentView == 'Statistics') ...[
-              StatisticsToggle(
-                onValuesChanged: (value) {
+      body: RefreshIndicator(
+        onRefresh: () => refreshPeople(ref),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              _buildHeader(currentUser),
+              const SizedBox(height: 20),
+              ProfileStateSwitch(
+                onSwitchChanged: (value) {
                   setState(() {
-                    _statsView = value;
+                    _currentView = value;
                   });
                 },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
+              if (_currentView == 'Statistics') ...[
+                StatisticsToggle(
+                  onValuesChanged: (value) {
+                    setState(() {
+                      _statsView = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 15),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SizeTransition(
+                        sizeFactor: animation,
+                        axis: Axis.vertical,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    key: ValueKey(_statsView),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      textDirection: TextDirection.rtl,
+                      children: [
+                        _buildSortChip(
+                          _statsView == 'Surahs'
+                              ? 'ترتيب القرآن'
+                              : 'ترتيب الأجزاء',
+                          'Normal Order',
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortChip('الأكثر قراءة', 'Frequency (Desc)'),
+                        const SizedBox(width: 8),
+                        _buildSortChip('الأقل قراءة', 'Frequency (Asc)'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  textDirection: TextDirection.rtl,
+                  children: [
+                    Text(
+                      _currentView == 'Your Friends'
+                          ? 'قائمة الأصدقاء'
+                          : _currentView == 'Your Khatms'
+                              ? 'ختماتك النشطة'
+                              : _statsView == 'Surahs'
+                                  ? 'إحصائيات السور'
+                                  : 'إحصائيات الأجزاء',
+                      style: const TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    if (_currentView == 'Your Friends')
+                      TextButton.icon(
+                        onPressed: () => context.push('/friends/search'),
+                        icon: const Icon(Icons.person_add_outlined, size: 18),
+                        label: const Text('إضافة صديق'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.primaryColor,
+                          textStyle: const TextStyle(
+                              fontFamily: 'Amiri', fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 400),
-                transitionBuilder:
-                    (Widget child, Animation<double> animation) {
+                transitionBuilder: (Widget child, Animation<double> animation) {
                   return FadeTransition(
                     opacity: animation,
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      axis: Axis.vertical,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.0, 0.05),
+                        end: Offset.zero,
+                      ).animate(animation),
                       child: child,
                     ),
                   );
                 },
-                child: Padding(
-                  key: ValueKey(_statsView),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    textDirection: TextDirection.rtl,
-                    children: [
-                      _buildSortChip(
-                        _statsView == 'Surahs'
-                            ? 'ترتيب القرآن'
-                            : 'ترتيب الأجزاء',
-                        'Normal Order',
-                      ),
-                      const SizedBox(width: 8),
-                      _buildSortChip('الأكثر قراءة', 'Frequency (Desc)'),
-                      const SizedBox(width: 8),
-                      _buildSortChip('الأقل قراءة', 'Frequency (Asc)'),
-                    ],
-                  ),
-                ),
+                child: _buildCurrentView(
+                    currentUser, friendsAsync, inProgressKhetmas),
               ),
-              const SizedBox(height: 20),
             ],
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                textDirection: TextDirection.rtl,
-                children: [
-                  Text(
-                    _currentView == 'Your Friends'
-                        ? 'قائمة الأصدقاء'
-                        : _currentView == 'Your Khatms'
-                            ? 'ختماتك النشطة'
-                            : _statsView == 'Surahs'
-                                ? 'إحصائيات السور'
-                                : 'إحصائيات الأجزاء',
-                    style: const TextStyle(
-                      fontFamily: 'Amiri',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  if (_currentView == 'Your Friends')
-                    TextButton.icon(
-                      onPressed: () => context.push('/friends/search'),
-                      icon:
-                          const Icon(Icons.person_add_outlined, size: 18),
-                      label: const Text('إضافة صديق'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.primaryColor,
-                        textStyle: const TextStyle(
-                            fontFamily: 'Amiri',
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
-              transitionBuilder:
-                  (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0.0, 0.05),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
-              child: _buildCurrentView(
-                  currentUser, friendsAsync, inProgressKhetmas),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -212,8 +212,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     } else if (_currentView == 'Your Khatms') {
       return _buildKhatmsList(inProgressKhetmas);
     } else {
-      final readingStats =
-          currentUser.valueOrNull?.readingStats;
+      final readingStats = currentUser.valueOrNull?.readingStats;
       return _buildStatsList(readingStats);
     }
   }
@@ -221,11 +220,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget _buildFriendsList(AsyncValue friendsAsync) {
     return friendsAsync.when(
       loading: () => const Center(
-          key: ValueKey('FriendsLoading'),
-          child: CircularProgressIndicator()),
+          key: ValueKey('FriendsLoading'), child: CircularProgressIndicator()),
       error: (_, __) => const Center(
-          key: ValueKey('FriendsError'),
-          child: Text('خطأ في تحميل الأصدقاء')),
+          key: ValueKey('FriendsError'), child: Text('خطأ في تحميل الأصدقاء')),
       data: (friends) {
         if (friends.isEmpty) {
           return const Padding(
@@ -268,11 +265,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget _buildKhatmsList(AsyncValue inProgressKhetmas) {
     return inProgressKhetmas.when(
       loading: () => const Center(
-          key: ValueKey('KhatmsLoading'),
-          child: CircularProgressIndicator()),
+          key: ValueKey('KhatmsLoading'), child: CircularProgressIndicator()),
       error: (_, __) => const Center(
-          key: ValueKey('KhatmsError'),
-          child: Text('خطأ في تحميل الختمات')),
+          key: ValueKey('KhatmsError'), child: Text('خطأ في تحميل الختمات')),
       data: (khetmas) {
         if (khetmas.isEmpty) {
           return const Padding(
@@ -295,17 +290,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             final khetma = khetmas[index];
             return _buildAnimatedListItem(
               index: index,
-              child: GestureDetector(
-                onTap: () =>
-                    context.push('/khetma/${khetma.khetmaId}'),
-                child: KhetmaComponent(
-                  title: khetma.name,
-                  progress: khetma.completionPercent,
-                  participantsCount:
-                      khetma.currentParticipantsNumber,
-                  createdAt: khetma.createdAt,
-                  updatedAt: khetma.updatedAt,
-                ),
+              child: KhetmaComponent(
+                title: khetma.name,
+                progress: khetma.completionPercent,
+                participantsCount: khetma.currentParticipantsNumber,
+                createdAt: khetma.createdAt,
+                updatedAt: khetma.updatedAt,
+                onTap: () => context.push('/khetma/${khetma.khetmaId}'),
               ),
             );
           },
@@ -349,18 +340,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           child: GestureDetector(
             onTap: () {
               int id = _statsView == 'Surahs'
-                  ? sourasWithAyahs.keys
-                          .toList()
-                          .indexOf(item['name']) +
-                      1
+                  ? sourasWithAyahs.keys.toList().indexOf(item['name']) + 1
                   : juzusList.indexOf(item['name']) + 1;
-              final type = _statsView == 'Surahs' ? 'sura' : 'juzu';
-              context.push('/quran/$type/$id',
-                  extra: {'title': item['name']});
+              final isSura = _statsView == 'Surahs';
+              final title = isSura ? 'سورة ${item['name']}' : item['name'];
+              context.push('/quran/${isSura ? 'surah' : 'juz'}/$id'
+                  '?title=${Uri.encodeComponent(title)}');
             },
             child: Container(
-              margin:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -399,11 +387,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                     decoration: BoxDecoration(
-                      color:
-                          AppTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Text(
@@ -426,13 +413,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _buildAnimatedListItem(
-      {required int index, required Widget child}) {
+  Widget _buildAnimatedListItem({required int index, required Widget child}) {
     return TweenAnimationBuilder<double>(
       key: ValueKey('anim-$index'),
       tween: Tween(begin: 0.0, end: 1.0),
-      duration:
-          Duration(milliseconds: 300 + (index * 50).clamp(0, 500)),
+      duration: Duration(milliseconds: 300 + (index * 50).clamp(0, 500)),
       curve: Curves.easeOutCubic,
       builder: (context, value, child) {
         return Opacity(
@@ -480,11 +465,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       Icons.arrow_forward_ios,
                       onTap: () => context.pop(),
                     ),
-                  if (Navigator.of(context).canPop())
-                    const SizedBox(width: 8),
+                  if (Navigator.of(context).canPop()) const SizedBox(width: 8),
                   KhetmtiHeader.buildHeaderIcon(
                     Icons.settings,
-                    onTap: () => context.push('/settings'),
+                    onTap: () => context.go('/settings'),
                   ),
                 ],
               ),
@@ -550,8 +534,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Colors.white
-                                    .withValues(alpha: 0.5)),
+                                color: Colors.white.withValues(alpha: 0.5)),
                           ),
                           child: Text(
                             _getRankName(userData?.level ?? 1),
@@ -567,28 +550,25 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                     const SizedBox(height: 12),
                     Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
                       child: Builder(
                         builder: (context) {
                           int totalXP = userData?.totalXP ?? 0;
                           int currentLevel = userData?.level ?? 1;
                           final minXP = xpForLevel(currentLevel);
                           final maxXP = xpForLevel(currentLevel + 1);
-                          double progress =
-                              (totalXP - minXP) / (maxXP - minXP);
+                          double progress = (totalXP - minXP) / (maxXP - minXP);
                           if (progress < 0) progress = 0;
                           if (progress > 1) progress = 1;
 
                           return Column(
                             children: [
                               ClipRRect(
-                                borderRadius:
-                                    BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(10),
                                 child: LinearProgressIndicator(
                                   value: progress,
-                                  backgroundColor: Colors.white
-                                      .withValues(alpha: 0.3),
+                                  backgroundColor:
+                                      Colors.white.withValues(alpha: 0.3),
                                   color: Colors.white,
                                   minHeight: 8,
                                 ),
@@ -648,8 +628,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor,
                         borderRadius: BorderRadius.circular(10),
-                        border:
-                            Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
                       child: const Text(
                         'نشط',
@@ -679,21 +658,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? AppTheme.primaryColor
-                : AppTheme.greyishColor,
+            color: isSelected ? AppTheme.primaryColor : AppTheme.greyishColor,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor
-                        .withValues(alpha: 0.3),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   )
@@ -706,9 +681,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             fontFamily: 'Amiri',
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: isSelected
-                ? Colors.white
-                : AppTheme.secondaryColor,
+            color: isSelected ? Colors.white : AppTheme.secondaryColor,
           ),
         ),
       ),

@@ -7,6 +7,7 @@ import 'package:khetmti/features/social/models/friendship.dart';
 import 'package:khetmti/features/social/providers/social_provider.dart';
 import 'package:khetmti/shared/widgets/friend_addition_component.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/motion.dart';
 
 class PersonSearchPage extends ConsumerStatefulWidget {
   const PersonSearchPage({super.key});
@@ -21,11 +22,9 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
   /// The submitted search; typing alone does not query the database.
   String _query = '';
 
-  /// Runs a friendship action, then reloads the results so buttons update.
-  Future<void> _act(Future<void> Function(SocialRepository repo) action) async {
-    await action(ref.read(socialRepositoryProvider));
-    ref.invalidate(personSearchProvider(_query));
-  }
+  /// Runs a friendship action; the buttons follow the live friendship rows.
+  Future<void> _act(Future<void> Function(SocialRepository repo) action) =>
+      action(ref.read(socialRepositoryProvider));
 
   @override
   void dispose() {
@@ -46,6 +45,7 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
         children: [
           KhetmtiHeader(
             title: 'البحث عن صديق',
+            showNotification: false,
             showProfile: false,
             showBackButton: true,
             onBackTap: () => context.pop(),
@@ -82,21 +82,25 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
                 }
 
                 return ListView.builder(
+                  padding: const EdgeInsets.only(top: 6, bottom: 24),
                   itemCount: results.length,
                   itemBuilder: (context, index) {
                     final result = results[index];
-                    return FriendAdditionComponent(
-                      username: result.username,
-                      subtitle: 'المستوى ${result.level}',
-                      status: result.status.name,
-                      onAdd: () =>
-                          _act((r) => r.sendFriendRequest(result.uid)),
-                      onRemove: () =>
-                          _act((r) => r.cancelFriendRequest(result.uid)),
-                      onAccept: () =>
-                          _act((r) => r.acceptFriendRequest(result.requestId!)),
-                      onDecline: () =>
-                          _act((r) => r.declineFriendRequest(result.requestId!)),
+                    return FadeSlideIn(
+                      index: index,
+                      child: FriendAdditionComponent(
+                        username: result.username,
+                        subtitle: 'المستوى ${result.level}',
+                        status: result.status.name,
+                        onAdd: () =>
+                            _act((r) => r.sendFriendRequest(result.uid)),
+                        onRemove: () =>
+                            _act((r) => r.cancelFriendRequest(result.uid)),
+                        onAccept: () => _act(
+                            (r) => r.acceptFriendRequest(result.requestId!)),
+                        onDecline: () => _act(
+                            (r) => r.declineFriendRequest(result.requestId!)),
+                      ),
                     );
                   },
                 );
@@ -143,7 +147,8 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
       ),
     );

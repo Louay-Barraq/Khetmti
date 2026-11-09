@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:khetmti/core/cache/local_cache.dart';
+import 'package:khetmti/features/auth/models/app_user.dart';
+
 import 'package:khetmti/features/khetma/models/khetma.dart';
 import 'package:khetmti/features/quran/models/quran_data.dart';
 
@@ -22,6 +25,7 @@ class KhetmaRepository {
 
   // --- Streams ---
 
+  /// One khatma, live. Used for khatmas the user has not joined (yet).
   Stream<Khetma> khetmaStream(String khetmaId) {
     return _supabase
         .from('khatms')
@@ -42,14 +46,27 @@ class KhetmaRepository {
         .map((rows) => [for (final r in rows) r['khatm_id'] as String]);
   }
 
-  /// The khatmas with these [ids], live: progress made by any participant
-  /// shows up straight away.
-  Stream<List<Khetma>> khetmasStream(List<String> ids) {
+  /// Rows of the khatmas with these [ids], live: progress made by any
+  /// participant shows up straight away.
+  Stream<List<DbRow>> khetmaRows(List<String> ids) {
     return _supabase
         .from('khatms')
         .stream(primaryKey: ['doc_id'])
-        .inFilter('doc_id', ids)
-        .map((rows) => rows.map(Khetma.fromSupabase).toList());
+        .inFilter('doc_id', ids);
+  }
+
+  /// Everyone who joined [khetmaId], in joining order, with their profile.
+  Future<List<AppUser>> participants(String khetmaId) async {
+    final rows = await _supabase
+        .from('khatm_participants')
+        .select('users(doc_id, username, "totalXP", "createdAt", "lastSeen")')
+        .eq('khatm_id', khetmaId)
+        .order('joinedAt', ascending: true);
+    return [
+      for (final r in rows)
+        if (r['users'] case final Map<String, dynamic> user)
+          AppUser.fromSupabase(user),
+    ];
   }
 
   // --- Create ---
@@ -63,21 +80,27 @@ class KhetmaRepository {
     final items =
         splitType == 'sura' ? sourasWithAyahs.keys.toList() : juzusList;
 
-    final row = await _supabase
-        .from('khatms')
-        .insert({
-          'name': name,
-          'code': await _generateUniqueCode(),
-          'creatorId': _supabase.auth.currentUser!.id,
-          'splitType': splitType,
-          'maxParticipantsNumber': maxParticipants,
-          'parts': getEmptyPartsMap(items),
-          'totalParts': items.length,
-        })
-        .select('doc_id')
-        .single();
-
-    return row['doc_id'] as String;
+    // The code is unique in the database; on the rare clash, draw another.
+    for (var attempt = 0;; attempt++) {
+      try {
+        final row = await _supabase
+            .from('khatms')
+            .insert({
+              'name': name,
+              'code': _randomCode(),
+              'creatorId': _supabase.auth.currentUser!.id,
+              'splitType': splitType,
+              'maxParticipantsNumber': maxParticipants,
+              'parts': getEmptyPartsMap(items),
+              'totalParts': items.length,
+            })
+            .select('doc_id')
+            .single();
+        return row['doc_id'] as String;
+      } on PostgrestException catch (e) {
+        if (e.code != '23505' || attempt == 4) rethrow;
+      }
+    }
   }
 
   // --- Join ---
@@ -142,16 +165,7 @@ class KhetmaRepository {
     }
   }
 
-  Future<String> _generateUniqueCode() async {
-    final random = Random();
-    while (true) {
-      final code = (random.nextInt(90000) + 10000).toString();
-      final existing = await _supabase
-          .from('khatms')
-          .select('doc_id')
-          .eq('code', code)
-          .maybeSingle();
-      if (existing == null) return code;
-    }
-  }
+  static final _random = Random();
+
+  static String _randomCode() => (_random.nextInt(90000) + 10000).toString();
 }

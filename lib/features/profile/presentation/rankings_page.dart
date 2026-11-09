@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/features/profile/providers/profile_provider.dart';
+import 'package:khetmti/features/social/providers/social_provider.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 
 class RankingsPage extends ConsumerStatefulWidget {
@@ -73,8 +74,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
           ),
           Expanded(
             child: rankingsAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, __) =>
                   const Center(child: Text('خطأ في تحميل البيانات')),
               data: (users) {
@@ -83,33 +83,36 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
                       child: Text('لا توجد بيانات',
                           style: TextStyle(fontFamily: 'Amiri')));
                 }
-                return ListView.builder(
-                  padding:
-                      const EdgeInsets.fromLTRB(20, 20, 20, 40),
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    final isMe = user.uid == currentUserId;
-                    if (index == 0) {
-                      return Column(
-                        children: [
-                          const SizedBox(height: 10),
-                          _buildRankingRow(
-                            name: user.username,
-                            xp: user.totalXP,
-                            rank: index + 1,
-                            isMe: isMe,
-                          ),
-                        ],
+                return RefreshIndicator(
+                  onRefresh: () => refreshPeople(ref),
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      final user = users[index];
+                      final isMe = user.uid == currentUserId;
+                      if (index == 0) {
+                        return Column(
+                          children: [
+                            const SizedBox(height: 10),
+                            _buildRankingRow(
+                              name: user.username,
+                              xp: user.totalXP,
+                              rank: index + 1,
+                              isMe: isMe,
+                            ),
+                          ],
+                        );
+                      }
+                      return _buildRankingRow(
+                        name: user.username,
+                        xp: user.totalXP,
+                        rank: index + 1,
+                        isMe: isMe,
                       );
-                    }
-                    return _buildRankingRow(
-                      name: user.username,
-                      xp: user.totalXP,
-                      rank: index + 1,
-                      isMe: isMe,
-                    );
-                  },
+                    },
+                  ),
                 );
               },
             ),
@@ -119,32 +122,27 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
     );
   }
 
-  Widget _buildTab(String label, int index,
-      {required bool isTimeframe}) {
-    bool isSelected = isTimeframe
-        ? (_timeframeIndex == index)
-        : (_isGlobal == (index == 0));
+  Widget _buildTab(String label, int index, {required bool isTimeframe}) {
+    bool isSelected =
+        isTimeframe ? (_timeframeIndex == index) : (_isGlobal == (index == 0));
 
     return isTimeframe
         ? Expanded(
             child: _buildTabButton(label, isSelected,
                 () => setState(() => _timeframeIndex = index)))
         : _buildTabButton(
-            label,
-            isSelected,
-            () => setState(() => _isGlobal = (index == 0)),
+            label, isSelected, () => setState(() => _isGlobal = (index == 0)),
             horizontalPadding: 25);
   }
 
-  Widget _buildTabButton(
-      String label, bool isSelected, VoidCallback onTap,
+  Widget _buildTabButton(String label, bool isSelected, VoidCallback onTap,
       {double horizontalPadding = 0}) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        padding: EdgeInsets.symmetric(
-            vertical: 8, horizontal: horizontalPadding),
+        padding:
+            EdgeInsets.symmetric(vertical: 8, horizontal: horizontalPadding),
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(15),
@@ -189,15 +187,12 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isMe
-            ? AppTheme.primaryColor.withValues(alpha: 0.05)
-            : Colors.white,
+        color:
+            isMe ? AppTheme.primaryColor.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: isMe
             ? Border.all(
-                color:
-                    AppTheme.primaryColor.withValues(alpha: 0.3),
-                width: 1.5)
+                color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 1.5)
             : null,
         boxShadow: [
           BoxShadow(
@@ -221,8 +216,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
             ),
             child: Center(
               child: rank <= 3
-                  ? Icon(Icons.emoji_events,
-                      color: rankColor, size: 18)
+                  ? Icon(Icons.emoji_events, color: rankColor, size: 18)
                   : Text(
                       rank.toString(),
                       style: TextStyle(
@@ -237,8 +231,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
           CircleAvatar(
             radius: 20,
             backgroundColor: AppTheme.greyishColor,
-            child: const Icon(Icons.person,
-                color: Colors.white, size: 24),
+            child: const Icon(Icons.person, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -253,8 +246,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: 16,
-                        fontWeight:
-                            isMe ? FontWeight.bold : FontWeight.w600,
+                        fontWeight: isMe ? FontWeight.bold : FontWeight.w600,
                         color: AppTheme.textPrimary,
                       ),
                     ),
