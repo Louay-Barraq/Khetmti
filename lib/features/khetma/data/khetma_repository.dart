@@ -122,12 +122,15 @@ class KhetmaRepository {
     return khetmaId;
   }
 
+  /// Only the columns the result list shows: not the 114 parts or the log.
   Future<List<Khetma>> searchByName(String name) async {
+    final pattern = name.replaceAll(r'\', r'\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
     final rows = await _supabase
         .from('khatms')
-        .select()
-        .ilike('name', '%$name%')
-        .limit(10);
+        .select('doc_id, name, "splitType", "currentParticipantsNumber", '
+            '"maxParticipantsNumber", "completionPercent"')
+        .ilike('name', '%$pattern%')
+        .limit(20);
 
     return rows.map((row) => Khetma.fromSupabase(row)).toList();
   }
