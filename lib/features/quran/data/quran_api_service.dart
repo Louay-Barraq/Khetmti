@@ -1,80 +1,72 @@
 import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
-Map<String, dynamic> _parseQuranJson(String jsonString) {
-  final decodedData = json.decode(jsonString);
-  if (decodedData['code'] == 200 && decodedData['status'] == 'OK') {
-    return decodedData['data'];
-  } else {
-    throw Exception('Invalid local Quran JSON structure');
-  }
-}
-
+/// The Quran text bundled with the app (assets/data/quran.json), read and
+/// parsed once per run, in a background isolate, then kept in memory. Every
+/// screen that shows a sura or a juz reads from this one copy; nothing is
+/// ever downloaded.
 class QuranApiService {
-  static Map<String, dynamic>? _cachedQuranData;
+  static Future<_Quran>? _quran;
 
-  static Future<Map<String, dynamic>> _getQuranData() async {
-    if (_cachedQuranData != null) return _cachedQuranData!;
+  /// Starts loading in the background so the first reader opens instantly.
+  static Future<void> warmUp() => _load().then((_) {});
 
-    try {
-      final jsonString = await rootBundle.loadString('assets/data/quran.json');
-      _cachedQuranData = await compute(_parseQuranJson, jsonString);
-      return _cachedQuranData!;
-    } catch (e) {
-      debugPrint('Error loading local Quran data: $e');
-      rethrow;
-    }
-  }
+  /// Concurrent callers share the same load; a failed load can be retried.
+  static Future<_Quran> _load() => _quran ??= rootBundle
+          .loadString('assets/data/quran.json')
+          .then((json) => compute(_parse, json))
+          .then((quran) => quran, onError: (Object e, StackTrace st) {
+        _quran = null;
+        Error.throwWithStackTrace(e, st);
+      });
 
   static Future<Map<String, dynamic>> fetchSurah(int surahId) async {
-    try {
-      final quranData = await _getQuranData();
-      final List<dynamic> surahs = quranData['surahs'];
-
-      final surah = surahs.firstWhere((s) => s['number'] == surahId,
-          orElse: () => throw Exception('Surah $surahId not found'));
-
-      return surah;
-    } catch (e) {
-      debugPrint('Error fetching Surah $surahId: $e');
-      rethrow;
+    final quran = await _load();
+    if (surahId < 1 || surahId > quran.surahs.length) {
+      throw Exception('Surah $surahId not found');
     }
+    return quran.surahs[surahId - 1];
   }
 
   static Future<Map<String, dynamic>> fetchJuz(int juzId) async {
-    try {
-      final quranData = await _getQuranData();
-      final List<dynamic> surahs = quranData['surahs'];
+    final juz = (await _load()).juzs[juzId];
+    if (juz == null) throw Exception('Juz $juzId not found');
+    return juz;
+  }
+}
 
-      List<dynamic> juzAyahs = [];
+class _Quran {
+  final List<Map<String, dynamic>> surahs;
+  final Map<int, Map<String, dynamic>> juzs;
+  const _Quran(this.surahs, this.juzs);
+}
 
-      for (var surah in surahs) {
-        final ayahs = surah['ayahs'] as List<dynamic>;
-        for (var ayah in ayahs) {
-          if (ayah['juz'] == juzId) {
-            var wrappedAyah = Map<String, dynamic>.from(ayah);
-            wrappedAyah['surah'] = {
-              'number': surah['number'],
-              'name': surah['name'],
-              'englishName': surah['englishName']
-            };
-            juzAyahs.add(wrappedAyah);
-          }
-        }
-      }
+/// Runs in an isolate: decodes the file and groups the ayahs of each juz
+/// once, so opening a juz is a map lookup.
+_Quran _parse(String jsonString) {
+  final decoded = json.decode(jsonString);
+  if (decoded['code'] != 200 || decoded['status'] != 'OK') {
+    throw Exception('Invalid local Quran JSON structure');
+  }
+  final surahs = [
+    for (final s in decoded['data']['surahs'] as List) Map<String, dynamic>.from(s as Map),
+  ];
 
-      if (juzAyahs.isEmpty) {
-        throw Exception('Juz $juzId not found or empty');
-      }
-
-      return {
-        'number': juzId,
-        'ayahs': juzAyahs,
-      };
-    } catch (e) {
-      debugPrint('Error fetching Juz $juzId: $e');
-      rethrow;
+  final juzAyahs = <int, List<Map<String, dynamic>>>{};
+  for (final surah in surahs) {
+    final info = {
+      'number': surah['number'],
+      'name': surah['name'],
+      'englishName': surah['englishName'],
+    };
+    for (final ayah in surah['ayahs'] as List) {
+      final a = Map<String, dynamic>.from(ayah as Map)..['surah'] = info;
+      juzAyahs.putIfAbsent(a['juz'] as int, () => []).add(a);
     }
   }
+
+  return _Quran(surahs, {
+    for (final e in juzAyahs.entries) e.key: {'number': e.key, 'ayahs': e.value},
+  });
 }
