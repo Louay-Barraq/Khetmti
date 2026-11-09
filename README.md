@@ -8,9 +8,9 @@
 
 ## ✨ Features
 
-- **Accounts:** email/password sign-up and login with Supabase Auth; change username, email (confirmed by email link) and password (the current one is checked first).
+- **Accounts:** email/password sign-up and login with Supabase Auth; change username, email (confirmed by email link) and password (the current one is checked first). "Forgot password" emails a link that opens the app on a "new password" page. Users can delete their account from Settings.
 - **Khatmas:** create one split by Surah or Juz' with a member limit and a 5-digit join code; join by code or by searching its name.
-- **Reading parts:** reserve, release, finish or undo a part. Progress, member counts and the activity log update live for everyone.
+- **Reading parts:** reserve, release, finish or undo a part. Each part shows its state in words and color (free, reserved for you, reserved by someone else, finished), and filter chips show how many are in each state. Progress, member counts and the activity log update live for everyone.
 - **XP and levels:** reserving and finishing parts earns XP (finishing a Surah gives 50 + 2 per ayah, a Juz' 500); levels follow from XP.
 - **Friends and rankings:** search users, send, accept or decline requests, and compare XP with friends.
 - **Quran reader:** bundled Quran text (`assets/data/quran.json`) with saved stopping points.
@@ -41,6 +41,15 @@ lib/
 
 Each feature has `data/` (repositories talking to Supabase), `models/`, `providers/` and `presentation/`.
 
+**Live data and caching.** The app keeps few realtime subscriptions and shares them:
+
+- one stream of the user's khatmas feeds the home page, the profile page and every khatma page (opening a khatma you are in costs no new request);
+- one stream of the user's friendship rows feeds the friends list, friend requests and the buttons in friend search;
+- friends' profiles are fetched again only when the set of friends changes (or on pull-to-refresh);
+- streams depend on the user id, not on the auth session, so the hourly token refresh does not reopen them.
+
+The last rows of each stream are kept on the device (`core/cache/local_cache.dart`), so screens fill at once on the next launch and stay readable offline. The cache is cleared on sign-out.
+
 ---
 
 ## 🗄️ Database (Supabase)
@@ -55,7 +64,11 @@ Schema changes live in `supabase/migrations/`; `supabase/tests/` holds SQL check
 | `friendships` | `sender`, `receiver`, `status` (`pending`/`accepted`); one row per pair of users. |
 | `xp_history` | Every XP change, used for history and rankings. |
 
-Row-level security allows logged-in users only, and each user changes only their own data. Writes that touch several rows go through database functions so they are atomic: `update_part_status` (reserve/finish a part and give XP) and `join_khatm`.
+Row-level security allows logged-in users only, and each user changes only their own data. Writes that touch several rows go through database functions so they are atomic: `update_part_status` (reserve/finish a part and give XP), `join_khatm` and `delete_my_account` (releases the user's reservations, hands their khatmas to the next member, then deletes the profile and the login).
+
+### Email links
+
+Password-reset and email-change links open the app through the `khetmti://` scheme. Add `khetmti://**` under **Authentication → URL Configuration → Redirect URLs** in the Supabase dashboard; without it Supabase sends users to the Site URL instead.
 
 ---
 
@@ -109,6 +122,7 @@ flutter build ios --no-codesign --debug --dart-define-from-file=config/env.json
 ```bash
 flutter test
 ```
+Unit and widget tests cover the level formula, part states, friendship rules, the auth redirect, the local cache, model parsing and the main widgets (part tile, password field, segmented switch).
 Run `supabase/tests/*.sql` in the Supabase SQL editor after applying the migrations; each file rolls back what it creates.
 
 ---

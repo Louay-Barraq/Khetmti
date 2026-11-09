@@ -47,3 +47,7 @@ app.*.map.json
 # Local secrets & tooling
 config/env.json
 .mcp.json
+
+# Demo accounts used for screenshots (fake emails)
+config/demo_accounts.json
+supabase/.temp/
