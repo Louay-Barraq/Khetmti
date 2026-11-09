@@ -18,7 +18,7 @@ class MenuPage extends StatelessWidget {
             showProfile: true,
             showNotification: true,
             onNotificationTap: () => context.push('/notifications'),
-            onProfileTap: () => context.push('/profile'),
+            onProfileTap: () => context.go('/profile'),
           ),
           Expanded(
             child: SingleChildScrollView(

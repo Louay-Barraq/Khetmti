@@ -1,73 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/khetma/providers/khetma_provider.dart';
-import 'package:khetmti/shared/widgets/custom_button.dart';
-import 'package:khetmti/shared/widgets/custom_textfield.dart';
+import 'package:khetmti/shared/widgets/app_text_field.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/motion.dart';
+import 'package:khetmti/shared/widgets/primary_button.dart';
 
 class KhetmaCreationPage extends ConsumerStatefulWidget {
   const KhetmaCreationPage({super.key});
 
   @override
-  ConsumerState<KhetmaCreationPage> createState() =>
-      _KhetmaCreationPageState();
+  ConsumerState<KhetmaCreationPage> createState() => _KhetmaCreationPageState();
 }
 
 class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
-  final _khetmaNameController = TextEditingController();
-  final _maxNumberController = TextEditingController();
+  static const _maxAllowed = 114;
+
+  final _name = TextEditingController();
+  int _maxParticipants = 10;
   String _splitType = 'sura';
+  bool _loading = false;
 
-  Future<void> _addKhetma() async {
-    final String khetmaName = _khetmaNameController.text.trim();
-    final String maxNumber = _maxNumberController.text.trim();
-
-    if (khetmaName.isEmpty || maxNumber.isEmpty) {
-      showErrorToast("يرجى ملء جميع الحقول");
+  Future<void> _create() async {
+    final name = _name.text.trim();
+    if (name.isEmpty) {
+      showErrorToast('اكتب لمن هذه الختمة');
       return;
     }
 
-    final int? maxNumberInt = int.tryParse(maxNumber);
-    if (maxNumberInt == null || maxNumberInt <= 0) {
-      showErrorToast("يرجى إدخال عدد صحيح موجب للمشاركين");
-      return;
-    }
-
+    FocusScope.of(context).unfocus();
+    setState(() => _loading = true);
     try {
-      showLoadingDialog(context);
-
-      final khetmaId =
-          await ref.read(khetmaRepositoryProvider).createKhetma(
-                name: khetmaName,
-                splitType: _splitType,
-                maxParticipants: maxNumberInt,
-              );
-
-      if (mounted) dismissLoadingDialog(context);
-
-      showSuccessToast("تم إنشاء الختمة بنجاح");
-
-      _khetmaNameController.clear();
-      _maxNumberController.clear();
-
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (!mounted) return;
-      context.push('/khetma/$khetmaId');
+      final id = await ref.read(khetmaRepositoryProvider).createKhetma(
+            name: name,
+            splitType: _splitType,
+            maxParticipants: _maxParticipants,
+          );
+      HapticFeedback.mediumImpact();
+      showSuccessToast('تم إنشاء الختمة بنجاح');
+      if (mounted) context.pushReplacement('/khetma/$id');
     } catch (e) {
-      debugPrint("Error creating khatma: $e");
-      if (mounted) dismissLoadingDialog(context);
-      showErrorToast("حدث خطأ أثناء إنشاء الختمة");
+      debugPrint('Error creating khatma: $e');
+      if (mounted) setState(() => _loading = false);
+      showErrorToast('حدث خطأ أثناء إنشاء الختمة');
     }
   }
 
   @override
   void dispose() {
-    _khetmaNameController.dispose();
-    _maxNumberController.dispose();
+    _name.dispose();
     super.dispose();
   }
 
@@ -75,125 +60,45 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           KhetmtiHeader(
-            title: "إنــــشاء ختمــــة",
+            title: 'إنشاء ختمة',
             showProfile: false,
+            showNotification: false,
             showBackButton: true,
             onBackTap: () => context.pop(),
-            onNotificationTap: () => context.push('/notifications'),
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 30),
-                  CustomTextfield(
-                    fieldController: _khetmaNameController,
-                    fieldTitle: "خــــتمة لفائدة (بــالعربية)",
-                    inArabic: true,
-                    isPassword: false,
-                    onlyNumber: false,
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextfield(
-                    fieldController: _maxNumberController,
-                    fieldTitle: "العـــدد الأقـــصى للمشـــاركين",
-                    inArabic: false,
-                    isPassword: false,
-                    onlyNumber: true,
-                  ),
-                  const SizedBox(height: 20),
-                  const Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      "تقسيم الختمة حسب:",
-                      style: TextStyle(
-                        fontFamily: 'Amiri',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                  FadeSlideIn(
+                    child: _card(
+                      AppTextField(
+                        controller: _name,
+                        label: 'ختمة لفائدة',
+                        hint: 'مثال: جدي رحمه الله',
+                        icon: Icons.favorite_border_rounded,
+                        textInputAction: TextInputAction.done,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _splitType = 'juzu'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: _splitType == 'juzu'
-                                  ? AppTheme.primaryColor
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: _splitType == 'juzu'
-                                    ? AppTheme.primaryColor
-                                    : AppTheme.primaryColor
-                                        .withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Text(
-                              "أجزاء (30 جزء)",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Amiri',
-                                fontWeight: FontWeight.bold,
-                                color: _splitType == 'juzu'
-                                    ? Colors.white
-                                    : AppTheme.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _splitType = 'sura'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: _splitType == 'sura'
-                                  ? AppTheme.primaryColor
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: _splitType == 'sura'
-                                    ? AppTheme.primaryColor
-                                    : AppTheme.primaryColor
-                                        .withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Text(
-                              "سور (114 سورة)",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Amiri',
-                                fontWeight: FontWeight.bold,
-                                color: _splitType == 'sura'
-                                    ? Colors.white
-                                    : AppTheme.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _addKhetma,
-                      borderRadius: BorderRadius.circular(30),
-                      child: const CustomButton(text: "إنــــشاء"),
+                  const SizedBox(height: 16),
+                  FadeSlideIn(index: 1, child: _card(_participantsStepper())),
+                  const SizedBox(height: 16),
+                  FadeSlideIn(index: 2, child: _card(_splitSelector())),
+                  const SizedBox(height: 28),
+                  FadeSlideIn(
+                    index: 3,
+                    child: PrimaryButton(
+                      label: 'إنشاء الختمة',
+                      icon: Icons.add_rounded,
+                      loading: _loading,
+                      onPressed: _create,
                     ),
                   ),
                 ],
@@ -202,6 +107,162 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _card(Widget child) => Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: child,
+      );
+
+  Widget _label(String text, String hint) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        textDirection: TextDirection.rtl,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              fontFamily: 'Amiri',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          Text(
+            hint,
+            textDirection: TextDirection.rtl,
+            style: const TextStyle(
+              fontFamily: 'Amiri',
+              fontSize: 14,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ],
+      );
+
+  Widget _participantsStepper() {
+    Widget button(IconData icon, int delta) {
+      final next = _maxParticipants + delta;
+      final enabled = next >= 1 && next <= _maxAllowed;
+      return Pressable(
+        onTap: enabled
+            ? () {
+                HapticFeedback.selectionClick();
+                setState(() => _maxParticipants = next);
+              }
+            : null,
+        pressedScale: 0.88,
+        child: AnimatedContainer(
+          duration: AppTheme.fast,
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: enabled ? AppTheme.softGreen : AppTheme.backgroundColor,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: enabled ? AppTheme.primaryColor : AppTheme.textMuted,
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      textDirection: TextDirection.rtl,
+      children: [
+        Expanded(child: _label('العدد الأقصى للمشاركين', 'بمن فيهم أنت')),
+        button(Icons.add_rounded, 1),
+        SizedBox(
+          width: 52,
+          child: AnimatedSwitcher(
+            duration: AppTheme.fast,
+            transitionBuilder: (child, a) =>
+                ScaleTransition(scale: a, child: child),
+            child: Text(
+              '$_maxParticipants',
+              key: ValueKey(_maxParticipants),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ),
+        ),
+        button(Icons.remove_rounded, -1),
+      ],
+    );
+  }
+
+  Widget _splitSelector() {
+    Widget option(String value, String title, String detail, IconData icon) {
+      final on = _splitType == value;
+      return Expanded(
+        child: Pressable(
+          onTap: () => setState(() => _splitType = value),
+          child: AnimatedContainer(
+            duration: AppTheme.fast,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+            decoration: BoxDecoration(
+              color: on ? AppTheme.softGreen : Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: on ? AppTheme.primaryColor : AppTheme.borderColor,
+                width: on ? 1.8 : 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(icon,
+                    color: on ? AppTheme.primaryColor : AppTheme.textMuted,
+                    size: 28),
+                const SizedBox(height: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'Amiri',
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: on ? AppTheme.primaryColor : AppTheme.textPrimary,
+                  ),
+                ),
+                Text(
+                  detail,
+                  style: const TextStyle(
+                    fontFamily: 'Amiri',
+                    fontSize: 13,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _label('تقسيم الختمة', 'كل مشارك يحجز ما سيقرؤه'),
+        const SizedBox(height: 14),
+        Row(
+          textDirection: TextDirection.rtl,
+          children: [
+            option('sura', 'بالسور', '114 سورة', Icons.auto_stories_outlined),
+            const SizedBox(width: 12),
+            option('juzu', 'بالأجزاء', '30 جزءاً', Icons.view_agenda_outlined),
+          ],
+        ),
+      ],
     );
   }
 }

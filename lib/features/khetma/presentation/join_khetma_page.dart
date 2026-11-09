@@ -112,10 +112,10 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
         children: [
           KhetmtiHeader(
             title: 'الانضمام لختمة',
+            showNotification: false,
             showProfile: false,
             showBackButton: true,
             onBackTap: () => context.pop(),
-            onNotificationTap: () => context.push('/notifications'),
           ),
           const SizedBox(height: 20),
           _buildMethodChoice(),

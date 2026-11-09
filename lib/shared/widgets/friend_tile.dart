@@ -8,11 +8,15 @@ class FriendComponent extends StatelessWidget {
   final DateTime? lastSeen;
   final Widget? trailing;
 
+  /// Replaces the "last seen" line when given.
+  final String? subtitle;
+
   const FriendComponent({
     required this.username,
     required this.level,
     this.lastSeen,
     this.trailing,
+    this.subtitle,
     super.key,
   });
 
@@ -99,7 +103,7 @@ class FriendComponent extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "آخر ظهور: ${_formatLastSeen(lastSeen)}",
+                        subtitle ?? "آخر ظهور: ${_formatLastSeen(lastSeen)}",
                         style: const TextStyle(
                           fontFamily: 'Amiri',
                           fontSize: 12,

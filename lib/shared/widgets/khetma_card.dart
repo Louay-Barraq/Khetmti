@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/shared/widgets/motion.dart';
 
 class KhetmaComponent extends StatelessWidget {
   final String title;
@@ -46,98 +47,101 @@ class KhetmaComponent extends StatelessWidget {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(15),
-            child: Row(
-              textDirection: TextDirection.rtl,
-              children: [
-                // Circular Progress Indicator
-                CircularPercentIndicator(
-                  radius: 35.0,
-                  lineWidth: 6.0,
-                  percent: progress,
-                  center: Text(
-                    "${(progress * 100).toInt()}%",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      fontFamily: 'Roboto',
-                    ),
+      child: Pressable(
+        onTap: onTap,
+        pressedScale: 0.98,
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              // Circular Progress Indicator
+              CircularPercentIndicator(
+                radius: 35.0,
+                lineWidth: 6.0,
+                percent: progress.clamp(0.0, 1.0),
+                animation: true,
+                animateFromLastPercent: true,
+                animationDuration: 700,
+                curve: AppTheme.curve,
+                center: Text(
+                  "${(progress * 100).toInt()}%",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    fontFamily: 'Roboto',
                   ),
-                  circularStrokeCap: CircularStrokeCap.round,
-                  backgroundColor: const Color(0xFFF1F5F9),
-                  progressColor: progress >= 1.0 ? Colors.green : AppTheme.primaryColor,
                 ),
-                const SizedBox(width: 20),
-                // Content
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    textDirection: TextDirection.rtl,
-                    children: [
-                      Text(
-                        "ختمة لفائدة $title",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                        ),
+                circularStrokeCap: CircularStrokeCap.round,
+                backgroundColor: const Color(0xFFF1F5F9),
+                progressColor:
+                    progress >= 1.0 ? Colors.green : AppTheme.primaryColor,
+              ),
+              const SizedBox(width: 20),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  textDirection: TextDirection.rtl,
+                  children: [
+                    Text(
+                      "ختمة لفائدة $title",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
-                      const SizedBox(height: 8),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          textDirection: TextDirection.rtl,
-                          children: [
-                            // Participants Pill
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                "$participantsCount مشاركين",
-                                style: const TextStyle(
-                                  color: AppTheme.primaryColor,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Amiri',
-                                ),
-                              ),
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        textDirection: TextDirection.rtl,
+                        children: [
+                          // Participants Pill
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F5E9),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(width: 12),
-                            // Date
-                            const Icon(
-                              Icons.calendar_today_outlined,
-                              size: 14,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              "$dateLabel$dateValue",
+                            child: Text(
+                              "$participantsCount مشاركين",
                               style: const TextStyle(
-                                color: Color(0xFF94A3B8),
+                                color: AppTheme.primaryColor,
                                 fontSize: 12,
+                                fontWeight: FontWeight.bold,
                                 fontFamily: 'Amiri',
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Date
+                          const Icon(
+                            Icons.calendar_today_outlined,
+                            size: 14,
+                            color: Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "$dateLabel$dateValue",
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 12,
+                              fontFamily: 'Amiri',
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

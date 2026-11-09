@@ -6,6 +6,7 @@ import 'package:khetmti/features/khetma/models/khetma.dart';
 import 'package:khetmti/features/khetma/providers/khetma_provider.dart';
 import 'package:khetmti/shared/widgets/khetma_card.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/motion.dart';
 import 'package:khetmti/shared/widgets/state_switch.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -44,46 +45,48 @@ class _HomePageState extends ConsumerState<HomePage> {
                   },
                 ),
               ),
-              const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 6),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   textDirection: TextDirection.rtl,
                   children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        _currentView == 'In Progress' ? 'ختماتك النشطة' : 'ختماتك المكتملة',
-                        key: ValueKey(_currentView),
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
+                    Expanded(
+                      child: SmoothSwitcher(
+                        duration: AppTheme.fast,
+                        child: Align(
+                          key: ValueKey(_currentView),
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            _currentView == 'In Progress'
+                                ? 'ختماتك النشطة'
+                                : 'ختماتك المكتملة',
+                            style: const TextStyle(
+                              fontFamily: 'Amiri',
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'عرض الكل',
-                        style: TextStyle(
-                          fontFamily: 'Amiri',
-                          color: AppTheme.primaryColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    TextButton.icon(
+                      onPressed: () => context.push('/khetma/join'),
+                      icon: const Icon(Icons.group_add_outlined, size: 20),
+                      label: const Text('انضمام'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
                       ),
                     ),
                   ],
                 ),
               ),
               Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
+                child: SmoothSwitcher(
                   child: _buildKhatmsList(
-                    _currentView == 'In Progress' ? inProgressAsync : completedAsync,
+                    _currentView == 'In Progress'
+                        ? inProgressAsync
+                        : completedAsync,
                   ),
                 ),
               ),
@@ -104,57 +107,41 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildKhatmsList(AsyncValue<List<Khetma>> asyncKhetmas) {
     return asyncKhetmas.when(
+      skipLoadingOnReload: true,
       loading: () => const Center(
         key: ValueKey('loading'),
         child: CircularProgressIndicator(),
       ),
       error: (_, __) => const Center(
         key: ValueKey('error'),
-        child: Text("Error loading data"),
+        child: Text(
+          'تعذّر تحميل الختمات، تحقق من اتصالك',
+          style: TextStyle(fontSize: 17, color: AppTheme.textSecondary),
+        ),
       ),
       data: (khetmas) {
         if (khetmas.isEmpty) {
-          return Center(
+          return _EmptyHome(
             key: ValueKey('empty-$_currentView'),
-            child: Text(
-              _currentView == 'In Progress' ? 'لا توجد ختمات نشطة' : 'لا توجد ختمات مكتملة',
-              style: const TextStyle(
-                fontFamily: 'Amiri',
-                fontSize: 18,
-                color: AppTheme.textSecondary,
-              ),
-            ),
+            active: _currentView == 'In Progress',
           );
         }
         return ListView.builder(
           key: ValueKey('list-$_currentView'),
-          padding: const EdgeInsets.only(bottom: 100),
+          padding: const EdgeInsets.only(bottom: 110),
           itemCount: khetmas.length,
           itemBuilder: (context, index) {
             final khetma = khetmas[index];
-            return TweenAnimationBuilder<double>(
-              key: ValueKey('home-anim-$index'),
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: Duration(milliseconds: 300 + (index * 50).clamp(0, 500)),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, child) {
-                return Opacity(
-                  opacity: value,
-                  child: Transform.translate(
-                    offset: Offset(0, 20 * (1 - value)),
-                    child: child,
-                  ),
-                );
-              },
+            return FadeSlideIn(
+              key: ValueKey(khetma.khetmaId),
+              index: index,
               child: KhetmaComponent(
                 title: khetma.name,
                 progress: khetma.completionPercent,
                 participantsCount: khetma.currentParticipantsNumber,
                 createdAt: khetma.createdAt,
                 updatedAt: khetma.updatedAt,
-                onTap: () {
-                  context.push('/khetma/${khetma.khetmaId}');
-                },
+                onTap: () => context.push('/khetma/${khetma.khetmaId}'),
               ),
             );
           },
@@ -164,44 +151,94 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildCreateButton() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.primaryColor,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.4),
-            offset: const Offset(0, 8),
-            blurRadius: 15,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
+    return Pressable(
+      onTap: () => context.push('/khetma/create'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryColor,
           borderRadius: BorderRadius.circular(30),
-          onTap: () {
-            context.push('/khetma/create');
-          },
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              textDirection: TextDirection.rtl,
-              children: [
-                Icon(Icons.add, color: Colors.white),
-                SizedBox(width: 10),
-                Text(
-                  'إنشاء ختمة جديدة',
-                  style: TextStyle(
-                    fontFamily: 'Amiri',
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryColor.withValues(alpha: 0.4),
+              offset: const Offset(0, 8),
+              blurRadius: 15,
             ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          textDirection: TextDirection.rtl,
+          children: [
+            Icon(Icons.add, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              'إنشاء ختمة جديدة',
+              style: TextStyle(
+                fontFamily: 'Amiri',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyHome extends StatelessWidget {
+  final bool active;
+  const _EmptyHome({super.key, required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(40, 0, 40, 100),
+        child: FadeSlideIn(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(22),
+                decoration: const BoxDecoration(
+                  color: AppTheme.softGreen,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  active
+                      ? Icons.menu_book_rounded
+                      : Icons.emoji_events_outlined,
+                  size: 44,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                active ? 'لا توجد ختمات نشطة' : 'لا توجد ختمات مكتملة بعد',
+                style: const TextStyle(
+                  fontFamily: 'Amiri',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                active
+                    ? 'أنشئ ختمة جديدة أو انضم إلى ختمة أصدقائك برمزها'
+                    : 'ستظهر هنا الختمات التي يتم إتمامها',
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.rtl,
+                style: const TextStyle(
+                  fontFamily: 'Amiri',
+                  fontSize: 16,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       ),
