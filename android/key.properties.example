@@ -1,0 +1,10 @@
+# Copy to android/key.properties (gitignored) and fill in.
+# Create the keystore once with:
+#   keytool -genkey -v -keystore ~/khetmti-upload.jks -keyalg RSA \
+#     -keysize 2048 -validity 10000 -alias upload
+# Keep the .jks file and these passwords safe: losing them means you can
+# no longer update the app on Google Play.
+storeFile=/Users/you/khetmti-upload.jks
+storePassword=
+keyAlias=upload
+keyPassword=
