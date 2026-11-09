@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/settings/providers/settings_provider.dart';
-import 'package:khetmti/shared/widgets/custom_button.dart';
-import 'package:khetmti/shared/widgets/custom_textfield.dart';
-import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/app_text_field.dart';
+import 'package:khetmti/shared/widgets/form_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChangePasswordPage extends ConsumerStatefulWidget {
@@ -17,106 +15,80 @@ class ChangePasswordPage extends ConsumerStatefulWidget {
 }
 
 class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
-  final _oldPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
+  final _current = TextEditingController();
+  final _new = TextEditingController();
+  bool _loading = false;
 
-  void changePassword() async {
-    String oldPassword = _oldPasswordController.text;
-    String newPassword = _newPasswordController.text;
-
-    if (newPassword.isEmpty || oldPassword.isEmpty) {
-      showErrorToast("يرجى ملء جميع الحقول");
+  Future<void> _save() async {
+    if (_current.text.isEmpty || _new.text.isEmpty) {
+      showErrorToast('يرجى ملء جميع الحقول');
+      return;
+    }
+    if (_new.text.length < minPasswordLength) {
+      showErrorToast(
+          'يجب أن تتكون كلمة السر من $minPasswordLength أحرف على الأقل');
+      return;
+    }
+    if (_current.text == _new.text) {
+      showErrorToast('كلمة السر الجديدة مطابقة للقديمة');
       return;
     }
 
-    if (oldPassword == newPassword) {
-      showErrorToast("كلمتا الســـر الجــديدة و القــديمة متطـابقتـان");
-      return;
-    }
-
-    if (newPassword.length < 7) {
-      showErrorToast("كلمة الســـر الجــديدة قصيرة");
-      return;
-    }
-
+    setState(() => _loading = true);
     try {
-      showLoadingDialog(context);
       await ref.read(settingsRepositoryProvider).changePassword(
-        currentPassword: oldPassword,
-        newPassword: newPassword,
-      );
-
-      if (mounted) dismissLoadingDialog(context);
-
-      _newPasswordController.clear();
-      _oldPasswordController.clear();
+            currentPassword: _current.text,
+            newPassword: _new.text,
+          );
+      if (mounted) context.pop();
     } on AuthException catch (e) {
-      if (mounted) dismissLoadingDialog(context);
-      if (e.message.toLowerCase().contains('password') ||
-          e.message.toLowerCase().contains('credential')) {
-        showErrorToast("كلمة السر القديمة غير صحيحة");
-        _oldPasswordController.clear();
-      } else {
-        showErrorToast("حدث خطأ أثناء العملية");
-      }
-    } catch (e) {
-      if (mounted) dismissLoadingDialog(context);
-      showErrorToast("حدث خطأ أثناء العملية");
+      if (mounted) setState(() => _loading = false);
+      final wrongPassword = e.message.toLowerCase().contains('credential');
+      showErrorToast(wrongPassword
+          ? 'كلمة السر الحالية غير صحيحة'
+          : 'حدث خطأ أثناء العملية');
+      if (wrongPassword) _current.clear();
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+      showErrorToast('حدث خطأ أثناء العملية');
     }
   }
 
   @override
   void dispose() {
-    _oldPasswordController.dispose();
-    _newPasswordController.dispose();
+    _current.dispose();
+    _new.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          KhetmtiHeader(
-            title: "تغيــــر كلمة السر",
-            showProfile: false,
-            showBackButton: true,
-            onBackTap: () => context.pop(),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 30),
-                  CustomTextfield(
-                    fieldController: _oldPasswordController,
-                    fieldTitle: "كلمة السر القـــديمة",
-                    inArabic: false,
-                    isPassword: true,
-                    onlyNumber: false,
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextfield(
-                    fieldController: _newPasswordController,
-                    fieldTitle: "كلمة السر الجـــديدة",
-                    inArabic: false,
-                    isPassword: true,
-                    onlyNumber: false,
-                  ),
-                  const SizedBox(height: 30),
-                  GestureDetector(
-                    onTap: changePassword,
-                    child: const CustomButton(text: "تـــغيير"),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return FormPage(
+      title: 'تغيير كلمة السر',
+      actionLabel: 'تغيير كلمة السر',
+      actionIcon: Icons.lock_reset_rounded,
+      loading: _loading,
+      onSubmit: _save,
+      fields: [
+        AppTextField(
+          controller: _current,
+          label: 'كلمة السر الحالية',
+          icon: Icons.lock_outline_rounded,
+          isPassword: true,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.password],
+        ),
+        AppTextField(
+          controller: _new,
+          label: 'كلمة السر الجديدة',
+          hint: '$minPasswordLength أحرف على الأقل',
+          icon: Icons.lock_reset_rounded,
+          isPassword: true,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _save(),
+          autofillHints: const [AutofillHints.newPassword],
+        ),
+      ],
     );
   }
 }

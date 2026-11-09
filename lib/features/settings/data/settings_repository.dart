@@ -1,3 +1,4 @@
+import 'package:khetmti/core/config/deep_links.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -21,10 +22,13 @@ class SettingsRepository {
     showSuccessToast('تم تـــغيير إسم المستخــدم بنجـــاح');
   }
 
-  /// Supabase emails a confirmation link; the login email changes once the
-  /// user clicks it.
+  /// Supabase emails a confirmation link (opening the app); the login email
+  /// changes once the user clicks it.
   Future<void> changeEmail({required String newEmail}) async {
-    await _supabase.auth.updateUser(UserAttributes(email: newEmail));
+    await _supabase.auth.updateUser(
+      UserAttributes(email: newEmail),
+      emailRedirectTo: DeepLinks.emailChanged,
+    );
   }
 
   /// Throws [AuthException] when [currentPassword] is wrong.

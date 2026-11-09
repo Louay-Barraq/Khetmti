@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/features/settings/providers/settings_provider.dart';
-import 'package:khetmti/shared/widgets/custom_button.dart';
-import 'package:khetmti/shared/widgets/custom_textfield.dart';
-import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/app_text_field.dart';
+import 'package:khetmti/shared/widgets/form_page.dart';
 
 class ChangeEmailPage extends ConsumerStatefulWidget {
   const ChangeEmailPage({super.key});
@@ -17,112 +15,62 @@ class ChangeEmailPage extends ConsumerStatefulWidget {
 }
 
 class _ChangeEmailPageState extends ConsumerState<ChangeEmailPage> {
-  final _oldEmailController = TextEditingController();
-  final _newEmailController = TextEditingController();
+  final _email = TextEditingController();
+  bool _loading = false;
 
-  void changeEmail() async {
-    String oldEmail = _oldEmailController.text.trim();
-    String newEmail = _newEmailController.text.trim();
+  Future<void> _save() async {
+    final email = _email.text.trim();
+    final current = ref.read(authRepositoryProvider).currentUser?.email;
 
-    if (oldEmail.isEmpty || newEmail.isEmpty) {
-      showErrorToast("يرجى ملء جميع الحقول");
+    if (!isValidEmail(email)) {
+      showErrorToast('عنوان البريد الإلكتروني غير صالح');
+      return;
+    }
+    if (email == current) {
+      showErrorToast('هذا هو بريدك الحالي');
       return;
     }
 
-    if (!isValidEmail(oldEmail)) {
-      showErrorToast("البريد الإلكتروني القــديم غير صالح");
-      return;
-    }
-
-    if (!isValidEmail(newEmail)) {
-      showErrorToast("البريد الإلكتروني الجــديد غير صالح");
-      return;
-    }
-
-    if (oldEmail == newEmail) {
-      showErrorToast("البـــريدان الإلكترونيـــان الجــديد و القــديم متطـابقـان");
-      return;
-    }
-
-    final authRepo = ref.read(authRepositoryProvider);
-    final currentEmail = authRepo.currentUser!.email;
-    if (currentEmail != null && currentEmail != oldEmail) {
-      showErrorToast("البريد الإلكتروني القديـــم غير صحيح");
-      return;
-    }
-
+    setState(() => _loading = true);
     try {
-      showLoadingDialog(context);
-      await ref.read(settingsRepositoryProvider).changeEmail(newEmail: newEmail);
-
-      if (mounted) dismissLoadingDialog(context);
-      showSuccessToast('تم إرسال بريد إلكتروني للتحقق.');
-      await Future.delayed(const Duration(seconds: 4));
-      showSuccessToast('يرجى التحقق وتسجيل الدخول مرة أخرى.');
-
-      await authRepo.signOut();
-      await Future.delayed(const Duration(seconds: 2));
-      if (!mounted) return;
-      context.go('/login');
-    } catch (e) {
-      if (mounted) dismissLoadingDialog(context);
-      debugPrint('Error changing email: $e');
-      showErrorToast("حدث خطأ أثناء تغيير البريد الإلكتروني");
+      await ref.read(settingsRepositoryProvider).changeEmail(newEmail: email);
+      showSuccessToast('أرسلنا رابط تأكيد، افتحه لإتمام تغيير البريد');
+      if (mounted) context.pop();
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+      showErrorToast('حدث خطأ أثناء تغيير البريد الإلكتروني');
     }
   }
 
   @override
   void dispose() {
-    _oldEmailController.dispose();
-    _newEmailController.dispose();
+    _email.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          KhetmtiHeader(
-            title: "تغيــــر البريد",
-            showProfile: false,
-            showBackButton: true,
-            onBackTap: () => context.pop(),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 30),
-                  CustomTextfield(
-                    fieldController: _oldEmailController,
-                    fieldTitle: "البريــد الإلكتروني القـــديم",
-                    inArabic: false,
-                    isPassword: false,
-                    onlyNumber: false,
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextfield(
-                    fieldController: _newEmailController,
-                    fieldTitle: "البريــد الإلكتروني الجـــديد",
-                    inArabic: false,
-                    isPassword: false,
-                    onlyNumber: false,
-                  ),
-                  const SizedBox(height: 30),
-                  GestureDetector(
-                    onTap: changeEmail,
-                    child: const CustomButton(text: "تـــغيير"),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    final current = ref.watch(authRepositoryProvider).currentUser?.email ?? '';
+    return FormPage(
+      title: 'تغيير البريد',
+      description: 'بريدك الحالي: $current\n'
+          'سنرسل رابط تأكيد، ويتغير بريد الدخول بعد فتحه.',
+      actionLabel: 'إرسال رابط التأكيد',
+      actionIcon: Icons.send_rounded,
+      loading: _loading,
+      onSubmit: _save,
+      fields: [
+        AppTextField(
+          controller: _email,
+          label: 'البريد الإلكتروني الجديد',
+          icon: Icons.alternate_email_rounded,
+          latin: true,
+          autofocus: true,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.send,
+          onSubmitted: (_) => _save(),
+        ),
+      ],
     );
   }
 }

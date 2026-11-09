@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/features/settings/providers/settings_provider.dart';
-import 'package:khetmti/shared/widgets/custom_button.dart';
-import 'package:khetmti/shared/widgets/custom_textfield.dart';
-import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/shared/widgets/app_text_field.dart';
+import 'package:khetmti/shared/widgets/form_page.dart';
 
 class ChangeUsernamePage extends ConsumerStatefulWidget {
   const ChangeUsernamePage({super.key});
@@ -17,102 +15,59 @@ class ChangeUsernamePage extends ConsumerStatefulWidget {
 }
 
 class _ChangeUsernamePageState extends ConsumerState<ChangeUsernamePage> {
-  final _oldUsernameController = TextEditingController();
-  final _newUsernameController = TextEditingController();
+  late final _name = TextEditingController(
+    text: ref.read(currentUserProvider).valueOrNull?.username ?? '',
+  );
+  bool _loading = false;
 
-  void changeUsername() async {
-    String oldUsername = _oldUsernameController.text.trim();
-    String newUsername = _newUsernameController.text.trim();
+  Future<void> _save() async {
+    final name = _name.text.trim();
+    final current = ref.read(currentUserProvider).valueOrNull?.username;
 
-    if (oldUsername.isEmpty || newUsername.isEmpty) {
-      showErrorToast("يرجى ملء جميع الحقول");
+    if (name.length < minUsernameLength) {
+      showErrorToast('يجب أن يتكون الاسم من $minUsernameLength أحرف على الأقل');
+      return;
+    }
+    if (name == current) {
+      showErrorToast('هذا هو اسمك الحالي');
       return;
     }
 
-    if (oldUsername == newUsername) {
-      showErrorToast("إسما المستخــدم الجــديد و القــديم متطـابقـان");
-      return;
-    }
-
-    if (newUsername.length < minUsernameLength) {
-      showErrorToast("إسم المستخــدم الجــديد قصير");
-      return;
-    }
-
-    final currentUsername = ref.read(authRepositoryProvider).currentUsername;
-    if (currentUsername != null && currentUsername != oldUsername) {
-      showErrorToast("إسم المستخــدم القديـــم غير صحيح");
-      return;
-    }
-
+    setState(() => _loading = true);
     try {
-      showLoadingDialog(context);
-      await ref
-          .read(settingsRepositoryProvider)
-          .changeUsername(newUsername: newUsername);
-
-      if (mounted) dismissLoadingDialog(context);
-
-      _newUsernameController.clear();
-      _oldUsernameController.clear();
-    } catch (e) {
-      if (mounted) dismissLoadingDialog(context);
-      showErrorToast("حدث خطأ أثناء العملية");
+      await ref.read(settingsRepositoryProvider).changeUsername(newUsername: name);
+      if (mounted) context.pop();
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+      showErrorToast('حدث خطأ أثناء العملية');
     }
   }
 
   @override
   void dispose() {
-    _oldUsernameController.dispose();
-    _newUsernameController.dispose();
+    _name.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          KhetmtiHeader(
-            title: "تغيــــر الإسم",
-            showProfile: false,
-            showBackButton: true,
-            onBackTap: () => context.pop(),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 30),
-                  CustomTextfield(
-                    fieldController: _oldUsernameController,
-                    fieldTitle: "إســـم المـــستخدم القـــديم",
-                    inArabic: true,
-                    isPassword: false,
-                    onlyNumber: false,
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextfield(
-                    fieldController: _newUsernameController,
-                    fieldTitle: "إســـم المـــستخدم الجـــديد",
-                    inArabic: true,
-                    isPassword: false,
-                    onlyNumber: false,
-                  ),
-                  const SizedBox(height: 30),
-                  GestureDetector(
-                    onTap: changeUsername,
-                    child: const CustomButton(text: "تـــغيير"),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return FormPage(
+      title: 'تغيير الاسم',
+      description: 'هذا الاسم يراه أصدقاؤك والمشاركون في ختماتك.',
+      actionLabel: 'حفظ',
+      actionIcon: Icons.check_rounded,
+      loading: _loading,
+      onSubmit: _save,
+      fields: [
+        AppTextField(
+          controller: _name,
+          label: 'الاسم واللقب',
+          icon: Icons.person_outline_rounded,
+          autofocus: true,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _save(),
+        ),
+      ],
     );
   }
 }
