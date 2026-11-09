@@ -23,7 +23,7 @@ class SettingsPage extends ConsumerWidget {
             showProfile: true,
             showBackButton: showBackButton,
             onNotificationTap: () => context.push('/notifications'),
-            onProfileTap: () => context.push('/profile'),
+            onProfileTap: () => context.go('/profile'),
           ),
           Expanded(
             child: ListView(
@@ -74,12 +74,8 @@ class SettingsPage extends ConsumerWidget {
                     textColor: Colors.red,
                     iconColor: Colors.red,
                     iconBgColor: Colors.red.withValues(alpha: 0.1),
-                    onTap: () async {
-                      await ref.read(authRepositoryProvider).signOut();
-                      if (context.mounted) {
-                        context.go('/login');
-                      }
-                    },
+                    // The router sends the signed-out user to /login.
+                    onTap: () => ref.read(authRepositoryProvider).signOut(),
                   ),
                   SettingsItemCard(
                     title: "حذف الحساب",
@@ -89,7 +85,6 @@ class SettingsPage extends ConsumerWidget {
                     iconBgColor: Colors.red.withValues(alpha: 0.1),
                     onTap: () => _showDeleteAccountDialog(context, ref),
                   ),
-                  const SizedBox(height: 10),
                 ]),
                 const SizedBox(height: 30),
                 const Text(
@@ -126,33 +121,7 @@ class SettingsPage extends ConsumerWidget {
   void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('حذف الحساب', textAlign: TextAlign.right),
-        content: const Text(
-          'هل أنت متأكد من حذف الحساب؟ لا يمكن التراجع عن هذا الفعل.',
-          textAlign: TextAlign.right,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                await ref.read(authRepositoryProvider).deleteAccount();
-                if (context.mounted) {
-                  context.go('/login');
-                }
-              } catch (e) {
-                if (context.mounted) Navigator.pop(context);
-                showErrorToast('يجب تسجيل الدخول مرة أخرى لحذف الحساب لأسباب أمنية');
-              }
-            },
-            child: const Text('حذف', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      builder: (_) => const _DeleteAccountDialog(),
     );
   }
 
@@ -175,6 +144,72 @@ class SettingsPage extends ConsumerWidget {
           children: items,
         ),
       ),
+    );
+  }
+}
+
+/// Explains what deleting the account removes, then deletes it.
+class _DeleteAccountDialog extends ConsumerStatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  ConsumerState<_DeleteAccountDialog> createState() =>
+      _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
+  bool _deleting = false;
+
+  Future<void> _delete() async {
+    setState(() => _deleting = true);
+    try {
+      await ref.read(authRepositoryProvider).deleteAccount();
+      if (!mounted) return;
+      Navigator.pop(context);
+      showSuccessToast('تم حذف حسابك. نسأل الله أن يتقبل منك');
+      // The router sends the signed-out user to /login.
+    } catch (_) {
+      if (mounted) setState(() => _deleting = false);
+      showErrorToast('تعذّر حذف الحساب، حاول مرة أخرى');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 40),
+      title: const Text('حذف الحساب نهائياً', textAlign: TextAlign.center),
+      content: const Text(
+        'سيُحذف حسابك وأصدقاؤك ونقاطك، وتُلغى حجوزاتك التي لم تتمها. '
+        'الختمات التي أنشأتها تنتقل إلى أقدم مشارك فيها، أو تُحذف إن لم يكن فيها غيرك. '
+        'لا يمكن التراجع عن هذا.',
+        textAlign: TextAlign.right,
+        textDirection: TextDirection.rtl,
+      ),
+      actionsAlignment: MainAxisAlignment.spaceBetween,
+      actions: [
+        TextButton(
+          onPressed: _deleting ? null : () => Navigator.pop(context),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: Colors.red,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          onPressed: _deleting ? null : _delete,
+          child: _deleting
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : const Text(
+                  'احذف حسابي',
+                  style: TextStyle(fontFamily: 'Amiri', fontWeight: FontWeight.bold),
+                ),
+        ),
+      ],
     );
   }
 }
