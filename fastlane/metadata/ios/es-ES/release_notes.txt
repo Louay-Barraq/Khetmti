@@ -1,0 +1,1 @@
+Primera versión de Khetmti: khatmas en grupo, reserva de yuz o suras, progreso en directo, puntos y niveles, amigos y clasificación, y un mushaf integrado. En árabe, inglés, francés y español.

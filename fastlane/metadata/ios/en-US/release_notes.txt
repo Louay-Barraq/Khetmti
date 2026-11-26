@@ -1,0 +1,1 @@
+First release of Khetmti: group khatmas, reserve juz or surahs, live progress, points and levels, friends and leaderboard, and a built-in mushaf. Available in Arabic, English, French and Spanish.
