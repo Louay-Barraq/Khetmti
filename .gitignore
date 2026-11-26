@@ -51,3 +51,10 @@ config/env.json
 # Demo accounts used for screenshots (fake emails)
 config/demo_accounts.json
 supabase/.temp/
+
+# Pitch reel project and reference videos (large media)
+refs/
+videos/
+
+# Store screenshots: raw captures and rendered images (regenerate, see docs/store-listing.md)
+store/**/*.png
