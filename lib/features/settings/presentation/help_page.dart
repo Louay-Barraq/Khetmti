@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
@@ -12,7 +13,7 @@ class HelpPage extends StatelessWidget {
       scheme: 'mailto',
       path: 'louaybarraq@gmail.com',
       query: _encodeQueryParameters(<String, String>{
-        'subject': 'دعم تطبيق ختمتي',
+        'subject': tr.supportEmailSubject,
       }),
     );
     if (!await launchUrl(emailLaunchUri)) {
@@ -34,7 +35,7 @@ class HelpPage extends StatelessWidget {
       body: Column(
         children: [
           KhetmtiHeader(
-            title: 'المساعدة والدعم',
+            title: tr.helpTitle,
             showBackButton: true,
             showProfile: false,
             onBackTap: () => context.pop(),
@@ -43,15 +44,14 @@ class HelpPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
               children: [
-                const Text(
-                  "تواصل معنا",
+                Text(
+                  tr.contactUs,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
                   ),
-                  textDirection: TextDirection.rtl,
                 ),
                 const SizedBox(height: 15),
                 InkWell(
@@ -71,7 +71,6 @@ class HelpPage extends StatelessWidget {
                       ],
                     ),
                     child: Row(
-                      textDirection: TextDirection.rtl,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -83,14 +82,14 @@ class HelpPage extends StatelessWidget {
                               color: AppTheme.primaryColor, size: 30),
                         ),
                         const SizedBox(width: 20),
-                        const Expanded(
+                        Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "عبر البريد الإلكتروني",
+                                tr.byEmail,
                                 style: TextStyle(
-                                  fontFamily: 'Amiri',
+                                  fontFamily: AppTheme.font,
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.textPrimary,
@@ -107,53 +106,52 @@ class HelpPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_back_ios,
+                        const Icon(Icons.arrow_forward_ios,
                             size: 16, color: AppTheme.textSecondary),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 40),
-                const Text(
-                  "الأسئلة الشائعة",
+                Text(
+                  tr.faq,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
                   ),
-                  textDirection: TextDirection.rtl,
                 ),
                 const SizedBox(height: 15),
                 _buildFaqItem(
-                  question: "كيف يمكنني إنشاء ختمة جديدة؟",
+                  question: tr.faqCreateQ,
                   answer:
-                      "يمكنك إنشاء ختمة جديدة من خلال الصفحة الرئيسية بالضغط على زر '+'، ثم تحديد نوع التقسيم (أجزاء أو سور) وعدد المشاركين المطلوب.",
+                      tr.faqCreateA,
                 ),
                 _buildFaqItem(
-                  question: "كيف أنضم لختمة موجودة؟",
+                  question: tr.faqJoinQ,
                   answer:
-                      "اطلب رمز الانضمام من منشئ الختمة، ثم من الصفحة الرئيسية اختر 'الانضمام لختمة' وأدخل الرمز.",
+                      tr.faqJoinA,
                 ),
                 _buildFaqItem(
-                  question: "كيف يمكنني حجز جزء للقراءة؟",
+                  question: tr.faqReserveQ,
                   answer:
-                      "بعد الدخول إلى الختمة، ستجد قائمة بالأجزاء أو السور، اضغط على زر الحجز بجانب الجزء المتاح (غير المحجوز) ليصبح باسمك.",
+                      tr.faqReserveA,
                 ),
                 _buildFaqItem(
-                  question: "هل يمكنني قراءة القرآن داخل التطبيق؟",
+                  question: tr.faqReadQ,
                   answer:
-                      "نعم! عند دخولك لأي سورة أو جزء في الختمة أو من ملفك الشخصي، سيفتح لك التطبيق المصحف لقراءته مباشرة.",
+                      tr.faqReadA,
                 ),
                 _buildFaqItem(
-                  question: "هل يمكنني القراءة بدون إنترنت؟",
+                  question: tr.faqOfflineQ,
                   answer:
-                      "يحتاج التطبيق لاتصال بالإنترنت عند فتح الصفحة لأول مرة، لكننا نعمل على توفير ميزة الحفظ التلقائي للقراءة دون إنترنت قريباً.",
+                      tr.faqOfflineA,
                 ),
                 _buildFaqItem(
-                  question: "كيف يمكن معرفة إحصائيات قراءتي؟",
+                  question: tr.faqStatsQ,
                   answer:
-                      "من خلال صفحة الملف الشخصي (الحساب)، ستجد تبويب 'الإحصائيات' الذي يعرض لك عدد الأجزاء والسور التي قرأتها.",
+                      tr.faqStatsA,
                 ),
                 const SizedBox(height: 40),
               ],
@@ -181,9 +179,8 @@ class HelpPage extends StatelessWidget {
       child: ExpansionTile(
         title: Text(
           question,
-          textDirection: TextDirection.rtl,
-          style: const TextStyle(
-            fontFamily: 'Amiri',
+          style: TextStyle(
+            fontFamily: AppTheme.font,
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: AppTheme.textPrimary,
@@ -196,9 +193,8 @@ class HelpPage extends StatelessWidget {
         children: [
           Text(
             answer,
-            textDirection: TextDirection.rtl,
-            style: const TextStyle(
-              fontFamily: 'Amiri',
+            style: TextStyle(
+              fontFamily: AppTheme.font,
               fontSize: 16,
               color: AppTheme.textSecondary,
               height: 1.5,

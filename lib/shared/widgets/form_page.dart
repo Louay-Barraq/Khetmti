@@ -58,9 +58,8 @@ class FormPage extends StatelessWidget {
                       if (description != null) ...[
                         Text(
                           description!,
-                          textDirection: TextDirection.rtl,
-                          style: const TextStyle(
-                            fontFamily: 'Amiri',
+                          style: TextStyle(
+                            fontFamily: AppTheme.font,
                             fontSize: 16,
                             height: 1.5,
                             color: AppTheme.textSecondary,

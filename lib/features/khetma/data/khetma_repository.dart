@@ -6,16 +6,17 @@ import 'package:khetmti/features/auth/models/app_user.dart';
 
 import 'package:khetmti/features/khetma/models/khetma.dart';
 import 'package:khetmti/features/quran/models/quran_data.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
-/// Arabic messages for the errors raised by the `join_khatm` and
+/// Messages (in the app language) for the errors raised by the `join_khatm` and
 /// `update_part_status` database functions.
-const _rpcErrors = {
-  'not_authenticated': 'يجب تسجيل الدخول أولاً',
-  'khatm_not_found': 'الختمة غير موجودة',
-  'already_joined': 'أنت منضم بالفعل لهذه الختمة',
-  'khatm_full': 'عذراً، هذه الختمة مكتملة العدد',
-  'not_a_participant': 'يجب الانضمام إلى الختمة أولاً',
-  'invalid_transition': 'لم يعد هذا الجزء متاحاً',
+Map<String, String> get _rpcErrors => {
+  'not_authenticated': tr.mustSignIn,
+  'khatm_not_found': tr.khatmaNotFound,
+  'already_joined': tr.alreadyJoined,
+  'khatm_full': tr.khatmaFull,
+  'not_a_participant': tr.mustJoinFirst,
+  'invalid_transition': tr.partUnavailable,
 };
 
 class KhetmaRepository {
@@ -164,7 +165,7 @@ class KhetmaRepository {
     try {
       await _supabase.rpc(fn, params: params);
     } on PostgrestException catch (e) {
-      throw Exception(_rpcErrors[e.message] ?? 'حدث خطأ، يرجى المحاولة مرة أخرى');
+      throw Exception(_rpcErrors[e.message] ?? tr.tryAgainError);
     }
   }
 

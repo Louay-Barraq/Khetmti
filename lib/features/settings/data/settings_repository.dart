@@ -1,6 +1,7 @@
 import 'package:khetmti/core/config/deep_links.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 /// Input is validated by the settings pages before these are called.
 class SettingsRepository {
@@ -19,7 +20,7 @@ class SettingsRepository {
       'username': newUsername,
     }).eq('doc_id', user.id);
 
-    showSuccessToast('تم تـــغيير إسم المستخــدم بنجـــاح');
+    showSuccessToast(tr.usernameChanged);
   }
 
   /// Supabase emails a confirmation link (opening the app); the login email
@@ -41,6 +42,6 @@ class SettingsRepository {
       password: currentPassword,
     );
     await _supabase.auth.updateUser(UserAttributes(password: newPassword));
-    showSuccessToast('تم تغيير كلمة السر بنجاح');
+    showSuccessToast(tr.passwordChanged);
   }
 }

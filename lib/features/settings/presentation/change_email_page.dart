@@ -6,6 +6,7 @@ import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/features/settings/providers/settings_provider.dart';
 import 'package:khetmti/shared/widgets/app_text_field.dart';
 import 'package:khetmti/shared/widgets/form_page.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class ChangeEmailPage extends ConsumerStatefulWidget {
   const ChangeEmailPage({super.key});
@@ -23,22 +24,22 @@ class _ChangeEmailPageState extends ConsumerState<ChangeEmailPage> {
     final current = ref.read(authRepositoryProvider).currentUser?.email;
 
     if (!isValidEmail(email)) {
-      showErrorToast('عنوان البريد الإلكتروني غير صالح');
+      showErrorToast(tr.invalidEmail);
       return;
     }
     if (email == current) {
-      showErrorToast('هذا هو بريدك الحالي');
+      showErrorToast(tr.sameEmail);
       return;
     }
 
     setState(() => _loading = true);
     try {
       await ref.read(settingsRepositoryProvider).changeEmail(newEmail: email);
-      showSuccessToast('أرسلنا رابط تأكيد، افتحه لإتمام تغيير البريد');
+      showSuccessToast(tr.emailConfirmSent);
       if (mounted) context.pop();
     } catch (_) {
       if (mounted) setState(() => _loading = false);
-      showErrorToast('حدث خطأ أثناء تغيير البريد الإلكتروني');
+      showErrorToast(tr.changeEmailError);
     }
   }
 
@@ -52,17 +53,16 @@ class _ChangeEmailPageState extends ConsumerState<ChangeEmailPage> {
   Widget build(BuildContext context) {
     final current = ref.watch(authRepositoryProvider).currentUser?.email ?? '';
     return FormPage(
-      title: 'تغيير البريد',
-      description: 'بريدك الحالي: $current\n'
-          'سنرسل رابط تأكيد، ويتغير بريد الدخول بعد فتحه.',
-      actionLabel: 'إرسال رابط التأكيد',
+      title: tr.changeEmailTitle,
+      description: tr.changeEmailBody(current),
+      actionLabel: tr.sendConfirmLink,
       actionIcon: Icons.send_rounded,
       loading: _loading,
       onSubmit: _save,
       fields: [
         AppTextField(
           controller: _email,
-          label: 'البريد الإلكتروني الجديد',
+          label: tr.newEmail,
           icon: Icons.alternate_email_rounded,
           latin: true,
           autofocus: true,

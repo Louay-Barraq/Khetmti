@@ -1,0 +1,509 @@
+{
+  "@@locale": "ar",
+  "appTitle": "ختمـتي",
+  "appName": "ختمتي",
+  "cancel": "إلغاء",
+  "save": "حفظ",
+  "delete": "حذف",
+  "remove": "إزالة",
+  "undo": "تراجع",
+  "ok": "حسناً",
+  "retry": "إعادة المحاولة",
+  "genericError": "حدث خطأ أثناء العملية",
+  "tryAgainError": "حدث خطأ، يرجى المحاولة مرة أخرى",
+  "noData": "لا توجد بيانات",
+  "loadDataError": "خطأ في تحميل البيانات",
+  "loading": "جاري التحميل...",
+  "unknown": "غير معروف",
+  "participant": "مشارك",
+  "surahName": "سورة {name}",
+  "@surahName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "levelN": "المستوى {level}",
+  "@levelN": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "levelColon": "المستوى: {level}",
+  "@levelColon": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "levelShort": "مستوى {level}",
+  "@levelShort": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "juzN": "الجزء {n}",
+  "@juzN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "surah": "سورة",
+  "juz": "جزء",
+  "surahs": "السور",
+  "juzs": "الأجزاء",
+  "language": "اللغة",
+  "invalidEmail": "عنوان البريد الإلكتروني غير صالح",
+  "passwordTooShort": "يجب أن تتكون كلمة السر من {min} أحرف على الأقل",
+  "@passwordTooShort": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "usernameTooShort": "يجب أن يتكون اسم المستخدم من {min} أحرف على الأقل",
+  "@usernameTooShort": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "nameTooShort": "يجب أن يتكون الاسم من {min} أحرف على الأقل",
+  "@nameTooShort": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "minChars": "{min} أحرف على الأقل",
+  "@minChars": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "enterPassword": "يرجى إدخال كلمة السر",
+  "fillAllFields": "يرجى ملء جميع الحقول",
+  "fullName": "الاسم واللقب",
+  "fullNameHint": "بالعربية، كما سيراه أصدقاؤك",
+  "email": "البريد الإلكتروني",
+  "password": "كلمة السر",
+  "showPassword": "إظهار كلمة السر",
+  "hidePassword": "إخفاء كلمة السر",
+  "accountCreated": "تم إنشاء الحساب بنجاح!",
+  "signedIn": "تم تسجيل الدخول بنجاح!",
+  "signedOut": "تم تسجيل الخروج بنجاح!",
+  "signOutError": "حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى.",
+  "wrongCredentials": "البريد الإلكتروني أو كلمة السر غير صحيحة.",
+  "emailInUse": "عنوان البريد الإلكتروني قيد الاستخدام بالفعل بواسطة حساب آخر.",
+  "registerTitle": "حساب جديد",
+  "registerSubtitle": "أنشئ حسابك وشارك أصدقاءك في ختم القرآن",
+  "haveAccount": "لديك حساب؟",
+  "signInLink": "سجّل الدخول",
+  "createAccount": "إنشاء الحساب",
+  "loginTitle": "أهلاً بعودتك",
+  "loginSubtitle": "سجّل دخولك لمتابعة ختماتك",
+  "noAccount": "ليس لديك حساب؟",
+  "createNewAccount": "أنشئ حساباً جديداً",
+  "forgotPassword": "نسيت كلمة السر؟",
+  "signIn": "تسجيل الدخول",
+  "resetLinkSent": "أرسلنا رابط إعادة تعيين كلمة السر إلى بريدك",
+  "resetLinkFailed": "تعذّر إرسال الرابط، حاول مرة أخرى بعد قليل",
+  "recoverPassword": "استعادة كلمة السر",
+  "recoverPasswordBody": "سنرسل إلى بريدك رابطاً يفتح التطبيق لتختار كلمة سر جديدة.",
+  "sendLink": "إرسال الرابط",
+  "passwordsDontMatch": "كلمتا السر غير متطابقتين",
+  "passwordChanged": "تم تغيير كلمة السر بنجاح",
+  "linkExpired": "انتهت صلاحية الرابط، اطلب رابطاً جديداً",
+  "newPasswordTitle": "كلمة سر جديدة",
+  "newPasswordSubtitle": "اختر كلمة سر جديدة لحسابك",
+  "newPassword": "كلمة السر الجديدة",
+  "confirmPassword": "تأكيد كلمة السر",
+  "savePassword": "حفظ كلمة السر",
+  "settings": "الإعدادات",
+  "editableSettings": "الإعدادات القابلة للتغيير",
+  "changeUsername": "تغيير إسم المستخدم",
+  "changeEmail": "تغيير البريد الإلكتروني",
+  "changePassword": "تغيير كلمة السر",
+  "reminders": "إشعارات التذكير",
+  "appearance": "المظهر (داكن/فاتح)",
+  "signOut": "تسجيل الخروج",
+  "deleteAccount": "حذف الحساب",
+  "supportSection": "الدعم والمساعدة",
+  "helpCenter": "مركز المساعدة",
+  "aboutKhetmti": "عن تطبيق ختمتي",
+  "accountDeleted": "تم حذف حسابك. نسأل الله أن يتقبل منك",
+  "deleteAccountFailed": "تعذّر حذف الحساب، حاول مرة أخرى",
+  "deleteAccountTitle": "حذف الحساب نهائياً",
+  "deleteAccountBody": "سيُحذف حسابك وأصدقاؤك ونقاطك، وتُلغى حجوزاتك التي لم تتمها. الختمات التي أنشأتها تنتقل إلى أقدم مشارك فيها، أو تُحذف إن لم يكن فيها غيرك. لا يمكن التراجع عن هذا.",
+  "deleteMyAccount": "احذف حسابي",
+  "usernameChanged": "تم تـــغيير إسم المستخــدم بنجـــاح",
+  "sameUsername": "هذا هو اسمك الحالي",
+  "changeNameTitle": "تغيير الاسم",
+  "changeNameBody": "هذا الاسم يراه أصدقاؤك والمشاركون في ختماتك.",
+  "sameEmail": "هذا هو بريدك الحالي",
+  "emailConfirmSent": "أرسلنا رابط تأكيد، افتحه لإتمام تغيير البريد",
+  "changeEmailError": "حدث خطأ أثناء تغيير البريد الإلكتروني",
+  "changeEmailTitle": "تغيير البريد",
+  "changeEmailBody": "بريدك الحالي: {current}\nسنرسل رابط تأكيد، ويتغير بريد الدخول بعد فتحه.",
+  "@changeEmailBody": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "sendConfirmLink": "إرسال رابط التأكيد",
+  "newEmail": "البريد الإلكتروني الجديد",
+  "samePassword": "كلمة السر الجديدة مطابقة للقديمة",
+  "wrongCurrentPassword": "كلمة السر الحالية غير صحيحة",
+  "currentPassword": "كلمة السر الحالية",
+  "supportEmailSubject": "دعم تطبيق ختمتي",
+  "helpTitle": "المساعدة والدعم",
+  "contactUs": "تواصل معنا",
+  "byEmail": "عبر البريد الإلكتروني",
+  "faq": "الأسئلة الشائعة",
+  "faqCreateQ": "كيف يمكنني إنشاء ختمة جديدة؟",
+  "faqCreateA": "يمكنك إنشاء ختمة جديدة من خلال الصفحة الرئيسية بالضغط على زر '+'، ثم تحديد نوع التقسيم (أجزاء أو سور) وعدد المشاركين المطلوب.",
+  "faqJoinQ": "كيف أنضم لختمة موجودة؟",
+  "faqJoinA": "اطلب رمز الانضمام من منشئ الختمة، ثم من الصفحة الرئيسية اختر 'الانضمام لختمة' وأدخل الرمز.",
+  "faqReserveQ": "كيف يمكنني حجز جزء للقراءة؟",
+  "faqReserveA": "بعد الدخول إلى الختمة، ستجد قائمة بالأجزاء أو السور، اضغط على زر الحجز بجانب الجزء المتاح (غير المحجوز) ليصبح باسمك.",
+  "faqReadQ": "هل يمكنني قراءة القرآن داخل التطبيق؟",
+  "faqReadA": "نعم! عند دخولك لأي سورة أو جزء في الختمة أو من ملفك الشخصي، سيفتح لك التطبيق المصحف لقراءته مباشرة.",
+  "faqOfflineQ": "هل يمكنني القراءة بدون إنترنت؟",
+  "faqOfflineA": "يحتاج التطبيق لاتصال بالإنترنت عند فتح الصفحة لأول مرة، لكننا نعمل على توفير ميزة الحفظ التلقائي للقراءة دون إنترنت قريباً.",
+  "faqStatsQ": "كيف يمكن معرفة إحصائيات قراءتي؟",
+  "faqStatsA": "من خلال صفحة الملف الشخصي (الحساب)، ستجد تبويب 'الإحصائيات' الذي يعرض لك عدد الأجزاء والسور التي قرأتها.",
+  "aboutTitle": "عن التطبيق",
+  "aboutAppName": "ختمتي (Khetmti)",
+  "aboutBody": "تطبيق ختمتي أُنشئ بهدف تسهيل وتشجيع قراءة القرآن الكريم وتنظيم الختمات الجماعية والفردية. نسأل الله أن يتقبل منا ومنكم صالح الأعمال وأن يجعله صدقة جارية.",
+  "developer": "المطور",
+  "developerName": "لؤي البراق",
+  "developerRole": "مطور تطبيقات محمول",
+  "saveProgress": "حفظ التقدم",
+  "saveProgressBody": "عند النقر على الآية، يتم حفظها كعلامة توقف. في المرة القادمة التي تدخل فيها إلى هذا الجزء من خلال الختمة، سينتقل التطبيق تلقائياً إلى آخر آية قمت بحفظها لإكمال القراءة بكل سهولة.",
+  "fetchError": "عذراً، حدث خطأ أثناء جلب البيانات",
+  "findFriend": "البحث عن صديق",
+  "searchError": "حدث خطأ أثناء البحث",
+  "searchStart": "ابدأ بالبحث عن اسم صديقك",
+  "noPersonFound": "لا يوجد شخص بهذا الاسم",
+  "searchUsernameHint": "ابحث عن اسم المستخدم...",
+  "requestSent": "تم إرسال طلب الصداقة!",
+  "requestExists": "يوجد طلب صداقة بينكما بالفعل",
+  "sendRequestError": "حدث خطأ أثناء إرسال الطلب",
+  "requestCancelled": "تم إلغاء طلب الصداقة!",
+  "cancelRequestError": "حدث خطأ أثناء إلغاء الطلب",
+  "requestAccepted": "تم قبول طلب الصداقة بنجاح",
+  "acceptError": "حدث خطأ أثناء قبول الطلب",
+  "requestDeclined": "تم رفض طلب الصداقة",
+  "declineError": "حدث خطأ أثناء رفض الطلب",
+  "removeFriendError": "حدث خطأ أثناء إزالة الصديق",
+  "friendRequests": "طلبات الصداقة",
+  "loadRequestsError": "حدث خطأ أثناء تحميل الطلبات",
+  "decline": "رفض",
+  "accept": "قبول",
+  "noRequests": "لا توجد طلبات صداقة حالياً",
+  "friendsBadge": "أصدقاء",
+  "cancelRequest": "إلغاء الطلب",
+  "add": "إضافة",
+  "onlineNow": "متصل الآن",
+  "minutesAgo": "منذ {n} دقيقة",
+  "@minutesAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "منذ {n} ساعة",
+  "@hoursAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "منذ {n} أيام",
+  "@daysAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "lastSeen": "آخر ظهور: {when}",
+  "@lastSeen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "leaderboard": "لوحة المتصدرين",
+  "today": "اليوم",
+  "thisWeek": "الأسبوع",
+  "allTime": "الكل",
+  "global": "العالمي",
+  "friends": "الأصدقاء",
+  "me": "أنا",
+  "unfriendTitle": "إلغاء الصداقة",
+  "unfriendBody": "هل أنت متأكد من إزالة هذا الصديق؟",
+  "quranOrder": "ترتيب القرآن",
+  "juzOrder": "ترتيب الأجزاء",
+  "mostRead": "الأكثر قراءة",
+  "leastRead": "الأقل قراءة",
+  "friendsList": "قائمة الأصدقاء",
+  "activeKhatmas": "ختماتك النشطة",
+  "completedKhatmas": "ختماتك المكتملة",
+  "surahStats": "إحصائيات السور",
+  "juzStats": "إحصائيات الأجزاء",
+  "addFriend": "إضافة صديق",
+  "loadFriendsError": "خطأ في تحميل الأصدقاء",
+  "noFriends": "ليس لديك أصدقاء حاليا",
+  "loadKhatmasError": "خطأ في تحميل الختمات",
+  "noActiveKhatmas": "لا توجد ختمات نشطة",
+  "noStats": "لا توجد إحصائيات",
+  "timesCount": "{count} مرة",
+  "@timesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "account": "الحساب",
+  "active": "نشط",
+  "rankStudent": "طالب",
+  "rankReader": "قارئ",
+  "rankReciter": "مرتل",
+  "rankMujawwid": "مجود",
+  "rankHafiz": "حافظ",
+  "rankMaster": "متقن",
+  "rankFaqih": "فقيه",
+  "rankScholar": "عالم",
+  "rankImam": "إمام",
+  "yourFriends": "أصدقائك",
+  "yourKhatmas": "ختماتك",
+  "stats": "الإحصائيات",
+  "mustSignIn": "يجب تسجيل الدخول أولاً",
+  "khatmaNotFound": "الختمة غير موجودة",
+  "alreadyJoined": "أنت منضم بالفعل لهذه الختمة",
+  "khatmaFull": "عذراً، هذه الختمة مكتملة العدد",
+  "mustJoinFirst": "يجب الانضمام إلى الختمة أولاً",
+  "partUnavailable": "لم يعد هذا الجزء متاحاً",
+  "menu": "القائمة",
+  "khatmas": "الختمات",
+  "createNewKhatma": "إنشاء ختمة جديدة",
+  "createNewKhatmaDesc": "ابدأ رحلة تلاوة جديدة وشاركها مع من تحب",
+  "joinExisting": "الإنضمام لختمة موجودة",
+  "joinExistingDesc": "ابحث عن مجموعات تلاوة وانضم إليهم",
+  "searchPerson": "البحث عن شخص",
+  "searchPersonDesc": "تواصل مع أصدقائك وتابع تقدمهم",
+  "friendRequestsDesc": "شاهد من يريد أن يكون صديقك",
+  "tipTitle": "هل تريد نصيحة؟",
+  "tipBody": "قراءة صفحتين يومياً تعينك على ختم القرآن في عام واحد.",
+  "khatmaForRequired": "اكتب لمن هذه الختمة",
+  "khatmaCreated": "تم إنشاء الختمة بنجاح",
+  "createKhatmaError": "حدث خطأ أثناء إنشاء الختمة",
+  "createKhatmaTitle": "إنشاء ختمة",
+  "khatmaFor": "ختمة لفائدة",
+  "khatmaForHint": "مثال: جدي رحمه الله",
+  "createKhatmaButton": "إنشاء الختمة",
+  "maxParticipants": "العدد الأقصى للمشاركين",
+  "includingYou": "بمن فيهم أنت",
+  "splitKhatma": "تقسيم الختمة",
+  "splitKhatmaDesc": "كل مشارك يحجز ما سيقرؤه",
+  "bySurah": "بالسور",
+  "surahCount": "114 سورة",
+  "byJuz": "بالأجزاء",
+  "juzCount": "30 جزءاً",
+  "wrongCode": "الرمز غير صحيح أو الختمة غير موجودة",
+  "joined": "تم الانضمام بنجاح!",
+  "enter5Digits": "يرجى إدخال رمز مكون من 5 أرقام",
+  "joinKhatmaTitle": "الانضمام لختمة",
+  "byCode": "بالرمز",
+  "byName": "بالاسم",
+  "enterJoinCode": "أدخل رمز الانضمام",
+  "joinCodeHelp": "رمز من 5 أرقام تجده في صفحة الختمة لدى أي مشارك",
+  "joinNow": "انضم الآن",
+  "khatmaName": "اسم الختمة",
+  "noKhatmaByName": "لا توجد ختمة بهذا الاسم",
+  "khatmaForName": "ختمة لفائدة {name}",
+  "@khatmaForName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "khatmaSearchMeta": "{current}/{max} مشاركين · {unit} · {percent}%",
+  "@khatmaSearchMeta": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "full": "مكتملة العدد",
+  "join": "انضمام",
+  "loadKhatmasHomeError": "تعذّر تحميل الختمات، تحقق من اتصالك",
+  "noCompletedYet": "لا توجد ختمات مكتملة بعد",
+  "emptyActiveHint": "أنشئ ختمة جديدة أو انضم إلى ختمة أصدقائك برمزها",
+  "emptyCompletedHint": "ستظهر هنا الختمات التي يتم إتمامها",
+  "notifications": "الإشعارات",
+  "noNotifications": "لا توجد إشعارات حالياً",
+  "partAvailable": "متاحة للحجز",
+  "partReservedForYou": "محجوزة لك",
+  "partReservedBy": "محجوزة لـ {name}",
+  "@partReservedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "partFinishedByYou": "أتممتَ قراءتها",
+  "partReadBy": "قرأها {name}",
+  "@partReadBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reserve": "احجز",
+  "cancelReservation": "إلغاء الحجز",
+  "finishedButton": "أتممت",
+  "congratsFinished": "بارك الله فيك! أتممت قراءة {part}",
+  "@congratsFinished": {
+    "placeholders": {
+      "part": {
+        "type": "String"
+      }
+    }
+  },
+  "undoFinishTitle": "التراجع عن الإتمام",
+  "undoFinishBody": "ستعود \"{part}\" محجوزة لك، وتُخصم النقاط التي حصلت عليها عند إتمامها.",
+  "@undoFinishBody": {
+    "placeholders": {
+      "part": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteKhatmaTitle": "حذف الختمة",
+  "deleteKhatmaBody": "هل أنت متأكد من حذف هذه الختمة؟ سيتم حذفها لجميع المشاركين ولا يمكن التراجع.",
+  "khatmaDeleted": "تم حذف الختمة بنجاح",
+  "deleteKhatmaError": "حدث خطأ أثناء حذف الختمة",
+  "ayahCount": "{countText} آية",
+  "@ayahCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "countText": {
+        "type": "String"
+      }
+    }
+  },
+  "tabContent": "المحتوى",
+  "tabParticipants": "المشاركون",
+  "tabLog": "السجل",
+  "participantsOf": "{current} / {max} مشاركين",
+  "@participantsOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "participantsCount": "{count} مشاركين",
+  "@participantsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "codeCopied": "تم نسخ رمز الانضمام",
+  "joinCode": "رمز الانضمام",
+  "filterAll": "الكل",
+  "filterAvailable": "المتاحة",
+  "filterMine": "محجوزاتي",
+  "filterDone": "المكتملة",
+  "emptyAvailable": "لم يبق شيء متاح للحجز",
+  "emptyMine": "لم تحجز شيئاً بعد، اختر من المتاحة",
+  "emptyDone": "لم يكتمل شيء بعد",
+  "loadParticipantsError": "تعذّر تحميل المشاركين",
+  "creator": "المنشئ",
+  "finishedN": "أتمّ {done} {unit}",
+  "@finishedN": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "readingN": "يقرأ {count}",
+  "@readingN": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "logReserved": "حجز",
+  "logFinished": "أتم القراءة",
+  "logReleased": "ألغى الحجز",
+  "logUndone": "تراجع عن القراءة",
+  "noActivity": "لا توجد نشاطات مسجلة بعد",
+  "finishedVerb": "أتم",
+  "khatmaGoneBody": "يبدو أن هذه الختمة قد حُذفت أو لم تعد متوفرة.",
+  "activeTab": "النشطة",
+  "completedTab": "المكتملة",
+  "completedOn": "تاريخ الإكمال: ",
+  "startedOn": "تاريخ البدء: ",
+  "navHome": "الرئيسية",
+  "skip": "تخطي",
+  "startNow": "ابدأ الآن",
+  "onb1Title": "أنشئ ختمة جديدة",
+  "onb1Body": "ابدأ ختمتك بسهولة: اكتب لمن هي، وحدّد عدد المشاركين وطريقة التقسيم بالسور أو بالأجزاء.",
+  "onb2Title": "تابع تقدّم الختمة",
+  "onb2Body": "احجز ما ستقرؤه، وأتمّه بلمسة، وتابع نسبة الإنجاز ومن يقرأ ماذا حتى تكتمل الختمة.",
+  "onb3Title": "كل ختماتك في مكان واحد",
+  "onb3Body": "ختماتك النشطة والمكتملة أمامك، يتحدّث تقدّمها مباشرة كلما قرأ أحد المشاركين.",
+  "onb4Title": "أصدقاؤك معك",
+  "onb4Body": "تابع أصدقاءك ومستوياتهم، وتنافسوا في الخير في لوحة المتصدرين.",
+  "onb5Title": "ابحث عن الأشخاص",
+  "onb5Body": "ابحث عن أصدقائك بالاسم، وأرسل طلبات الصداقة أو اقبلها لتشاركوا الختمات معاً.",
+  "onb6Title": "انطلق، والله في عونك",
+  "onb6Body": "استعد لرحلتك مع القرآن. سواء بدأت ختمة أو شاركت في أخرى، أتمّ وردك بفضل الله."
+}

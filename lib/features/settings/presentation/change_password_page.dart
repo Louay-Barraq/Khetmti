@@ -6,6 +6,7 @@ import 'package:khetmti/features/settings/providers/settings_provider.dart';
 import 'package:khetmti/shared/widgets/app_text_field.dart';
 import 'package:khetmti/shared/widgets/form_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class ChangePasswordPage extends ConsumerStatefulWidget {
   const ChangePasswordPage({super.key});
@@ -21,16 +22,16 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
 
   Future<void> _save() async {
     if (_current.text.isEmpty || _new.text.isEmpty) {
-      showErrorToast('يرجى ملء جميع الحقول');
+      showErrorToast(tr.fillAllFields);
       return;
     }
     if (_new.text.length < minPasswordLength) {
       showErrorToast(
-          'يجب أن تتكون كلمة السر من $minPasswordLength أحرف على الأقل');
+          tr.passwordTooShort(minPasswordLength));
       return;
     }
     if (_current.text == _new.text) {
-      showErrorToast('كلمة السر الجديدة مطابقة للقديمة');
+      showErrorToast(tr.samePassword);
       return;
     }
 
@@ -45,12 +46,12 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
       if (mounted) setState(() => _loading = false);
       final wrongPassword = e.message.toLowerCase().contains('credential');
       showErrorToast(wrongPassword
-          ? 'كلمة السر الحالية غير صحيحة'
-          : 'حدث خطأ أثناء العملية');
+          ? tr.wrongCurrentPassword
+          : tr.genericError);
       if (wrongPassword) _current.clear();
     } catch (_) {
       if (mounted) setState(() => _loading = false);
-      showErrorToast('حدث خطأ أثناء العملية');
+      showErrorToast(tr.genericError);
     }
   }
 
@@ -64,15 +65,15 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
   @override
   Widget build(BuildContext context) {
     return FormPage(
-      title: 'تغيير كلمة السر',
-      actionLabel: 'تغيير كلمة السر',
+      title: tr.changePassword,
+      actionLabel: tr.changePassword,
       actionIcon: Icons.lock_reset_rounded,
       loading: _loading,
       onSubmit: _save,
       fields: [
         AppTextField(
           controller: _current,
-          label: 'كلمة السر الحالية',
+          label: tr.currentPassword,
           icon: Icons.lock_outline_rounded,
           isPassword: true,
           textInputAction: TextInputAction.next,
@@ -80,8 +81,8 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
         ),
         AppTextField(
           controller: _new,
-          label: 'كلمة السر الجديدة',
-          hint: '$minPasswordLength أحرف على الأقل',
+          label: tr.newPassword,
+          hint: tr.minChars(minPasswordLength),
           icon: Icons.lock_reset_rounded,
           isPassword: true,
           textInputAction: TextInputAction.done,

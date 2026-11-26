@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class FriendAdditionComponent extends StatelessWidget {
   final String username;
@@ -39,7 +40,6 @@ class FriendAdditionComponent extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
-          textDirection: TextDirection.rtl,
           children: [
             // Avatar
             Container(
@@ -65,12 +65,11 @@ class FriendAdditionComponent extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                textDirection: TextDirection.rtl,
                 children: [
                   Text(
                     username,
-                    style: const TextStyle(
-                      fontFamily: 'Amiri',
+                    style: TextStyle(
+                      fontFamily: AppTheme.font,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.textPrimary,
@@ -106,12 +105,12 @@ class FriendAdditionComponent extends StatelessWidget {
             color: const Color(0xFFE8F5E9),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Text(
-            'أصدقاء',
+          child: Text(
+            tr.friendsBadge,
             style: TextStyle(
               color: Colors.green,
               fontWeight: FontWeight.bold,
-              fontFamily: 'Amiri',
+              fontFamily: AppTheme.font,
               fontSize: 14,
             ),
           ),
@@ -125,7 +124,7 @@ class FriendAdditionComponent extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Amiri', fontSize: 12)),
+          child: Text(tr.cancelRequest, style: TextStyle(fontFamily: AppTheme.font, fontSize: 12)),
         );
       case 'received':
         return Row(
@@ -146,7 +145,7 @@ class FriendAdditionComponent extends StatelessWidget {
         return ElevatedButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.person_add_alt_1, size: 16),
-          label: const Text('إضافة', style: TextStyle(fontFamily: 'Amiri', fontSize: 14)),
+          label: Text(tr.add, style: TextStyle(fontFamily: AppTheme.font, fontSize: 14)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primaryColor,
             foregroundColor: Colors.white,

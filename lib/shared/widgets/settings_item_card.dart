@@ -35,7 +35,6 @@ class SettingsItemCard extends StatelessWidget {
           ),
         ),
         child: Row(
-          textDirection: TextDirection.rtl,
           children: [
             // Icon
             Container(
@@ -55,9 +54,8 @@ class SettingsItemCard extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                textDirection: TextDirection.rtl,
                 style: TextStyle(
-                  fontFamily: 'Amiri',
+                  fontFamily: AppTheme.font,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: textColor ?? AppTheme.textPrimary,
@@ -66,7 +64,7 @@ class SettingsItemCard extends StatelessWidget {
             ),
             // Chevron
             const Icon(
-              Icons.chevron_left,
+              Icons.chevron_right,
               color: Color(0xFFCBD5E1),
               size: 20,
             ),

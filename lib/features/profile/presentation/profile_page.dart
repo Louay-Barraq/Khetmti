@@ -12,6 +12,7 @@ import 'package:khetmti/shared/widgets/khetma_card.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/profile_state_switch.dart';
 import 'package:khetmti/shared/widgets/statistics_toggle.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -55,18 +56,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('إلغاء الصداقة', textAlign: TextAlign.right),
-        content: const Text('هل أنت متأكد من إزالة هذا الصديق؟',
-            textAlign: TextAlign.right),
+        title: Text(tr.unfriendTitle, textAlign: TextAlign.start),
+        content: Text(tr.unfriendBody, textAlign: TextAlign.start),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+              onPressed: () => Navigator.pop(ctx), child: Text(tr.cancel)),
           TextButton(
             onPressed: () {
               ref.read(socialRepositoryProvider).unfriend(friendUid);
               Navigator.pop(ctx);
             },
-            child: const Text('إزالة', style: TextStyle(color: Colors.red)),
+            child: Text(tr.remove, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -122,21 +122,24 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   child: Padding(
                     key: ValueKey(_statsView),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      textDirection: TextDirection.rtl,
-                      children: [
-                        _buildSortChip(
-                          _statsView == 'Surahs'
-                              ? 'ترتيب القرآن'
-                              : 'ترتيب الأجزاء',
-                          'Normal Order',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildSortChip('الأكثر قراءة', 'Frequency (Desc)'),
-                        const SizedBox(width: 8),
-                        _buildSortChip('الأقل قراءة', 'Frequency (Asc)'),
-                      ],
+                    // longer labels (French, Spanish) shrink instead of overflowing
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildSortChip(
+                            _statsView == 'Surahs'
+                                ? tr.quranOrder
+                                : tr.juzOrder,
+                            'Normal Order',
+                          ),
+                          const SizedBox(width: 8),
+                          _buildSortChip(tr.mostRead, 'Frequency (Desc)'),
+                          const SizedBox(width: 8),
+                          _buildSortChip(tr.leastRead, 'Frequency (Asc)'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -146,18 +149,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  textDirection: TextDirection.rtl,
                   children: [
                     Text(
                       _currentView == 'Your Friends'
-                          ? 'قائمة الأصدقاء'
+                          ? tr.friendsList
                           : _currentView == 'Your Khatms'
-                              ? 'ختماتك النشطة'
+                              ? tr.activeKhatmas
                               : _statsView == 'Surahs'
-                                  ? 'إحصائيات السور'
-                                  : 'إحصائيات الأجزاء',
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                                  ? tr.surahStats
+                                  : tr.juzStats,
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimary,
@@ -167,11 +169,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       TextButton.icon(
                         onPressed: () => context.push('/friends/search'),
                         icon: const Icon(Icons.person_add_outlined, size: 18),
-                        label: const Text('إضافة صديق'),
+                        label: Text(tr.addFriend),
                         style: TextButton.styleFrom(
                           foregroundColor: AppTheme.primaryColor,
-                          textStyle: const TextStyle(
-                              fontFamily: 'Amiri', fontWeight: FontWeight.bold),
+                          textStyle: TextStyle(
+                              fontFamily: AppTheme.font,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                   ],
@@ -221,16 +224,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return friendsAsync.when(
       loading: () => const Center(
           key: ValueKey('FriendsLoading'), child: CircularProgressIndicator()),
-      error: (_, __) => const Center(
-          key: ValueKey('FriendsError'), child: Text('خطأ في تحميل الأصدقاء')),
+      error: (_, __) => Center(
+          key: ValueKey('FriendsError'), child: Text(tr.loadFriendsError)),
       data: (friends) {
         if (friends.isEmpty) {
-          return const Padding(
+          return Padding(
             key: ValueKey('FriendsEmpty'),
             padding: EdgeInsets.only(top: 50),
-            child: Text('ليس لديك أصدقاء حاليا',
+            child: Text(tr.noFriends,
                 style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 18,
                     color: AppTheme.textSecondary)),
           );
@@ -266,16 +269,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return inProgressKhetmas.when(
       loading: () => const Center(
           key: ValueKey('KhatmsLoading'), child: CircularProgressIndicator()),
-      error: (_, __) => const Center(
-          key: ValueKey('KhatmsError'), child: Text('خطأ في تحميل الختمات')),
+      error: (_, __) => Center(
+          key: ValueKey('KhatmsError'), child: Text(tr.loadKhatmasError)),
       data: (khetmas) {
         if (khetmas.isEmpty) {
-          return const Padding(
+          return Padding(
             key: ValueKey('KhatmsEmpty'),
             padding: EdgeInsets.only(top: 50),
-            child: Text('لا توجد ختمات نشطة',
+            child: Text(tr.noActiveKhatmas,
                 style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 18,
                     color: AppTheme.textSecondary)),
           );
@@ -316,12 +319,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     }
 
     if (data.isEmpty) {
-      return const Padding(
+      return Padding(
         key: ValueKey('StatsEmpty'),
         padding: EdgeInsets.only(top: 50),
-        child: Text('لا توجد إحصائيات',
+        child: Text(tr.noStats,
             style: TextStyle(
-                fontFamily: 'Amiri',
+                fontFamily: AppTheme.font,
                 fontSize: 18,
                 color: AppTheme.textSecondary)),
       );
@@ -343,7 +346,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ? sourasWithAyahs.keys.toList().indexOf(item['name']) + 1
                   : juzusList.indexOf(item['name']) + 1;
               final isSura = _statsView == 'Surahs';
-              final title = isSura ? 'سورة ${item['name']}' : item['name'];
+              final title = isSura
+                  ? tr.surahName(displaySurah(item['name']))
+                  : displayJuz(item['name']);
               context.push('/quran/${isSura ? 'surah' : 'juz'}/$id'
                   '?title=${Uri.encodeComponent(title)}');
             },
@@ -362,7 +367,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 ],
               ),
               child: Row(
-                textDirection: TextDirection.rtl,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -376,14 +380,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   const SizedBox(width: 15),
                   Expanded(
                     child: Text(
-                      item['name'],
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                      displayPart(item['name']),
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimary,
                       ),
-                      textDirection: TextDirection.rtl,
                     ),
                   ),
                   Container(
@@ -394,10 +397,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Text(
-                      "${item['count']} مرة",
+                      tr.timesCount((item['count'] as num).toInt()),
                       textDirection: TextDirection.ltr,
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryColor,
@@ -455,14 +458,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            textDirection: TextDirection.rtl,
             children: [
               Row(
-                textDirection: TextDirection.rtl,
                 children: [
                   if (Navigator.of(context).canPop())
                     KhetmtiHeader.buildHeaderIcon(
-                      Icons.arrow_forward_ios,
+                      Icons.arrow_back_ios,
                       onTap: () => context.pop(),
                     ),
                   if (Navigator.of(context).canPop()) const SizedBox(width: 8),
@@ -472,10 +473,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ),
                 ],
               ),
-              const Text(
-                'الحساب',
+              Text(
+                tr.account,
                 style: TextStyle(
-                  fontFamily: 'Amiri',
+                  fontFamily: AppTheme.font,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -489,17 +490,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
           const SizedBox(height: 30),
           Row(
-            textDirection: TextDirection.rtl,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      userData?.username ?? 'جاري التحميل...',
+                      userData?.username ?? tr.loading,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimary,
@@ -517,9 +517,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            "المستوى: ${userData?.level ?? 1}",
-                            style: const TextStyle(
-                              fontFamily: 'Amiri',
+                            tr.levelColon('${userData?.level ?? 1}'),
+                            style: TextStyle(
+                              fontFamily: AppTheme.font,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF065F46),
                               fontSize: 14,
@@ -538,8 +538,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           ),
                           child: Text(
                             _getRankName(userData?.level ?? 1),
-                            style: const TextStyle(
-                              fontFamily: 'Amiri',
+                            style: TextStyle(
+                              fontFamily: AppTheme.font,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               fontSize: 14,
@@ -576,6 +576,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               const SizedBox(height: 4),
                               Text(
                                 "${totalXP - minXP} / ${maxXP - minXP} XP",
+                                // numbers read left to right in every language ("470 / 2986", not reversed)
+                                textDirection: TextDirection.ltr,
                                 style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
@@ -630,8 +632,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: const Text(
-                        'نشط',
+                      child: Text(
+                        tr.active,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 9,
@@ -678,7 +680,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         child: Text(
           label,
           style: TextStyle(
-            fontFamily: 'Amiri',
+            fontFamily: AppTheme.font,
             fontSize: 14,
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.white : AppTheme.secondaryColor,
@@ -689,14 +691,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   String _getRankName(int level) {
-    if (level <= 5) return "طالب";
-    if (level <= 10) return "قارئ";
-    if (level <= 15) return "مرتل";
-    if (level <= 25) return "مجود";
-    if (level <= 40) return "حافظ";
-    if (level <= 60) return "متقن";
-    if (level <= 80) return "فقيه";
-    if (level <= 100) return "عالم";
-    return "إمام";
+    if (level <= 5) return tr.rankStudent;
+    if (level <= 10) return tr.rankReader;
+    if (level <= 15) return tr.rankReciter;
+    if (level <= 25) return tr.rankMujawwid;
+    if (level <= 40) return tr.rankHafiz;
+    if (level <= 60) return tr.rankMaster;
+    if (level <= 80) return tr.rankFaqih;
+    if (level <= 100) return tr.rankScholar;
+    return tr.rankImam;
   }
 }

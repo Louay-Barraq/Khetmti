@@ -1,6 +1,8 @@
 // Quran data shared across the app: the 114 suras with their ayah counts
 // and the 30 juz.
 
+import 'package:khetmti/l10n/l10n.dart';
+
 /// Map of Surah names (Arabic) to their Ayah counts.
 const Map<String, int> sourasWithAyahs = {
   "الفاتحة": 7,
@@ -143,3 +145,36 @@ Map<String, Map<String, dynamic>> getEmptyPartsMap(List<String> items) {
 
 /// Total number of Ayahs in the Quran.
 const int totalAyahs = 6236;
+
+/// Surah names in Latin letters, in Quran order (same order as [sourasWithAyahs]).
+const List<String> surahNamesLatin = [
+  'Al-Fatiha', 'Al-Baqarah', "Al 'Imran", "An-Nisa'", "Al-Ma'idah", "Al-An'am", "Al-A'raf", 'Al-Anfal', 'At-Tawbah', 'Yunus',
+  'Hud', 'Yusuf', "Ar-Ra'd", 'Ibrahim', 'Al-Hijr', 'An-Nahl', "Al-Isra'", 'Al-Kahf', 'Maryam', 'Ta-Ha',
+  "Al-Anbiya'", 'Al-Hajj', "Al-Mu'minun", 'An-Nur', 'Al-Furqan', "Ash-Shu'ara'", 'An-Naml', 'Al-Qasas', "Al-'Ankabut", 'Ar-Rum',
+  'Luqman', 'As-Sajdah', 'Al-Ahzab', "Saba'", 'Fatir', 'Ya-Sin', 'As-Saffat', 'Sad', 'Az-Zumar', 'Ghafir',
+  'Fussilat', 'Ash-Shura', 'Az-Zukhruf', 'Ad-Dukhan', 'Al-Jathiyah', 'Al-Ahqaf', 'Muhammad', 'Al-Fath', 'Al-Hujurat', 'Qaf',
+  'Adh-Dhariyat', 'At-Tur', 'An-Najm', 'Al-Qamar', 'Ar-Rahman', "Al-Waqi'ah", 'Al-Hadid', 'Al-Mujadilah', 'Al-Hashr', 'Al-Mumtahanah',
+  'As-Saff', "Al-Jumu'ah", 'Al-Munafiqun', 'At-Taghabun', 'At-Talaq', 'At-Tahrim', 'Al-Mulk', 'Al-Qalam', 'Al-Haqqah', "Al-Ma'arij",
+  'Nuh', 'Al-Jinn', 'Al-Muzzammil', 'Al-Muddaththir', 'Al-Qiyamah', 'Al-Insan', 'Al-Mursalat', "An-Naba'", "An-Nazi'at", "'Abasa",
+  'At-Takwir', 'Al-Infitar', 'Al-Mutaffifin', 'Al-Inshiqaq', 'Al-Buruj', 'At-Tariq', "Al-A'la", 'Al-Ghashiyah', 'Al-Fajr', 'Al-Balad',
+  'Ash-Shams', 'Al-Layl', 'Ad-Duha', 'Ash-Sharh', 'At-Tin', "Al-'Alaq", 'Al-Qadr', 'Al-Bayyinah', 'Az-Zalzalah', "Al-'Adiyat",
+  "Al-Qari'ah", 'At-Takathur', "Al-'Asr", 'Al-Humazah', 'Al-Fil', 'Quraysh', "Al-Ma'un", 'Al-Kawthar', 'Al-Kafirun', 'An-Nasr',
+  'Al-Masad', 'Al-Ikhlas', 'Al-Falaq', 'An-Nas',
+];
+
+/// A surah's name in the app language (Arabic keeps the Arabic name).
+String displaySurah(String arabicName) {
+  if (L10n.isArabic) return arabicName;
+  final i = sourasWithAyahs.keys.toList().indexOf(arabicName);
+  return i < 0 ? arabicName : surahNamesLatin[i];
+}
+
+/// A juz label in the app language ("الجزء الأول" → "Juz 1").
+String displayJuz(String arabicLabel) {
+  if (L10n.isArabic) return arabicLabel;
+  final i = juzusList.indexOf(arabicLabel);
+  return i < 0 ? arabicLabel : tr.juzN('${i + 1}');
+}
+
+/// A khatma part (stored under its Arabic surah name or juz label) in the app language.
+String displayPart(String key) => juzusList.contains(key) ? displayJuz(key) : displaySurah(key);

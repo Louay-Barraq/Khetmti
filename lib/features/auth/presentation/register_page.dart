@@ -6,6 +6,7 @@ import 'package:khetmti/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/shared/widgets/app_text_field.dart';
 import 'package:khetmti/shared/widgets/primary_button.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -26,16 +27,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     if (username.length < minUsernameLength) {
       showErrorToast(
-          'يجب أن يتكون اسم المستخدم من $minUsernameLength أحرف على الأقل');
+          tr.usernameTooShort(minUsernameLength));
       return;
     }
     if (!isValidEmail(email)) {
-      showErrorToast('عنوان البريد الإلكتروني غير صالح');
+      showErrorToast(tr.invalidEmail);
       return;
     }
     if (_password.text.length < minPasswordLength) {
       showErrorToast(
-          'يجب أن تتكون كلمة السر من $minPasswordLength أحرف على الأقل');
+          tr.passwordTooShort(minPasswordLength));
       return;
     }
 
@@ -69,12 +70,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: 'حساب جديد',
-      subtitle: 'أنشئ حسابك وشارك أصدقاءك في ختم القرآن',
+      title: tr.registerTitle,
+      subtitle: tr.registerSubtitle,
       onBack: context.canPop() ? _toLogin : null,
       footer: AuthFooterLink(
-        question: 'لديك حساب؟',
-        action: 'سجّل الدخول',
+        question: tr.haveAccount,
+        action: tr.signInLink,
         onTap: _toLogin,
       ),
       children: [
@@ -84,8 +85,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             children: [
               AppTextField(
                 controller: _username,
-                label: 'الاسم واللقب',
-                hint: 'بالعربية، كما سيراه أصدقاؤك',
+                label: tr.fullName,
+                hint: tr.fullNameHint,
                 icon: Icons.person_outline_rounded,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.name],
@@ -93,7 +94,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               const SizedBox(height: 18),
               AppTextField(
                 controller: _email,
-                label: 'البريد الإلكتروني',
+                label: tr.email,
                 icon: Icons.alternate_email_rounded,
                 latin: true,
                 keyboardType: TextInputType.emailAddress,
@@ -103,8 +104,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               const SizedBox(height: 18),
               AppTextField(
                 controller: _password,
-                label: 'كلمة السر',
-                hint: '$minPasswordLength أحرف على الأقل',
+                label: tr.password,
+                hint: tr.minChars(minPasswordLength),
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
                 textInputAction: TextInputAction.done,
@@ -116,7 +117,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         ),
         const SizedBox(height: 26),
         PrimaryButton(
-          label: 'إنشاء الحساب',
+          label: tr.createAccount,
           icon: Icons.person_add_alt_1_rounded,
           loading: _loading,
           onPressed: _register,

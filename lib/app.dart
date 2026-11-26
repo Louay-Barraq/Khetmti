@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/l10n/l10n.dart';
 import 'package:khetmti/router/app_router.dart';
 
 class KhetmtiApp extends ConsumerWidget {
@@ -10,10 +11,14 @@ class KhetmtiApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Khetmti',
+      locale: locale,
+      supportedLocales: L10n.supported,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: AppTheme.theme,
       scaffoldMessengerKey: scaffoldMessengerKey,
       routerConfig: router,
@@ -40,8 +45,10 @@ class ResponsiveFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
+    final base = media.textScaler.clamp(maxScaleFactor: 1.3);
     final capped = media.copyWith(
-      textScaler: media.textScaler.clamp(maxScaleFactor: 1.3),
+      // Poppins runs larger than Amiri at the same size: Latin languages are set 10% smaller.
+      textScaler: L10n.isArabic ? base : _ScaledText(base, 0.9),
     );
     final width = media.size.width;
 
@@ -65,4 +72,23 @@ class ResponsiveFrame extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ScaledText extends TextScaler {
+  final TextScaler base;
+  final double factor;
+  const _ScaledText(this.base, this.factor);
+
+  @override
+  double scale(double fontSize) => base.scale(fontSize) * factor;
+
+  @override
+  // ignore: deprecated_member_use
+  double get textScaleFactor => base.textScaleFactor * factor;
+
+  @override
+  bool operator ==(Object other) => other is _ScaledText && other.base == base && other.factor == factor;
+
+  @override
+  int get hashCode => Object.hash(base, factor);
 }

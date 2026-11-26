@@ -38,7 +38,6 @@ class PossibleActionComponent extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
-              textDirection: TextDirection.rtl,
               children: [
                 // Icon
                 Container(
@@ -54,12 +53,11 @@ class PossibleActionComponent extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    textDirection: TextDirection.rtl,
                     children: [
                       Text(
                         actionText,
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
+                        style: TextStyle(
+                          fontFamily: AppTheme.font,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
@@ -67,8 +65,8 @@ class PossibleActionComponent extends StatelessWidget {
                       ),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
+                        style: TextStyle(
+                          fontFamily: AppTheme.font,
                           fontSize: 12,
                           color: AppTheme.textSecondary,
                         ),
@@ -78,7 +76,7 @@ class PossibleActionComponent extends StatelessWidget {
                 ),
                 // Chevron
                 const Icon(
-                  Icons.chevron_left,
+                  Icons.chevron_right,
                   color: Color(0xFFCBD5E1),
                 ),
               ],

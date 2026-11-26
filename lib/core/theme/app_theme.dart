@@ -1,7 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class AppTheme {
+  /// UI font: Amiri for Arabic, Poppins for English, French and Spanish.
+  /// The Quran text itself always uses Amiri.
+  static String get font => L10n.isArabic ? 'Amiri' : 'Poppins';
+
   static const Color primaryColor = Color(0xFF00C853);
   static const Color secondaryColor = Color(0xFF101D2D);
   static const Color tertiaryColor = Color(0xFF9DB2CE);
@@ -51,7 +56,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      fontFamily: 'Amiri',
+      fontFamily: AppTheme.font,
       scaffoldBackgroundColor: backgroundColor,
       splashFactory: InkSparkle.splashFactory,
       progressIndicatorTheme: const ProgressIndicatorThemeData(color: primaryColor),
@@ -64,14 +69,14 @@ class AppTheme {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        titleTextStyle: const TextStyle(
-          fontFamily: 'Amiri',
+        titleTextStyle: TextStyle(
+          fontFamily: AppTheme.font,
           fontSize: 22,
           fontWeight: FontWeight.bold,
           color: textPrimary,
         ),
-        contentTextStyle: const TextStyle(
-          fontFamily: 'Amiri',
+        contentTextStyle: TextStyle(
+          fontFamily: AppTheme.font,
           fontSize: 17,
           height: 1.5,
           color: textSecondary,
@@ -79,8 +84,8 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          textStyle: const TextStyle(
-            fontFamily: 'Amiri',
+          textStyle: TextStyle(
+            fontFamily: AppTheme.font,
             fontSize: 17,
             fontWeight: FontWeight.bold,
           ),

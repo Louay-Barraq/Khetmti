@@ -7,6 +7,7 @@ import 'package:khetmti/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/shared/widgets/app_text_field.dart';
 import 'package:khetmti/shared/widgets/primary_button.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -23,11 +24,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _login() async {
     final email = _email.text.trim();
     if (!isValidEmail(email)) {
-      showErrorToast('عنوان البريد الإلكتروني غير صالح');
+      showErrorToast(tr.invalidEmail);
       return;
     }
     if (_password.text.isEmpty) {
-      showErrorToast('يرجى إدخال كلمة السر');
+      showErrorToast(tr.enterPassword);
       return;
     }
 
@@ -59,11 +60,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: 'أهلاً بعودتك',
-      subtitle: 'سجّل دخولك لمتابعة ختماتك',
+      title: tr.loginTitle,
+      subtitle: tr.loginSubtitle,
       footer: AuthFooterLink(
-        question: 'ليس لديك حساب؟',
-        action: 'أنشئ حساباً جديداً',
+        question: tr.noAccount,
+        action: tr.createNewAccount,
         onTap: () => context.push('/register'),
       ),
       children: [
@@ -73,7 +74,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             children: [
               AppTextField(
                 controller: _email,
-                label: 'البريد الإلكتروني',
+                label: tr.email,
                 icon: Icons.alternate_email_rounded,
                 latin: true,
                 keyboardType: TextInputType.emailAddress,
@@ -83,7 +84,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 18),
               AppTextField(
                 controller: _password,
-                label: 'كلمة السر',
+                label: tr.password,
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
                 textInputAction: TextInputAction.done,
@@ -94,18 +95,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
         ),
         Align(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerEnd,
           child: TextButton(
             onPressed: _forgotPassword,
-            child: const Text(
-              'نسيت كلمة السر؟',
+            child: Text(
+              tr.forgotPassword,
               style: TextStyle(color: AppTheme.primaryColor),
             ),
           ),
         ),
         const SizedBox(height: 8),
         PrimaryButton(
-          label: 'تسجيل الدخول',
+          label: tr.signIn,
           icon: Icons.login_rounded,
           loading: _loading,
           onPressed: _login,
@@ -132,7 +133,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
   Future<void> _send() async {
     final email = _email.text.trim();
     if (!isValidEmail(email)) {
-      showErrorToast('عنوان البريد الإلكتروني غير صالح');
+      showErrorToast(tr.invalidEmail);
       return;
     }
     setState(() => _loading = true);
@@ -140,10 +141,10 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
       await ref.read(authRepositoryProvider).resetPassword(email);
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessToast('أرسلنا رابط إعادة تعيين كلمة السر إلى بريدك');
+      showSuccessToast(tr.resetLinkSent);
     } catch (_) {
       if (mounted) setState(() => _loading = false);
-      showErrorToast('تعذّر إرسال الرابط، حاول مرة أخرى بعد قليل');
+      showErrorToast(tr.resetLinkFailed);
     }
   }
 
@@ -180,23 +181,22 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'استعادة كلمة السر',
+              Text(
+                tr.recoverPassword,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontFamily: 'Amiri',
+                  fontFamily: AppTheme.font,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'سنرسل إلى بريدك رابطاً يفتح التطبيق لتختار كلمة سر جديدة.',
+              Text(
+                tr.recoverPasswordBody,
                 textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
                 style: TextStyle(
-                  fontFamily: 'Amiri',
+                  fontFamily: AppTheme.font,
                   fontSize: 16,
                   color: AppTheme.textSecondary,
                 ),
@@ -204,7 +204,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
               const SizedBox(height: 20),
               AppTextField(
                 controller: _email,
-                label: 'البريد الإلكتروني',
+                label: tr.email,
                 icon: Icons.alternate_email_rounded,
                 latin: true,
                 keyboardType: TextInputType.emailAddress,
@@ -213,7 +213,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
               ),
               const SizedBox(height: 22),
               PrimaryButton(
-                label: 'إرسال الرابط',
+                label: tr.sendLink,
                 icon: Icons.send_rounded,
                 loading: _loading,
                 onPressed: _send,

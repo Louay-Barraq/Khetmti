@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:khetmti/app.dart';
 import 'package:khetmti/core/config/env.dart';
 import 'package:khetmti/features/quran/data/quran_api_service.dart';
+import 'package:khetmti/l10n/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -13,6 +14,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  await L10n.load();
   Env.ensureConfigured();
   await Supabase.initialize(
     url: Env.supabaseUrl,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 /// The app's text field: a label above a white rounded box that turns green
 /// when focused. Password fields get a show/hide button.
@@ -63,12 +64,11 @@ class _AppTextFieldState extends State<AppTextField> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.only(right: 6, bottom: 8),
+          padding: const EdgeInsetsDirectional.only(start: 6, bottom: 8),
           child: Text(
             widget.label,
-            textDirection: TextDirection.rtl,
             style: TextStyle(
-              fontFamily: 'Amiri',
+              fontFamily: AppTheme.font,
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: focused ? AppTheme.primaryColor : AppTheme.textPrimary,
@@ -106,19 +106,18 @@ class _AppTextFieldState extends State<AppTextField> {
             inputFormatters: widget.inputFormatters,
             autocorrect: !latin,
             enableSuggestions: !latin,
-            textDirection: latin ? TextDirection.ltr : TextDirection.rtl,
-            textAlign: latin ? TextAlign.left : TextAlign.right,
+            textDirection: latin ? TextDirection.ltr : null,
+            textAlign: latin ? TextAlign.left : TextAlign.start,
             style: TextStyle(
-              fontFamily: latin ? 'Roboto' : 'Amiri',
+              fontFamily: latin ? 'Roboto' : AppTheme.font,
               fontSize: latin ? 16 : 18,
               color: AppTheme.textPrimary,
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: widget.hint,
-              hintTextDirection: TextDirection.rtl,
-              hintStyle: const TextStyle(
-                fontFamily: 'Amiri',
+              hintStyle: TextStyle(
+                fontFamily: AppTheme.font,
                 fontSize: 16,
                 color: AppTheme.textMuted,
               ),
@@ -135,7 +134,7 @@ class _AppTextFieldState extends State<AppTextField> {
                     ),
               prefixIcon: widget.isPassword
                   ? IconButton(
-                      tooltip: _obscured ? 'إظهار كلمة السر' : 'إخفاء كلمة السر',
+                      tooltip: _obscured ? tr.showPassword : tr.hidePassword,
                       onPressed: () => setState(() => _obscured = !_obscured),
                       icon: AnimatedSwitcher(
                         duration: AppTheme.fast,

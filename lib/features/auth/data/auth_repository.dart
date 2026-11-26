@@ -2,6 +2,7 @@ import 'package:khetmti/core/cache/local_cache.dart';
 import 'package:khetmti/core/config/deep_links.dart';
 import 'package:khetmti/core/utils/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class AuthRepository {
   final SupabaseClient _supabase;
@@ -34,7 +35,7 @@ class AuthRepository {
 
       // The database creates the profile row (trigger on_auth_user_created).
 
-      showSuccessToast('تم إنشاء الحساب بنجاح!');
+      showSuccessToast(tr.accountCreated);
       return response;
     } on AuthException catch (e) {
       _handleAuthException(e);
@@ -52,7 +53,7 @@ class AuthRepository {
         password: password,
       );
       await updateLastSeen();
-      showSuccessToast('تم تسجيل الدخول بنجاح!');
+      showSuccessToast(tr.signedIn);
       return response;
     } on AuthException catch (e) {
       _handleAuthException(e);
@@ -64,9 +65,9 @@ class AuthRepository {
     try {
       await _supabase.auth.signOut();
       await _cache.clear();
-      showSuccessToast('تم تسجيل الخروج بنجاح!');
+      showSuccessToast(tr.signedOut);
     } catch (_) {
-      showErrorToast('حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى.');
+      showErrorToast(tr.signOutError);
     }
   }
 
@@ -102,9 +103,9 @@ class AuthRepository {
 
   void _handleAuthException(AuthException e) {
     final message = switch (e.message) {
-      'Invalid login credentials' => 'البريد الإلكتروني أو كلمة السر غير صحيحة.',
+      'Invalid login credentials' => tr.wrongCredentials,
       'User already registered' =>
-        'عنوان البريد الإلكتروني قيد الاستخدام بالفعل بواسطة حساب آخر.',
+        tr.emailInUse,
       _ => e.message,
     };
     showErrorToast(message);

@@ -6,6 +6,7 @@ import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/features/profile/providers/profile_provider.dart';
 import 'package:khetmti/features/social/providers/social_provider.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class RankingsPage extends ConsumerStatefulWidget {
   const RankingsPage({super.key});
@@ -28,7 +29,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
       body: Column(
         children: [
           KhetmtiHeader(
-            title: 'لوحة المتصدرين',
+            title: tr.leaderboard,
             showProfile: false,
             showBackButton: true,
             onBackTap: () => context.pop(),
@@ -44,9 +45,9 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
                     ),
                     child: Row(
                       children: [
-                        _buildTab('اليوم', 0, isTimeframe: true),
-                        _buildTab('الأسبوع', 1, isTimeframe: true),
-                        _buildTab('الكل', 2, isTimeframe: true),
+                        _buildTab(tr.today, 0, isTimeframe: true),
+                        _buildTab(tr.thisWeek, 1, isTimeframe: true),
+                        _buildTab(tr.allTime, 2, isTimeframe: true),
                       ],
                     ),
                   ),
@@ -62,9 +63,9 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _buildTab('العالمي', 0, isTimeframe: false),
+                        _buildTab(tr.global, 0, isTimeframe: false),
                         const SizedBox(width: 8),
-                        _buildTab('الأصدقاء', 1, isTimeframe: false),
+                        _buildTab(tr.friends, 1, isTimeframe: false),
                       ],
                     ),
                   ),
@@ -76,12 +77,12 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
             child: rankingsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, __) =>
-                  const Center(child: Text('خطأ في تحميل البيانات')),
+                  Center(child: Text(tr.loadDataError)),
               data: (users) {
                 if (users.isEmpty) {
-                  return const Center(
-                      child: Text('لا توجد بيانات',
-                          style: TextStyle(fontFamily: 'Amiri')));
+                  return Center(
+                      child: Text(tr.noData,
+                          style: TextStyle(fontFamily: AppTheme.font)));
                 }
                 return RefreshIndicator(
                   onRefresh: () => refreshPeople(ref),
@@ -160,7 +161,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontFamily: 'Amiri',
+            fontFamily: AppTheme.font,
             fontSize: 15,
             fontWeight: FontWeight.bold,
             color: isSelected
@@ -203,7 +204,6 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
         ],
       ),
       child: Row(
-        textDirection: TextDirection.rtl,
         children: [
           Container(
             width: 36,
@@ -239,12 +239,11 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  textDirection: TextDirection.rtl,
                   children: [
                     Text(
                       name,
                       style: TextStyle(
-                        fontFamily: 'Amiri',
+                        fontFamily: AppTheme.font,
                         fontSize: 16,
                         fontWeight: isMe ? FontWeight.bold : FontWeight.w600,
                         color: AppTheme.textPrimary,
@@ -259,8 +258,8 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
                           color: AppTheme.primaryColor,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
-                          'أنا',
+                        child: Text(
+                          tr.me,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -275,7 +274,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage> {
             ),
           ),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '$xp',

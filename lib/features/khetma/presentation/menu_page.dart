@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/possible_action_component.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
@@ -14,7 +15,7 @@ class MenuPage extends StatelessWidget {
       body: Column(
         children: [
           KhetmtiHeader(
-            title: 'القائمة',
+            title: tr.menu,
             showProfile: true,
             showNotification: true,
             onNotificationTap: () => context.push('/notifications'),
@@ -25,15 +26,15 @@ class MenuPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Column(
                 children: [
-                  const Padding(
+                  Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerStart,
                       child: Text(
-                        'الختمات',
+                        tr.khatmas,
                         style: TextStyle(
-                          fontFamily: 'Amiri',
+                          fontFamily: AppTheme.font,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
@@ -42,27 +43,27 @@ class MenuPage extends StatelessWidget {
                     ),
                   ),
                   PossibleActionComponent(
-                    actionText: "إنشاء ختمة جديدة",
-                    subtitle: "ابدأ رحلة تلاوة جديدة وشاركها مع من تحب",
+                    actionText: tr.createNewKhatma,
+                    subtitle: tr.createNewKhatmaDesc,
                     icon: Icons.add_circle_outline,
                     onTap: () => context.push('/khetma/create'),
                   ),
                   PossibleActionComponent(
-                    actionText: "الإنضمام لختمة موجودة",
-                    subtitle: "ابحث عن مجموعات تلاوة وانضم إليهم",
+                    actionText: tr.joinExisting,
+                    subtitle: tr.joinExistingDesc,
                     icon: Icons.search,
                     onTap: () => context.push('/khetma/join'),
                   ),
                   const SizedBox(height: 20),
-                  const Padding(
+                  Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerStart,
                       child: Text(
-                        'الأصدقاء',
+                        tr.friends,
                         style: TextStyle(
-                          fontFamily: 'Amiri',
+                          fontFamily: AppTheme.font,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
@@ -71,14 +72,14 @@ class MenuPage extends StatelessWidget {
                     ),
                   ),
                   PossibleActionComponent(
-                    actionText: "البحث عن شخص",
-                    subtitle: "تواصل مع أصدقائك وتابع تقدمهم",
+                    actionText: tr.searchPerson,
+                    subtitle: tr.searchPersonDesc,
                     icon: Icons.person_add_outlined,
                     onTap: () => context.push('/friends/search'),
                   ),
                   PossibleActionComponent(
-                    actionText: "طلبات الصداقة",
-                    subtitle: "شاهد من يريد أن يكون صديقك",
+                    actionText: tr.friendRequests,
+                    subtitle: tr.friendRequestsDesc,
                     icon: Icons.people_outline,
                     onTap: () => context.push('/friends/requests'),
                   ),
@@ -115,21 +116,21 @@ class MenuPage extends StatelessWidget {
                 color: Colors.white, size: 30),
           ),
           const SizedBox(height: 15),
-          const Text(
-            'هل تريد نصيحة؟',
+          Text(
+            tr.tipTitle,
             style: TextStyle(
-              fontFamily: 'Amiri',
+              fontFamily: AppTheme.font,
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppTheme.textPrimary,
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'قراءة صفحتين يومياً تعينك على ختم القرآن في عام واحد.',
+          Text(
+            tr.tipBody,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontFamily: 'Amiri',
+              fontFamily: AppTheme.font,
               fontSize: 16,
               color: AppTheme.textSecondary,
             ),

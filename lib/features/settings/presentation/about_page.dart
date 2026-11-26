@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -21,7 +22,7 @@ class AboutPage extends StatelessWidget {
       body: Column(
         children: [
           KhetmtiHeader(
-            title: 'عن التطبيق',
+            title: tr.aboutTitle,
             showBackButton: true,
             showProfile: false,
             onBackTap: () => context.pop(),
@@ -31,24 +32,23 @@ class AboutPage extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionCard(
-                    title: "ختمتي (Khetmti)",
+                    title: tr.aboutAppName,
                     icon: Icons.menu_book,
                     content:
-                        "تطبيق ختمتي أُنشئ بهدف تسهيل وتشجيع قراءة القرآن الكريم وتنظيم الختمات الجماعية والفردية. نسأل الله أن يتقبل منا ومنكم صالح الأعمال وأن يجعله صدقة جارية.",
+                        tr.aboutBody,
                   ),
                   const SizedBox(height: 30),
-                  const Text(
-                    "المطور",
+                  Text(
+                    tr.developer,
                     style: TextStyle(
-                      fontFamily: 'Amiri',
+                      fontFamily: AppTheme.font,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.textPrimary,
                     ),
-                    textDirection: TextDirection.rtl,
                   ),
                   const SizedBox(height: 15),
                   Container(
@@ -74,10 +74,10 @@ class AboutPage extends StatelessWidget {
                               size: 50, color: AppTheme.primaryColor),
                         ),
                         const SizedBox(height: 20),
-                        const Text(
-                          "لؤي البراق",
+                        Text(
+                          tr.developerName,
                           style: TextStyle(
-                            fontFamily: 'Amiri',
+                            fontFamily: AppTheme.font,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: AppTheme.textPrimary,
@@ -92,10 +92,10 @@ class AboutPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          "مطور تطبيقات محمول",
+                        Text(
+                          tr.developerRole,
                           style: TextStyle(
-                            fontFamily: 'Amiri',
+                            fontFamily: AppTheme.font,
                             fontSize: 18,
                             color: AppTheme.textSecondary,
                           ),
@@ -160,10 +160,9 @@ class AboutPage extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            textDirection: TextDirection.rtl,
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
@@ -176,8 +175,8 @@ class AboutPage extends StatelessWidget {
               const SizedBox(width: 15),
               Text(
                 title,
-                style: const TextStyle(
-                  fontFamily: 'Amiri',
+                style: TextStyle(
+                  fontFamily: AppTheme.font,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,
@@ -188,9 +187,8 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             content,
-            textDirection: TextDirection.rtl,
-            style: const TextStyle(
-              fontFamily: 'Amiri',
+            style: TextStyle(
+              fontFamily: AppTheme.font,
               fontSize: 18,
               height: 1.6,
               color: AppTheme.textSecondary,

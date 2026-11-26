@@ -6,6 +6,7 @@ import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/features/settings/providers/settings_provider.dart';
 import 'package:khetmti/shared/widgets/app_text_field.dart';
 import 'package:khetmti/shared/widgets/form_page.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class ChangeUsernamePage extends ConsumerStatefulWidget {
   const ChangeUsernamePage({super.key});
@@ -25,11 +26,11 @@ class _ChangeUsernamePageState extends ConsumerState<ChangeUsernamePage> {
     final current = ref.read(currentUserProvider).valueOrNull?.username;
 
     if (name.length < minUsernameLength) {
-      showErrorToast('يجب أن يتكون الاسم من $minUsernameLength أحرف على الأقل');
+      showErrorToast(tr.nameTooShort(minUsernameLength));
       return;
     }
     if (name == current) {
-      showErrorToast('هذا هو اسمك الحالي');
+      showErrorToast(tr.sameUsername);
       return;
     }
 
@@ -39,7 +40,7 @@ class _ChangeUsernamePageState extends ConsumerState<ChangeUsernamePage> {
       if (mounted) context.pop();
     } catch (_) {
       if (mounted) setState(() => _loading = false);
-      showErrorToast('حدث خطأ أثناء العملية');
+      showErrorToast(tr.genericError);
     }
   }
 
@@ -52,16 +53,16 @@ class _ChangeUsernamePageState extends ConsumerState<ChangeUsernamePage> {
   @override
   Widget build(BuildContext context) {
     return FormPage(
-      title: 'تغيير الاسم',
-      description: 'هذا الاسم يراه أصدقاؤك والمشاركون في ختماتك.',
-      actionLabel: 'حفظ',
+      title: tr.changeNameTitle,
+      description: tr.changeNameBody,
+      actionLabel: tr.save,
       actionIcon: Icons.check_rounded,
       loading: _loading,
       onSubmit: _save,
       fields: [
         AppTextField(
           controller: _name,
-          label: 'الاسم واللقب',
+          label: tr.fullName,
           icon: Icons.person_outline_rounded,
           autofocus: true,
           textInputAction: TextInputAction.done,

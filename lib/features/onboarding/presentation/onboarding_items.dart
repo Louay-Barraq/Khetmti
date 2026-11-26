@@ -1,3 +1,4 @@
+import 'package:khetmti/l10n/l10n.dart';
 class OnboardingInfo {
   final String title;
   final String description;
@@ -12,40 +13,40 @@ class OnboardingInfo {
   });
 }
 
-const onboardingItems = [
+List<OnboardingInfo> get onboardingItems => [
   OnboardingInfo(
-    title: 'أنشئ ختمة جديدة',
+    title: tr.onb1Title,
     description:
-        'ابدأ ختمتك بسهولة: اكتب لمن هي، وحدّد عدد المشاركين وطريقة التقسيم بالسور أو بالأجزاء.',
+        tr.onb1Body,
     image: 'assets/onboarding/create.jpg',
   ),
   OnboardingInfo(
-    title: 'تابع تقدّم الختمة',
+    title: tr.onb2Title,
     description:
-        'احجز ما ستقرؤه، وأتمّه بلمسة، وتابع نسبة الإنجاز ومن يقرأ ماذا حتى تكتمل الختمة.',
+        tr.onb2Body,
     image: 'assets/onboarding/khatma.jpg',
   ),
   OnboardingInfo(
-    title: 'كل ختماتك في مكان واحد',
+    title: tr.onb3Title,
     description:
-        'ختماتك النشطة والمكتملة أمامك، يتحدّث تقدّمها مباشرة كلما قرأ أحد المشاركين.',
+        tr.onb3Body,
     image: 'assets/onboarding/home.jpg',
   ),
   OnboardingInfo(
-    title: 'أصدقاؤك معك',
+    title: tr.onb4Title,
     description:
-        'تابع أصدقاءك ومستوياتهم، وتنافسوا في الخير في لوحة المتصدرين.',
+        tr.onb4Body,
     image: 'assets/onboarding/friends.jpg',
   ),
   OnboardingInfo(
-    title: 'ابحث عن الأشخاص',
+    title: tr.onb5Title,
     description:
-        'ابحث عن أصدقائك بالاسم، وأرسل طلبات الصداقة أو اقبلها لتشاركوا الختمات معاً.',
+        tr.onb5Body,
     image: 'assets/onboarding/search.jpg',
   ),
   OnboardingInfo(
-    title: 'انطلق، والله في عونك',
+    title: tr.onb6Title,
     description:
-        'استعد لرحلتك مع القرآن. سواء بدأت ختمة أو شاركت في أخرى، أتمّ وردك بفضل الله.',
+        tr.onb6Body,
   ),
 ];

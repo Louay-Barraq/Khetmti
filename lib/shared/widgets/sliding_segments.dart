@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 
 /// A segmented switch whose green pill slides to the chosen segment.
-/// [labels] are listed right to left. [dark] is the navy version used on the
+/// [labels] are in reading order (right to left in Arabic). [dark] is the navy version used on the
 /// green header; the light version sits on the page background.
 class SlidingSegments extends StatelessWidget {
   final List<String> labels;
@@ -25,12 +25,13 @@ class SlidingSegments extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final n = labels.length;
-    final x = n == 1 ? 0.0 : 1 - 2 * selected / (n - 1);
+    // start → end: first label on the right in Arabic, on the left in LTR languages
+    final x = n == 1 ? 0.0 : -1 + 2 * selected / (n - 1);
 
     final body = Stack(
       children: [
         AnimatedAlign(
-          alignment: Alignment(x, 0),
+          alignment: AlignmentDirectional(x, 0),
           duration: AppTheme.medium,
           curve: Curves.easeOutBack,
           child: FractionallySizedBox(
@@ -52,7 +53,6 @@ class SlidingSegments extends StatelessWidget {
           ),
         ),
         Row(
-          textDirection: TextDirection.rtl,
           children: [
             for (var i = 0; i < n; i++)
               Expanded(
@@ -63,7 +63,7 @@ class SlidingSegments extends StatelessWidget {
                     child: AnimatedDefaultTextStyle(
                       duration: AppTheme.fast,
                       style: TextStyle(
-                        fontFamily: 'Amiri',
+                        fontFamily: AppTheme.font,
                         fontWeight: FontWeight.bold,
                         fontSize: dark ? 16 : 17,
                         color: i == selected

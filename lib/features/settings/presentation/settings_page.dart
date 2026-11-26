@@ -6,6 +6,7 @@ import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/auth/providers/auth_provider.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/settings_item_card.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class SettingsPage extends ConsumerWidget {
   final bool showBackButton;
@@ -19,7 +20,7 @@ class SettingsPage extends ConsumerWidget {
         children: [
           // Standardized Header
           KhetmtiHeader(
-            title: 'الإعدادات',
+            title: tr.settings,
             showProfile: true,
             showBackButton: showBackButton,
             onNotificationTap: () => context.push('/notifications'),
@@ -29,11 +30,10 @@ class SettingsPage extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 30, 20, 40),
               children: [
-                const Text(
-                  'الإعدادات القابلة للتغيير',
-                  textDirection: TextDirection.rtl,
+                Text(
+                  tr.editableSettings,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
@@ -42,34 +42,39 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 15),
                 _buildCardGroup([
                   SettingsItemCard(
-                    title: "تغيير إسم المستخدم",
+                    title: tr.changeUsername,
                     icon: Icons.person_outline,
                     onTap: () => context.push('/settings/username'),
                   ),
                   SettingsItemCard(
-                    title: "تغيير البريد الإلكتروني",
+                    title: tr.changeEmail,
                     icon: Icons.email_outlined,
                     onTap: () => context.push('/settings/email'),
                   ),
                   SettingsItemCard(
-                    title: "تغيير كلمة السر",
+                    title: tr.changePassword,
                     icon: Icons.lock_outline,
                     onTap: () => context.push('/settings/password'),
                   ),
+                  SettingsItemCard(
+                    title: '${tr.language} · ${languageNames[L10n.locale.languageCode]}',
+                    icon: Icons.translate_rounded,
+                    onTap: () => _showLanguagePicker(context, ref),
+                  ),
                   /*
                   SettingsItemCard(
-                    title: "إشعارات التذكير",
+                    title: tr.reminders,
                     icon: Icons.notifications_none,
                     onTap: () {},
                   ),
                   SettingsItemCard(
-                    title: "المظهر (داكن/فاتح)",
+                    title: tr.appearance,
                     icon: Icons.dark_mode_outlined,
                     onTap: () {},
                   ),
                   */
                   SettingsItemCard(
-                    title: "تسجيل الخروج",
+                    title: tr.signOut,
                     icon: Icons.logout,
                     textColor: Colors.red,
                     iconColor: Colors.red,
@@ -78,7 +83,7 @@ class SettingsPage extends ConsumerWidget {
                     onTap: () => ref.read(authRepositoryProvider).signOut(),
                   ),
                   SettingsItemCard(
-                    title: "حذف الحساب",
+                    title: tr.deleteAccount,
                     icon: Icons.delete_forever,
                     textColor: Colors.red,
                     iconColor: Colors.red,
@@ -87,11 +92,10 @@ class SettingsPage extends ConsumerWidget {
                   ),
                 ]),
                 const SizedBox(height: 30),
-                const Text(
-                  'الدعم والمساعدة',
-                  textDirection: TextDirection.rtl,
+                Text(
+                  tr.supportSection,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
@@ -100,12 +104,12 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 15),
                 _buildCardGroup([
                   SettingsItemCard(
-                    title: "مركز المساعدة",
+                    title: tr.helpCenter,
                     icon: Icons.help_outline,
                     onTap: () => context.push('/help'),
                   ),
                   SettingsItemCard(
-                    title: "عن تطبيق ختمتي",
+                    title: tr.aboutKhetmti,
                     icon: Icons.info_outline,
                     onTap: () => context.push('/about'),
                   ),
@@ -122,6 +126,32 @@ class SettingsPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (_) => const _DeleteAccountDialog(),
+    );
+  }
+
+  void _showLanguagePicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final e in languageNames.entries)
+              ListTile(
+                title: Text(e.value, style: const TextStyle(fontSize: 18)),
+                trailing: L10n.locale.languageCode == e.key
+                    ? const Icon(Icons.check_rounded, color: AppTheme.primaryColor)
+                    : null,
+                onTap: () {
+                  Navigator.pop(sheet);
+                  setAppLanguage(ref, e.key);
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 
@@ -166,11 +196,11 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
       await ref.read(authRepositoryProvider).deleteAccount();
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessToast('تم حذف حسابك. نسأل الله أن يتقبل منك');
+      showSuccessToast(tr.accountDeleted);
       // The router sends the signed-out user to /login.
     } catch (_) {
       if (mounted) setState(() => _deleting = false);
-      showErrorToast('تعذّر حذف الحساب، حاول مرة أخرى');
+      showErrorToast(tr.deleteAccountFailed);
     }
   }
 
@@ -178,19 +208,16 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 40),
-      title: const Text('حذف الحساب نهائياً', textAlign: TextAlign.center),
-      content: const Text(
-        'سيُحذف حسابك وأصدقاؤك ونقاطك، وتُلغى حجوزاتك التي لم تتمها. '
-        'الختمات التي أنشأتها تنتقل إلى أقدم مشارك فيها، أو تُحذف إن لم يكن فيها غيرك. '
-        'لا يمكن التراجع عن هذا.',
-        textAlign: TextAlign.right,
-        textDirection: TextDirection.rtl,
+      title: Text(tr.deleteAccountTitle, textAlign: TextAlign.center),
+      content: Text(
+        tr.deleteAccountBody,
+        textAlign: TextAlign.start,
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
         TextButton(
           onPressed: _deleting ? null : () => Navigator.pop(context),
-          child: const Text('إلغاء'),
+          child: Text(tr.cancel),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
@@ -204,9 +231,9 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : const Text(
-                  'احذف حسابي',
-                  style: TextStyle(fontFamily: 'Amiri', fontWeight: FontWeight.bold),
+              : Text(
+                  tr.deleteMyAccount,
+                  style: TextStyle(fontFamily: AppTheme.font, fontWeight: FontWeight.bold),
                 ),
         ),
       ],

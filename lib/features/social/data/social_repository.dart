@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:khetmti/features/auth/models/app_user.dart';
 import 'package:khetmti/core/cache/local_cache.dart';
 import 'package:khetmti/core/utils/helpers.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 /// Columns other users may see. Never select '*' for other people's profiles.
 const _profileColumns = 'doc_id, username, "totalXP", "readingStats", "createdAt", "lastSeen"';
@@ -55,15 +56,15 @@ class SocialRepository {
         'sender': _currentUserId,
         'receiver': friendUid,
       });
-      showSuccessToast('تم إرسال طلب الصداقة!');
+      showSuccessToast(tr.requestSent);
     } on PostgrestException catch (e) {
       // 23505: a request between these two users already exists.
       showErrorToast(e.code == '23505'
-          ? 'يوجد طلب صداقة بينكما بالفعل'
-          : 'حدث خطأ أثناء إرسال الطلب');
+          ? tr.requestExists
+          : tr.sendRequestError);
     } catch (e) {
       debugPrint('Error sending friend request: $e');
-      showErrorToast('حدث خطأ أثناء إرسال الطلب');
+      showErrorToast(tr.sendRequestError);
     }
   }
 
@@ -77,10 +78,10 @@ class SocialRepository {
           .eq('sender', _currentUserId!)
           .eq('receiver', friendUid)
           .eq('status', 'pending');
-      showSuccessToast('تم إلغاء طلب الصداقة!');
+      showSuccessToast(tr.requestCancelled);
     } catch (e) {
       debugPrint('Error removing friend request: $e');
-      showErrorToast('حدث خطأ أثناء إلغاء الطلب');
+      showErrorToast(tr.cancelRequestError);
     }
   }
 
@@ -92,10 +93,10 @@ class SocialRepository {
           .from('friendships')
           .update({'status': 'accepted'})
           .eq('doc_id', requestId);
-      showSuccessToast("تم قبول طلب الصداقة بنجاح");
+      showSuccessToast(tr.requestAccepted);
     } catch (e) {
       debugPrint("Error accepting friend request: $e");
-      showErrorToast("حدث خطأ أثناء قبول الطلب");
+      showErrorToast(tr.acceptError);
     }
   }
 
@@ -104,10 +105,10 @@ class SocialRepository {
   Future<void> declineFriendRequest(String requestId) async {
     try {
       await _supabase.from('friendships').delete().eq('doc_id', requestId);
-      showSuccessToast("تم رفض طلب الصداقة");
+      showSuccessToast(tr.requestDeclined);
     } catch (e) {
       debugPrint("Error declining friend request: $e");
-      showErrorToast("حدث خطأ أثناء رفض الطلب");
+      showErrorToast(tr.declineError);
     }
   }
 
@@ -122,7 +123,7 @@ class SocialRepository {
           'and(sender.eq.$userId,receiver.eq.$friendUid),and(sender.eq.$friendUid,receiver.eq.$userId)');
     } catch (e) {
       debugPrint("Error unfriending: $e");
-      showErrorToast("حدث خطأ أثناء إزالة الصديق");
+      showErrorToast(tr.removeFriendError);
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:khetmti/shared/widgets/sliding_segments.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class StatisticsToggle extends StatefulWidget {
   final void Function(String) onValuesChanged;
@@ -17,7 +18,7 @@ class _StatisticsToggleState extends State<StatisticsToggle> {
   @override
   Widget build(BuildContext context) {
     return SlidingSegments(
-      labels: const ['السور', 'الأجزاء'],
+      labels: [tr.surahs, tr.juzs],
       selected: _index,
       segmentWidth: 110,
       onChanged: (i) {

@@ -17,6 +17,7 @@ import 'package:khetmti/features/quran/models/quran_data.dart';
 import 'package:khetmti/shared/widgets/friend_tile.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 enum _Filter { all, available, mine, finished }
 
@@ -43,7 +44,7 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
           );
       if (newStatus == 'finished') {
         HapticFeedback.mediumImpact();
-        showSuccessToast('بارك الله فيك! أتممت قراءة $partName');
+        showSuccessToast(tr.congratsFinished(displayPart(partName)));
       }
     } catch (e) {
       showErrorToast(e.toString().replaceFirst('Exception: ', ''));
@@ -56,20 +57,19 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('التراجع عن الإتمام', textAlign: TextAlign.right),
+        title: Text(tr.undoFinishTitle, textAlign: TextAlign.start),
         content: Text(
-          'ستعود "$partName" محجوزة لك، وتُخصم النقاط التي حصلت عليها عند إتمامها.',
-          textAlign: TextAlign.right,
-          textDirection: TextDirection.rtl,
+          tr.undoFinishBody(displayPart(partName)),
+          textAlign: TextAlign.start,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء'),
+            child: Text(tr.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('تراجع'),
+            child: Text(tr.undo),
           ),
         ],
       ),
@@ -81,16 +81,15 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('حذف الختمة', textAlign: TextAlign.right),
-        content: const Text(
-          'هل أنت متأكد من حذف هذه الختمة؟ سيتم حذفها لجميع المشاركين ولا يمكن التراجع.',
-          textAlign: TextAlign.right,
-          textDirection: TextDirection.rtl,
+        title: Text(tr.deleteKhatmaTitle, textAlign: TextAlign.start),
+        content: Text(
+          tr.deleteKhatmaBody,
+          textAlign: TextAlign.start,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء'),
+            child: Text(tr.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -100,12 +99,12 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
                 await ref
                     .read(khetmaRepositoryProvider)
                     .deleteKhetma(widget.khetmaId);
-                showSuccessToast('تم حذف الختمة بنجاح');
+                showSuccessToast(tr.khatmaDeleted);
               } catch (_) {
-                showErrorToast('حدث خطأ أثناء حذف الختمة');
+                showErrorToast(tr.deleteKhatmaError);
               }
             },
-            child: const Text('حذف', style: TextStyle(color: Colors.red)),
+            child: Text(tr.delete, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -115,7 +114,7 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
   void _openReader(Khetma khetma, String name) {
     final isSura = khetma.splitType == 'sura';
     final id = (isSura ? sourasWithAyahs.keys.toList() : juzusList).indexOf(name) + 1;
-    final title = isSura ? 'سورة $name' : name;
+    final title = isSura ? tr.surahName(displaySurah(name)) : displayJuz(name);
     context.push(
       '/quran/${isSura ? 'surah' : 'juz'}/$id'
       '?title=${Uri.encodeComponent(title)}&khatmaId=${widget.khetmaId}',
@@ -135,7 +134,7 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
         body: Column(
           children: [
             KhetmtiHeader(
-              title: 'ختمـتي',
+              title: tr.appTitle,
               showProfile: false,
               showBackButton: true,
               onBackTap: () => context.pop(),
@@ -233,9 +232,12 @@ class _KhetmaDetailPageState extends ConsumerState<KhetmaDetailPage> {
                   offset: 16,
                   child: PartTile(
                     number: names.indexOf(name) + 1,
-                    title: isSura ? 'سورة $name' : name,
+                    // Latin languages drop "Surah" here so the name fits beside the actions
+                    title: isSura
+                        ? (L10n.isArabic ? tr.surahName(name) : displaySurah(name))
+                        : displayJuz(name),
                     detail: isSura
-                        ? '${toArabicDigits(sourasWithAyahs[name]!)} آية'
+                        ? tr.ayahCount(sourasWithAyahs[name]!, toArabicDigits(sourasWithAyahs[name]!))
                         : null,
                     part: part,
                     state: states[name]!,
@@ -260,8 +262,8 @@ class _Tabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const TabBar(
-      tabs: [Tab(text: 'المحتوى'), Tab(text: 'المشاركون'), Tab(text: 'السجل')],
+    return TabBar(
+      tabs: [Tab(text: tr.tabContent), Tab(text: tr.tabParticipants), Tab(text: tr.tabLog)],
       labelColor: AppTheme.primaryColor,
       unselectedLabelColor: AppTheme.textSecondary,
       indicatorColor: AppTheme.primaryColor,
@@ -269,7 +271,7 @@ class _Tabs extends StatelessWidget {
       indicatorWeight: 3,
       dividerColor: AppTheme.borderColor,
       labelStyle: TextStyle(
-        fontFamily: 'Amiri',
+        fontFamily: AppTheme.font,
         fontWeight: FontWeight.bold,
         fontSize: 17,
       ),
@@ -284,7 +286,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unit = khetma.splitType == 'sura' ? 'سورة' : 'جزء';
+    final unit = khetma.splitType == 'sura' ? tr.surah : tr.juz;
     final percent = khetma.completionPercent.clamp(0.0, 1.0);
 
     return Container(
@@ -298,26 +300,23 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         children: [
           Row(
-            textDirection: TextDirection.rtl,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  textDirection: TextDirection.rtl,
                   children: [
-                    const Text(
-                      'ختمة لفائدة',
+                    Text(
+                      tr.khatmaFor,
                       style: TextStyle(
-                        fontFamily: 'Amiri',
+                        fontFamily: AppTheme.font,
                         fontSize: 14,
                         color: AppTheme.textSecondary,
                       ),
                     ),
                     Text(
                       khetma.name,
-                      textDirection: TextDirection.rtl,
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimary,
@@ -326,14 +325,13 @@ class _SummaryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Wrap(
-                      textDirection: TextDirection.rtl,
                       spacing: 8,
                       runSpacing: 8,
                       children: [
                         _Stat(
                           icon: Icons.group_rounded,
                           text:
-                              '${khetma.currentParticipantsNumber} / ${khetma.maxParticipantsNumber} مشاركين',
+                              tr.participantsOf(khetma.currentParticipantsNumber, khetma.maxParticipantsNumber),
                         ),
                         _Stat(
                           icon: Icons.menu_book_rounded,
@@ -384,22 +382,20 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: AppTheme.softGreen,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        textDirection: TextDirection.rtl,
         children: [
           Icon(icon, size: 15, color: AppTheme.primaryColor),
           const SizedBox(width: 5),
           Text(
             text,
-            textDirection: TextDirection.rtl,
-            style: const TextStyle(
-              fontFamily: 'Amiri',
+            style: TextStyle(
+              fontFamily: AppTheme.font,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               color: AppTheme.primaryColor,
@@ -423,7 +419,7 @@ class _JoinCode extends StatelessWidget {
       onTap: () {
         Clipboard.setData(ClipboardData(text: code));
         HapticFeedback.selectionClick();
-        showSuccessToast('تم نسخ رمز الانضمام');
+        showSuccessToast(tr.codeCopied);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -433,14 +429,13 @@ class _JoinCode extends StatelessWidget {
           border: Border.all(color: AppTheme.borderColor),
         ),
         child: Row(
-          textDirection: TextDirection.rtl,
           children: [
             const Icon(Icons.vpn_key_rounded, size: 18, color: AppTheme.textSecondary),
             const SizedBox(width: 8),
-            const Text(
-              'رمز الانضمام',
+            Text(
+              tr.joinCode,
               style: TextStyle(
-                fontFamily: 'Amiri',
+                fontFamily: AppTheme.font,
                 fontSize: 15,
                 color: AppTheme.textSecondary,
               ),
@@ -477,11 +472,11 @@ class _FilterBar extends StatelessWidget {
     required this.counts,
   });
 
-  static const _labels = {
-    _Filter.all: ('الكل', AppTheme.textPrimary),
-    _Filter.available: ('المتاحة', AppTheme.availableColor),
-    _Filter.mine: ('محجوزاتي', AppTheme.reservedColor),
-    _Filter.finished: ('المكتملة', AppTheme.finishedColor),
+  static Map<_Filter, (String, Color)> get _labels => {
+    _Filter.all: (tr.filterAll, AppTheme.textPrimary),
+    _Filter.available: (tr.filterAvailable, AppTheme.availableColor),
+    _Filter.mine: (tr.filterMine, AppTheme.reservedColor),
+    _Filter.finished: (tr.filterDone, AppTheme.finishedColor),
   };
 
   @override
@@ -517,7 +512,6 @@ class _FilterBar extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          textDirection: TextDirection.rtl,
           children: [
             if (f != _Filter.all) ...[
               Container(
@@ -533,7 +527,7 @@ class _FilterBar extends StatelessWidget {
             Text(
               '$label ${counts[f] ?? 0}',
               style: TextStyle(
-                fontFamily: 'Amiri',
+                fontFamily: AppTheme.font,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: isOn ? Colors.white : AppTheme.textPrimary,
@@ -554,9 +548,9 @@ class _EmptyFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = switch (filter) {
-      _Filter.available => 'لم يبق شيء متاح للحجز',
-      _Filter.mine => 'لم تحجز شيئاً بعد، اختر من المتاحة',
-      _Filter.finished => 'لم يكتمل شيء بعد',
+      _Filter.available => tr.emptyAvailable,
+      _Filter.mine => tr.emptyMine,
+      _Filter.finished => tr.emptyDone,
       _Filter.all => '',
     };
     return Center(
@@ -565,8 +559,8 @@ class _EmptyFilter extends StatelessWidget {
         child: Text(
           text,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontFamily: 'Amiri',
+          style: TextStyle(
+            fontFamily: AppTheme.font,
             fontSize: 17,
             color: AppTheme.textSecondary,
           ),
@@ -583,7 +577,7 @@ class _ParticipantsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final participants = ref.watch(khetmaParticipantsProvider(khetma.khetmaId));
-    final unit = khetma.splitType == 'sura' ? 'سورة' : 'جزء';
+    final unit = khetma.splitType == 'sura' ? tr.surah : tr.juz;
 
     return SmoothSwitcher(
       child: participants.when(
@@ -592,9 +586,9 @@ class _ParticipantsTab extends ConsumerWidget {
           key: ValueKey('loading'),
           child: CircularProgressIndicator(),
         ),
-        error: (_, __) => const Center(
+        error: (_, __) => Center(
           key: ValueKey('error'),
-          child: Text('تعذّر تحميل المشاركين'),
+          child: Text(tr.loadParticipantsError),
         ),
         data: (users) => ListView.builder(
           key: const ValueKey('list'),
@@ -611,9 +605,9 @@ class _ParticipantsTab extends ConsumerWidget {
                 username: u.username,
                 level: u.level,
                 subtitle: [
-                  if (u.uid == khetma.creatorId) 'المنشئ',
-                  'أتمّ $done $unit',
-                  if (reserved > 0) 'يقرأ $reserved',
+                  if (u.uid == khetma.creatorId) tr.creator,
+                  tr.finishedN(done, unit),
+                  if (reserved > 0) tr.readingN(reserved),
                 ].join(' · '),
               ),
             );
@@ -631,9 +625,9 @@ class _LogsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (logs.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'لا توجد نشاطات مسجلة بعد',
+          tr.noActivity,
           style: TextStyle(fontSize: 17, color: AppTheme.textSecondary),
         ),
       );
@@ -646,7 +640,7 @@ class _LogsTab extends StatelessWidget {
       itemCount: sorted.length,
       itemBuilder: (context, i) {
         final log = sorted[i];
-        final finished = log.action.contains('أتم');
+        final finished = log.action == 'أتم القراءة';
         final color = finished ? AppTheme.finishedColor : AppTheme.reservedColor;
         return FadeSlideIn(
           index: i,
@@ -659,7 +653,6 @@ class _LogsTab extends StatelessWidget {
               boxShadow: AppTheme.cardShadow,
             ),
             child: Row(
-              textDirection: TextDirection.rtl,
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
@@ -677,7 +670,6 @@ class _LogsTab extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    textDirection: TextDirection.rtl,
                     children: [
                       Text.rich(
                         TextSpan(children: [
@@ -685,18 +677,17 @@ class _LogsTab extends StatelessWidget {
                             text: log.username,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          TextSpan(text: ' ${log.action} '),
+                          TextSpan(text: ' ${_logAction(log.action)} '),
                           TextSpan(
-                            text: log.part,
+                            text: displayPart(log.part),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: color,
                             ),
                           ),
                         ]),
-                        textDirection: TextDirection.rtl,
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
+                        style: TextStyle(
+                          fontFamily: AppTheme.font,
                           fontSize: 16,
                           color: AppTheme.textPrimary,
                         ),
@@ -742,8 +733,8 @@ class _NotFound extends StatelessWidget {
                   size: 56, color: Colors.red),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'الختمة غير موجودة',
+            Text(
+              tr.khatmaNotFound,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -751,8 +742,8 @@ class _NotFound extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              'يبدو أن هذه الختمة قد حُذفت أو لم تعد متوفرة.',
+            Text(
+              tr.khatmaGoneBody,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 17, color: AppTheme.textSecondary),
             ),
@@ -762,3 +753,12 @@ class _NotFound extends StatelessWidget {
     );
   }
 }
+
+/// Log actions are stored in Arabic by the update_part_status database function.
+String _logAction(String stored) => switch (stored) {
+      'حجز' => tr.logReserved,
+      'أتم القراءة' => tr.logFinished,
+      'ألغى الحجز' => tr.logReleased,
+      'تراجع عن القراءة' => tr.logUndone,
+      _ => stored,
+    };

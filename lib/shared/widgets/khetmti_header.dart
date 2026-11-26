@@ -49,31 +49,29 @@ class KhetmtiHeader extends StatelessWidget {
         children: [
           // Header Row: [Prefix/Notifications] --- [Title] --- [Profile]
           Row(
-            textDirection: TextDirection.rtl,
             children: [
               // Right side (RTL): Back Button or Prefix Actions
               Expanded(
                 flex: 1,
                 child: Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerStart,
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      textDirection: TextDirection.rtl,
                       children: [
                         if (showBackButton ?? (Navigator.canPop(context)))
                           Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsetsDirectional.only(end: 8.0),
                             child: KhetmtiHeader.buildHeaderIcon(
-                              Icons.arrow_forward_ios,
+                              Icons.arrow_back_ios,
                               onTap: onBackTap ?? () => Navigator.pop(context),
                             ),
                           ),
                         if (prefixActions != null) ...prefixActions!,
                         if (showNotification)
                           Padding(
-                            padding: const EdgeInsets.only(right: 0),
+                            padding: EdgeInsets.zero,
                             child: KhetmtiHeader.buildHeaderIcon(
                               Icons.notifications_none,
                               onTap: onNotificationTap,
@@ -92,8 +90,8 @@ class KhetmtiHeader extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -106,7 +104,7 @@ class KhetmtiHeader extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Row(

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class KhetmaComponent extends StatelessWidget {
   final String title;
@@ -24,14 +25,14 @@ class KhetmaComponent extends StatelessWidget {
   });
 
   String _formatDate(DateTime? date) {
-    if (date == null) return "غير معروف";
+    if (date == null) return tr.unknown;
     return intl.DateFormat('yyyy/MM/dd').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
     bool isFinished = progress >= 1.0;
-    String dateLabel = isFinished ? "تاريخ الإكمال: " : "تاريخ البدء: ";
+    String dateLabel = isFinished ? tr.completedOn : tr.startedOn;
     String dateValue = _formatDate(isFinished ? updatedAt : createdAt);
 
     return Container(
@@ -53,7 +54,6 @@ class KhetmaComponent extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(15),
           child: Row(
-            textDirection: TextDirection.rtl,
             children: [
               // Circular Progress Indicator
               CircularPercentIndicator(
@@ -82,14 +82,13 @@ class KhetmaComponent extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  textDirection: TextDirection.rtl,
                   children: [
                     Text(
-                      "ختمة لفائدة $title",
+                      tr.khatmaForName(title),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimary,
@@ -99,7 +98,6 @@ class KhetmaComponent extends StatelessWidget {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        textDirection: TextDirection.rtl,
                         children: [
                           // Participants Pill
                           Container(
@@ -110,12 +108,12 @@ class KhetmaComponent extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              "$participantsCount مشاركين",
-                              style: const TextStyle(
+                              tr.participantsCount(participantsCount),
+                              style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                fontFamily: 'Amiri',
+                                fontFamily: AppTheme.font,
                               ),
                             ),
                           ),
@@ -129,10 +127,10 @@ class KhetmaComponent extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             "$dateLabel$dateValue",
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 12,
-                              fontFamily: 'Amiri',
+                              fontFamily: AppTheme.font,
                             ),
                           ),
                         ],

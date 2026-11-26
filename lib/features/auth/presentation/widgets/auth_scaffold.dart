@@ -101,15 +101,15 @@ class AuthScaffold extends StatelessWidget {
             child: _bubble(120, 0.08),
           ),
           if (onBack != null)
-            Positioned(
+            PositionedDirectional(
               top: 12,
-              right: 16,
+              start: 16,
               child: Material(
                 color: Colors.white.withValues(alpha: 0.2),
                 shape: const CircleBorder(),
                 child: IconButton(
                   onPressed: onBack,
-                  icon: const Icon(Icons.arrow_forward_ios_rounded,
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
                       color: Colors.white, size: 20),
                 ),
               ),
@@ -143,8 +143,8 @@ class AuthScaffold extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontFamily: 'Amiri',
+                  style: TextStyle(
+                    fontFamily: AppTheme.font,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -154,7 +154,7 @@ class AuthScaffold extends StatelessWidget {
                   subtitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 16,
                     color: Colors.white.withValues(alpha: 0.9),
                   ),
@@ -213,8 +213,7 @@ class AuthFooterLink extends StatelessWidget {
                 ),
               ],
             ),
-            textDirection: TextDirection.rtl,
-            style: const TextStyle(fontFamily: 'Amiri', fontSize: 17),
+            style: TextStyle(fontFamily: AppTheme.font, fontSize: 17),
           ),
         ),
       ),

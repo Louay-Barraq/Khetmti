@@ -8,6 +8,7 @@ import 'package:khetmti/shared/widgets/khetma_card.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
 import 'package:khetmti/shared/widgets/state_switch.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -31,7 +32,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           Column(
             children: [
               KhetmtiHeader(
-                title: 'ختمـتي',
+                title: tr.appTitle,
                 showProfile: true,
                 showBackButton: false,
                 icon: Icons.emoji_events,
@@ -48,20 +49,19 @@ class _HomePageState extends ConsumerState<HomePage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 6),
                 child: Row(
-                  textDirection: TextDirection.rtl,
                   children: [
                     Expanded(
                       child: SmoothSwitcher(
                         duration: AppTheme.fast,
                         child: Align(
                           key: ValueKey(_currentView),
-                          alignment: Alignment.centerRight,
+                          alignment: AlignmentDirectional.centerStart,
                           child: Text(
                             _currentView == 'In Progress'
-                                ? 'ختماتك النشطة'
-                                : 'ختماتك المكتملة',
-                            style: const TextStyle(
-                              fontFamily: 'Amiri',
+                                ? tr.activeKhatmas
+                                : tr.completedKhatmas,
+                            style: TextStyle(
+                              fontFamily: AppTheme.font,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.textPrimary,
@@ -73,7 +73,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     TextButton.icon(
                       onPressed: () => context.push('/khetma/join'),
                       icon: const Icon(Icons.group_add_outlined, size: 20),
-                      label: const Text('انضمام'),
+                      label: Text(tr.join),
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.primaryColor,
                       ),
@@ -112,10 +112,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         key: ValueKey('loading'),
         child: CircularProgressIndicator(),
       ),
-      error: (_, __) => const Center(
+      error: (_, __) => Center(
         key: ValueKey('error'),
         child: Text(
-          'تعذّر تحميل الختمات، تحقق من اتصالك',
+          tr.loadKhatmasHomeError,
           style: TextStyle(fontSize: 17, color: AppTheme.textSecondary),
         ),
       ),
@@ -166,16 +166,15 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
-          textDirection: TextDirection.rtl,
           children: [
             Icon(Icons.add, color: Colors.white),
             SizedBox(width: 10),
             Text(
-              'إنشاء ختمة جديدة',
+              tr.createNewKhatma,
               style: TextStyle(
-                fontFamily: 'Amiri',
+                fontFamily: AppTheme.font,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -217,9 +216,9 @@ class _EmptyHome extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                active ? 'لا توجد ختمات نشطة' : 'لا توجد ختمات مكتملة بعد',
-                style: const TextStyle(
-                  fontFamily: 'Amiri',
+                active ? tr.noActiveKhatmas : tr.noCompletedYet,
+                style: TextStyle(
+                  fontFamily: AppTheme.font,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,
@@ -228,12 +227,11 @@ class _EmptyHome extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 active
-                    ? 'أنشئ ختمة جديدة أو انضم إلى ختمة أصدقائك برمزها'
-                    : 'ستظهر هنا الختمات التي يتم إتمامها',
+                    ? tr.emptyActiveHint
+                    : tr.emptyCompletedHint,
                 textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
-                style: const TextStyle(
-                  fontFamily: 'Amiri',
+                style: TextStyle(
+                  fontFamily: AppTheme.font,
                   fontSize: 16,
                   color: AppTheme.textSecondary,
                 ),

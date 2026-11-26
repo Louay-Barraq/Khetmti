@@ -5,6 +5,7 @@ import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/quran/data/quran_api_service.dart';
 import 'package:khetmti/features/quran/providers/quran_provider.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class QuranViewPage extends ConsumerStatefulWidget {
   final int id;
@@ -92,15 +93,15 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
         return AlertDialog(
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20)),
-          title: const Text(
-            'حفظ التقدم',
+          title: Text(
+            tr.saveProgress,
             style: TextStyle(
-                fontFamily: 'Amiri', color: AppTheme.primaryColor),
+                fontFamily: AppTheme.font, color: AppTheme.primaryColor),
             textAlign: TextAlign.center,
           ),
-          content: const Text(
-            'عند النقر على الآية، يتم حفظها كعلامة توقف. في المرة القادمة التي تدخل فيها إلى هذا الجزء من خلال الختمة، سينتقل التطبيق تلقائياً إلى آخر آية قمت بحفظها لإكمال القراءة بكل سهولة.',
-            style: TextStyle(fontFamily: 'Amiri', fontSize: 16),
+          content: Text(
+            tr.saveProgressBody,
+            style: TextStyle(fontFamily: AppTheme.font, fontSize: 16),
             textAlign: TextAlign.center,
           ),
           actionsAlignment: MainAxisAlignment.center,
@@ -112,9 +113,9 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('حسناً',
+              child: Text(tr.ok,
                   style: TextStyle(
-                      fontFamily: 'Amiri', color: Colors.white)),
+                      fontFamily: AppTheme.font, color: Colors.white)),
             ),
           ],
         );
@@ -182,18 +183,18 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
                             const Icon(Icons.error_outline,
                                 size: 50, color: Colors.red),
                             const SizedBox(height: 16),
-                            const Text(
-                              'عذراً، حدث خطأ أثناء جلب البيانات',
+                            Text(
+                              tr.fetchError,
                               style: TextStyle(
-                                  fontFamily: 'Amiri',
+                                  fontFamily: AppTheme.font,
                                   fontSize: 18),
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _fetchData,
-                              child: const Text('إعادة المحاولة',
+                              child: Text(tr.retry,
                                   style: TextStyle(
-                                      fontFamily: 'Amiri')),
+                                      fontFamily: AppTheme.font)),
                             ),
                           ],
                         ),
@@ -202,9 +203,9 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
 
                     if (!snapshot.hasData ||
                         snapshot.data == null) {
-                      return const Center(
+                      return Center(
                         key: ValueKey('no_data'),
-                        child: Text('لا توجد بيانات'),
+                        child: Text(tr.noData),
                       );
                     }
 
@@ -384,21 +385,7 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
       if (surahId != 1 &&
           surahId != 9 &&
           ayah['numberInSurah'] == 1) {
-        const String b1 =
-            'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
-        const String b2 =
-            'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-        const String b3 = 'بسم الله الرحمن الرحيم';
-        if (cleanedText.startsWith(b1)) {
-          cleanedText =
-              cleanedText.substring(b1.length).trim();
-        } else if (cleanedText.startsWith(b2)) {
-          cleanedText =
-              cleanedText.substring(b2.length).trim();
-        } else if (cleanedText.startsWith(b3)) {
-          cleanedText =
-              cleanedText.substring(b3.length).trim();
-        }
+        cleanedText = stripBasmala(cleanedText);
       }
       ayahText = cleanedText;
 
@@ -485,4 +472,17 @@ class _QuranViewPageState extends ConsumerState<QuranViewPage> {
       ),
     );
   }
+}
+
+/// Removes the basmala that opens the first ayah of a surah (shown as a header instead).
+/// Compared without harakat: the bundled text orders shadda and fatha differently from
+/// typed Arabic, so an exact match never succeeds.
+String stripBasmala(String text) {
+  String bare(String w) =>
+      w.replaceAll(RegExp('[\u064B-\u0655\u0670\uFEFF]'), '').replaceAll('\u0671', '\u0627');
+  final words = text.split(' ');
+  if (words.length > 4 && words.take(4).map(bare).join(' ') == 'بسم الله الرحمن الرحيم') {
+    return words.skip(4).join(' ').trim();
+  }
+  return text;
 }

@@ -55,7 +55,6 @@ class PrimaryButton extends StatelessWidget {
                 : Row(
                     key: const ValueKey('label'),
                     mainAxisSize: MainAxisSize.min,
-                    textDirection: TextDirection.rtl,
                     children: [
                       if (icon != null) ...[
                         Icon(icon, color: Colors.white, size: 22),
@@ -63,8 +62,8 @@ class PrimaryButton extends StatelessWidget {
                       ],
                       Text(
                         label,
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
+                        style: TextStyle(
+                          fontFamily: AppTheme.font,
                           fontSize: 19,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,

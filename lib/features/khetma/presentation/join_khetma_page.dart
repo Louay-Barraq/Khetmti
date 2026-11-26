@@ -11,6 +11,7 @@ import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
 import 'package:khetmti/shared/widgets/primary_button.dart';
 import 'package:khetmti/shared/widgets/sliding_segments.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class JoinKhetmaPage extends ConsumerStatefulWidget {
   const JoinKhetmaPage({super.key});
@@ -34,10 +35,10 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
     try {
       final id = await join();
       if (id == null) {
-        showErrorToast('الرمز غير صحيح أو الختمة غير موجودة');
+        showErrorToast(tr.wrongCode);
       } else {
         HapticFeedback.mediumImpact();
-        showSuccessToast('تم الانضمام بنجاح!');
+        showSuccessToast(tr.joined);
         if (mounted) context.pushReplacement('/khetma/$id');
         return;
       }
@@ -55,7 +56,7 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
   void _joinByCode() {
     final code = _code.text.trim();
     if (code.length != 5) {
-      showErrorToast('يرجى إدخال رمز مكون من 5 أرقام');
+      showErrorToast(tr.enter5Digits);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -79,7 +80,7 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
       final results = await ref.read(khetmaRepositoryProvider).searchByName(name);
       if (mounted) setState(() => _results = results);
     } catch (_) {
-      showErrorToast('حدث خطأ أثناء البحث');
+      showErrorToast(tr.searchError);
     } finally {
       if (mounted) setState(() => _searching = false);
     }
@@ -99,7 +100,7 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
       body: Column(
         children: [
           KhetmtiHeader(
-            title: 'الانضمام لختمة',
+            title: tr.joinKhatmaTitle,
             showProfile: false,
             showNotification: false,
             showBackButton: true,
@@ -107,7 +108,7 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
             bottom: SlidingSegments(
               dark: true,
               segmentWidth: 120,
-              labels: const ['بالرمز', 'بالاسم'],
+              labels: [tr.byCode, tr.byName],
               selected: _byCode ? 0 : 1,
               onChanged: (i) => setState(() => _byCode = i == 0),
             ),
@@ -152,21 +153,20 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
                       size: 36, color: AppTheme.primaryColor),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'أدخل رمز الانضمام',
+                Text(
+                  tr.enterJoinCode,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
                   ),
                 ),
-                const Text(
-                  'رمز من 5 أرقام تجده في صفحة الختمة لدى أي مشارك',
+                Text(
+                  tr.joinCodeHelp,
                   textAlign: TextAlign.center,
-                  textDirection: TextDirection.rtl,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 15,
                     color: AppTheme.textSecondary,
                   ),
@@ -217,7 +217,7 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
         FadeSlideIn(
           index: 1,
           child: PrimaryButton(
-            label: 'انضم الآن',
+            label: tr.joinNow,
             icon: Icons.group_add_rounded,
             loading: _joining,
             onPressed: _joinByCode,
@@ -234,8 +234,8 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
       children: [
         AppTextField(
           controller: _search,
-          label: 'اسم الختمة',
-          hint: 'مثال: جدي رحمه الله',
+          label: tr.khatmaName,
+          hint: tr.khatmaForHint,
           icon: Icons.search_rounded,
           autofocus: true,
           textInputAction: TextInputAction.search,
@@ -245,10 +245,10 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
         if (_searching)
           const Center(child: CircularProgressIndicator())
         else if (results != null && results.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 24),
             child: Text(
-              'لا توجد ختمة بهذا الاسم',
+              tr.noKhatmaByName,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 17, color: AppTheme.textSecondary),
             ),
@@ -262,40 +262,36 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
 
   Widget _resultTile(Khetma k) {
     final full = k.currentParticipantsNumber >= k.maxParticipantsNumber;
-    final unit = k.splitType == 'sura' ? 'بالسور' : 'بالأجزاء';
+    final unit = k.splitType == 'sura' ? tr.bySurah : tr.byJuz;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 12, 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: AppTheme.cardShadow,
       ),
       child: Row(
-        textDirection: TextDirection.rtl,
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              textDirection: TextDirection.rtl,
               children: [
                 Text(
-                  'ختمة لفائدة ${k.name}',
+                  tr.khatmaForName(k.name),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textDirection: TextDirection.rtl,
-                  style: const TextStyle(
-                    fontFamily: 'Amiri',
+                  style: TextStyle(
+                    fontFamily: AppTheme.font,
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
                   ),
                 ),
                 Text(
-                  '${k.currentParticipantsNumber}/${k.maxParticipantsNumber} مشاركين · $unit · ${(k.completionPercent * 100).round()}%',
-                  textDirection: TextDirection.rtl,
-                  style: const TextStyle(
-                    fontFamily: 'Amiri',
+                  tr.khatmaSearchMeta(k.currentParticipantsNumber, k.maxParticipantsNumber, unit, (k.completionPercent * 100).round()),
+                  style: TextStyle(
+                    fontFamily: AppTheme.font,
                     fontSize: 14,
                     color: AppTheme.textSecondary,
                   ),
@@ -307,14 +303,14 @@ class _JoinKhetmaPageState extends ConsumerState<JoinKhetmaPage> {
           SizedBox(
             width: 96,
             child: full
-                ? const Center(
+                ? Center(
                     child: Text(
-                      'مكتملة العدد',
+                      tr.full,
                       style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
                     ),
                   )
                 : PrimaryButton(
-                    label: 'انضمام',
+                    label: tr.join,
                     loading: _joining && _joiningId == k.khetmaId,
                     onPressed: _joining ? null : () => _joinById(k.khetmaId),
                   ),

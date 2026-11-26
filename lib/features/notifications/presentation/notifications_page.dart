@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
@@ -11,8 +12,8 @@ class NotificationsPage extends StatelessWidget {
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          const KhetmtiHeader(
-            title: 'الإشعارات',
+          KhetmtiHeader(
+            title: tr.notifications,
             showProfile: false,
             showBackButton: true,
             showNotification: false,
@@ -28,10 +29,10 @@ class NotificationsPage extends StatelessWidget {
                     color: AppTheme.textSecondary.withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'لا توجد إشعارات حالياً',
+                  Text(
+                    tr.noNotifications,
                     style: TextStyle(
-                      fontFamily: 'Amiri',
+                      fontFamily: AppTheme.font,
                       fontSize: 20,
                       color: AppTheme.textSecondary,
                     ),

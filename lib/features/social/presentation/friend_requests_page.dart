@@ -6,6 +6,7 @@ import 'package:khetmti/features/social/models/friendship.dart';
 import 'package:khetmti/features/social/providers/social_provider.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class FriendRequestsPage extends ConsumerStatefulWidget {
   const FriendRequestsPage({super.key});
@@ -36,8 +37,8 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          const KhetmtiHeader(
-            title: 'طلبات الصداقة',
+          KhetmtiHeader(
+            title: tr.friendRequests,
             showNotification: false,
             showProfile: false,
             showBackButton: true,
@@ -50,10 +51,10 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
                   key: ValueKey('loading'),
                   child: CircularProgressIndicator(),
                 ),
-                error: (_, __) => const Center(
+                error: (_, __) => Center(
                   key: ValueKey('error'),
                   child: Text(
-                    'حدث خطأ أثناء تحميل الطلبات',
+                    tr.loadRequestsError,
                     style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
                   ),
                 ),
@@ -90,15 +91,14 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
         boxShadow: AppTheme.cardShadow,
       ),
       child: Row(
-        textDirection: TextDirection.rtl,
         children: [
           CircleAvatar(
             radius: 26,
             backgroundColor: const Color(0xFFF1F5F9),
             child: Text(
               initial,
-              style: const TextStyle(
-                fontFamily: 'Amiri',
+              style: TextStyle(
+                fontFamily: AppTheme.font,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.primaryColor,
@@ -109,24 +109,22 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              textDirection: TextDirection.rtl,
               children: [
                 Text(
                   request.username,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textDirection: TextDirection.rtl,
-                  style: const TextStyle(
-                    fontFamily: 'Amiri',
+                  style: TextStyle(
+                    fontFamily: AppTheme.font,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
                   ),
                 ),
                 Text(
-                  'المستوى ${request.level}',
-                  style: const TextStyle(
-                    fontFamily: 'Amiri',
+                  tr.levelN('${request.level}'),
+                  style: TextStyle(
+                    fontFamily: AppTheme.font,
                     fontSize: 14,
                     color: AppTheme.textSecondary,
                   ),
@@ -154,7 +152,7 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
                     children: [
                       _RoundButton(
                         icon: Icons.close_rounded,
-                        tooltip: 'رفض',
+                        tooltip: tr.decline,
                         color: AppTheme.redishColor,
                         onTap: () => _answer(request.requestId,
                             (r) => r.declineFriendRequest(request.requestId)),
@@ -162,7 +160,7 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage> {
                       const SizedBox(width: 8),
                       _RoundButton(
                         icon: Icons.check_rounded,
-                        tooltip: 'قبول',
+                        tooltip: tr.accept,
                         color: AppTheme.primaryColor,
                         filled: true,
                         onTap: () => _answer(request.requestId,
@@ -232,8 +230,8 @@ class _NoRequests extends StatelessWidget {
                 size: 44, color: AppTheme.primaryColor),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'لا توجد طلبات صداقة حالياً',
+          Text(
+            tr.noRequests,
             style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
           ),
         ],

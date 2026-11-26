@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:khetmti/shared/widgets/sliding_segments.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class ProfileStateSwitch extends StatefulWidget {
   final void Function(String) onSwitchChanged;
@@ -17,9 +18,9 @@ class _ProfileStateSwitchState extends State<ProfileStateSwitch> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: 20),
       child: SlidingSegments(
-        labels: const ['أصدقائك', 'ختماتك', 'الإحصائيات'],
+        labels: [tr.yourFriends, tr.yourKhatmas, tr.stats],
         selected: _index,
         onChanged: (i) {
           if (i == _index) return;

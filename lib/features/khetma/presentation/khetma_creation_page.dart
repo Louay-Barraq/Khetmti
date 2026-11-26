@@ -9,6 +9,7 @@ import 'package:khetmti/shared/widgets/app_text_field.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
 import 'package:khetmti/shared/widgets/primary_button.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class KhetmaCreationPage extends ConsumerStatefulWidget {
   const KhetmaCreationPage({super.key});
@@ -28,7 +29,7 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
   Future<void> _create() async {
     final name = _name.text.trim();
     if (name.isEmpty) {
-      showErrorToast('اكتب لمن هذه الختمة');
+      showErrorToast(tr.khatmaForRequired);
       return;
     }
 
@@ -41,12 +42,12 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
             maxParticipants: _maxParticipants,
           );
       HapticFeedback.mediumImpact();
-      showSuccessToast('تم إنشاء الختمة بنجاح');
+      showSuccessToast(tr.khatmaCreated);
       if (mounted) context.pushReplacement('/khetma/$id');
     } catch (e) {
       debugPrint('Error creating khatma: $e');
       if (mounted) setState(() => _loading = false);
-      showErrorToast('حدث خطأ أثناء إنشاء الختمة');
+      showErrorToast(tr.createKhatmaError);
     }
   }
 
@@ -63,7 +64,7 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
       body: Column(
         children: [
           KhetmtiHeader(
-            title: 'إنشاء ختمة',
+            title: tr.createKhatmaTitle,
             showProfile: false,
             showNotification: false,
             showBackButton: true,
@@ -80,8 +81,8 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
                     child: _card(
                       AppTextField(
                         controller: _name,
-                        label: 'ختمة لفائدة',
-                        hint: 'مثال: جدي رحمه الله',
+                        label: tr.khatmaFor,
+                        hint: tr.khatmaForHint,
                         icon: Icons.favorite_border_rounded,
                         textInputAction: TextInputAction.done,
                       ),
@@ -95,7 +96,7 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
                   FadeSlideIn(
                     index: 3,
                     child: PrimaryButton(
-                      label: 'إنشاء الختمة',
+                      label: tr.createKhatmaButton,
                       icon: Icons.add_rounded,
                       loading: _loading,
                       onPressed: _create,
@@ -122,12 +123,11 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
 
   Widget _label(String text, String hint) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        textDirection: TextDirection.rtl,
         children: [
           Text(
             text,
-            style: const TextStyle(
-              fontFamily: 'Amiri',
+            style: TextStyle(
+              fontFamily: AppTheme.font,
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppTheme.textPrimary,
@@ -135,9 +135,8 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
           ),
           Text(
             hint,
-            textDirection: TextDirection.rtl,
-            style: const TextStyle(
-              fontFamily: 'Amiri',
+            style: TextStyle(
+              fontFamily: AppTheme.font,
               fontSize: 14,
               color: AppTheme.textSecondary,
             ),
@@ -174,9 +173,8 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
     }
 
     return Row(
-      textDirection: TextDirection.rtl,
       children: [
-        Expanded(child: _label('العدد الأقصى للمشاركين', 'بمن فيهم أنت')),
+        Expanded(child: _label(tr.maxParticipants, tr.includingYou)),
         button(Icons.add_rounded, 1),
         SizedBox(
           width: 52,
@@ -228,7 +226,7 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
                 Text(
                   title,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: on ? AppTheme.primaryColor : AppTheme.textPrimary,
@@ -236,8 +234,8 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
                 ),
                 Text(
                   detail,
-                  style: const TextStyle(
-                    fontFamily: 'Amiri',
+                  style: TextStyle(
+                    fontFamily: AppTheme.font,
                     fontSize: 13,
                     color: AppTheme.textSecondary,
                   ),
@@ -252,14 +250,13 @@ class _KhetmaCreationPageState extends ConsumerState<KhetmaCreationPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _label('تقسيم الختمة', 'كل مشارك يحجز ما سيقرؤه'),
+        _label(tr.splitKhatma, tr.splitKhatmaDesc),
         const SizedBox(height: 14),
         Row(
-          textDirection: TextDirection.rtl,
           children: [
-            option('sura', 'بالسور', '114 سورة', Icons.auto_stories_outlined),
+            option('sura', tr.bySurah, tr.surahCount, Icons.auto_stories_outlined),
             const SizedBox(width: 12),
-            option('juzu', 'بالأجزاء', '30 جزءاً', Icons.view_agenda_outlined),
+            option('juzu', tr.byJuz, tr.juzCount, Icons.view_agenda_outlined),
           ],
         ),
       ],

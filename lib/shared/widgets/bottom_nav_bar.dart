@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -30,10 +31,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_rounded, 'الرئيسية'),
-              _buildNavItem(1, Icons.grid_view_rounded, 'القائمة'),
-              _buildNavItem(2, Icons.settings_rounded, 'الإعدادات'),
-              _buildNavItem(3, Icons.person_rounded, 'الحساب'),
+              _buildNavItem(0, Icons.home_rounded, tr.navHome),
+              _buildNavItem(1, Icons.grid_view_rounded, tr.menu),
+              _buildNavItem(2, Icons.settings_rounded, tr.settings),
+              _buildNavItem(3, Icons.person_rounded, tr.account),
             ],
           ),
         ),
@@ -58,7 +59,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Amiri',
+              fontFamily: AppTheme.font,
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,

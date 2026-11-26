@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 /// Attached to [MaterialApp] so toasts can be shown without a BuildContext
 /// (e.g. from repositories).
@@ -50,8 +51,9 @@ bool isValidEmail(String email) {
   return emailRegex.hasMatch(email);
 }
 
-/// 123 → ١٢٣
+/// 123 → ١٢٣ in Arabic; unchanged in the other languages.
 String toArabicDigits(int number) {
+  if (!L10n.isArabic) return number.toString();
   const digits = '٠١٢٣٤٥٦٧٨٩';
   return number
       .toString()

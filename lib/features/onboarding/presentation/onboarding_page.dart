@@ -6,6 +6,7 @@ import 'package:khetmti/shared/widgets/motion.dart';
 import 'package:khetmti/shared/widgets/primary_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -55,14 +56,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
             SizedBox(
               height: 52,
               child: Align(
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerEnd,
                 child: AnimatedOpacity(
                   opacity: _isLast ? 0 : 1,
                   duration: AppTheme.fast,
                   child: TextButton(
                     onPressed: _isLast ? null : _finish,
-                    child: const Text(
-                      'تخطي',
+                    child: Text(
+                      tr.skip,
                       style: TextStyle(color: AppTheme.textSecondary),
                     ),
                   ),
@@ -101,13 +102,34 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   child: _isLast
                       ? PrimaryButton(
                           key: const ValueKey('start'),
-                          label: 'ابدأ الآن',
-                          icon: Icons.arrow_back_rounded,
+                          label: tr.startNow,
+                          icon: Icons.arrow_forward_rounded,
                           onPressed: _finish,
                         )
                       : Row(
                           key: const ValueKey('nav'),
                           children: [
+                            Directionality(
+                              textDirection: Directionality.of(context),
+                              child: SmoothPageIndicator(
+                                controller: _controller,
+                                count: onboardingItems.length,
+                                onDotClicked: (i) => _controller.animateToPage(
+                                  i,
+                                  duration: AppTheme.medium,
+                                  curve: AppTheme.curve,
+                                ),
+                                effect: const ExpandingDotsEffect(
+                                  dotHeight: 8,
+                                  dotWidth: 8,
+                                  expansionFactor: 3.5,
+                                  spacing: 6,
+                                  activeDotColor: AppTheme.primaryColor,
+                                  dotColor: AppTheme.borderColor,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
                             Pressable(
                               onTap: _next,
                               child: Container(
@@ -125,29 +147,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                     ),
                                   ],
                                 ),
-                                child: const Icon(Icons.arrow_back_rounded,
+                                child: const Icon(Icons.arrow_forward_rounded,
                                     color: Colors.white),
-                              ),
-                            ),
-                            const Spacer(),
-                            Directionality(
-                              textDirection: TextDirection.rtl,
-                              child: SmoothPageIndicator(
-                                controller: _controller,
-                                count: onboardingItems.length,
-                                onDotClicked: (i) => _controller.animateToPage(
-                                  i,
-                                  duration: AppTheme.medium,
-                                  curve: AppTheme.curve,
-                                ),
-                                effect: const ExpandingDotsEffect(
-                                  dotHeight: 8,
-                                  dotWidth: 8,
-                                  expansionFactor: 3.5,
-                                  spacing: 6,
-                                  activeDotColor: AppTheme.primaryColor,
-                                  dotColor: AppTheme.borderColor,
-                                ),
                               ),
                             ),
                           ],
@@ -195,8 +196,8 @@ class _OnboardingSlide extends StatelessWidget {
                   Text(
                     item.title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Amiri',
+                    style: TextStyle(
+                      fontFamily: AppTheme.font,
                       fontSize: 27,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.textPrimary,
@@ -206,9 +207,8 @@ class _OnboardingSlide extends StatelessWidget {
                   Text(
                     item.description,
                     textAlign: TextAlign.center,
-                    textDirection: TextDirection.rtl,
-                    style: const TextStyle(
-                      fontFamily: 'Amiri',
+                    style: TextStyle(
+                      fontFamily: AppTheme.font,
                       fontSize: 17,
                       height: 1.6,
                       color: AppTheme.textSecondary,

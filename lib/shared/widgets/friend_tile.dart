@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:khetmti/core/theme/app_theme.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class FriendComponent extends StatelessWidget {
   final String username;
@@ -21,19 +22,19 @@ class FriendComponent extends StatelessWidget {
   });
 
   String _formatLastSeen(DateTime? date) {
-    if (date == null) return "غير معروف";
+    if (date == null) return tr.unknown;
 
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inSeconds < 60) {
-      return "متصل الآن";
+      return tr.onlineNow;
     } else if (difference.inMinutes < 60) {
-      return "منذ ${difference.inMinutes} دقيقة";
+      return tr.minutesAgo(difference.inMinutes);
     } else if (difference.inHours < 24) {
-      return "منذ ${difference.inHours} ساعة";
+      return tr.hoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return "منذ ${difference.inDays} أيام";
+      return tr.daysAgo(difference.inDays);
     } else {
       return DateFormat('yyyy/MM/dd').format(date);
     }
@@ -62,7 +63,6 @@ class FriendComponent extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
-              textDirection: TextDirection.rtl,
               children: [
                 // Friend Avatar
                 Container(
@@ -88,14 +88,13 @@ class FriendComponent extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    textDirection: TextDirection.rtl,
                     children: [
                       Text(
                         username,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
+                        style: TextStyle(
+                          fontFamily: AppTheme.font,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
@@ -103,9 +102,9 @@ class FriendComponent extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        subtitle ?? "آخر ظهور: ${_formatLastSeen(lastSeen)}",
-                        style: const TextStyle(
-                          fontFamily: 'Amiri',
+                        subtitle ?? tr.lastSeen(_formatLastSeen(lastSeen)),
+                        style: TextStyle(
+                          fontFamily: AppTheme.font,
                           fontSize: 12,
                           color: AppTheme.textSecondary,
                         ),
@@ -124,9 +123,9 @@ class FriendComponent extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      "مستوى $level",
-                      style: const TextStyle(
-                        fontFamily: 'Amiri',
+                      tr.levelShort('$level'),
+                      style: TextStyle(
+                        fontFamily: AppTheme.font,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.secondaryColor,

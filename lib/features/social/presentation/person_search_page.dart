@@ -8,6 +8,7 @@ import 'package:khetmti/features/social/providers/social_provider.dart';
 import 'package:khetmti/shared/widgets/friend_addition_component.dart';
 import 'package:khetmti/shared/widgets/khetmti_header.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 class PersonSearchPage extends ConsumerStatefulWidget {
   const PersonSearchPage({super.key});
@@ -44,7 +45,7 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
       body: Column(
         children: [
           KhetmtiHeader(
-            title: 'البحث عن صديق',
+            title: tr.findFriend,
             showNotification: false,
             showProfile: false,
             showBackButton: true,
@@ -58,25 +59,25 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(
                 child: Text(
-                  'حدث خطأ أثناء البحث',
-                  style: const TextStyle(fontFamily: 'Amiri', fontSize: 18),
+                  tr.searchError,
+                  style: TextStyle(fontFamily: AppTheme.font, fontSize: 18),
                 ),
               ),
               data: (results) {
                 if (query.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
-                      'ابدأ بالبحث عن اسم صديقك',
-                      style: TextStyle(fontFamily: 'Amiri', fontSize: 18),
+                      tr.searchStart,
+                      style: TextStyle(fontFamily: AppTheme.font, fontSize: 18),
                     ),
                   );
                 }
 
                 if (results.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
-                      'لا يوجد شخص بهذا الاسم',
-                      style: TextStyle(fontFamily: 'Amiri', fontSize: 18),
+                      tr.noPersonFound,
+                      style: TextStyle(fontFamily: AppTheme.font, fontSize: 18),
                     ),
                   );
                 }
@@ -90,7 +91,7 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
                       index: index,
                       child: FriendAdditionComponent(
                         username: result.username,
-                        subtitle: 'المستوى ${result.level}',
+                        subtitle: tr.levelN('${result.level}'),
                         status: result.status.name,
                         onAdd: () =>
                             _act((r) => r.sendFriendRequest(result.uid)),
@@ -128,14 +129,13 @@ class _PersonSearchPageState extends ConsumerState<PersonSearchPage> {
       ),
       child: TextField(
         controller: _controller,
-        textDirection: TextDirection.rtl,
         textInputAction: TextInputAction.search,
         onChanged: (_) => setState(() {}),
         onSubmitted: (val) => setState(() => _query = val.trim()),
-        style: const TextStyle(fontFamily: 'Amiri', fontSize: 18),
+        style: TextStyle(fontFamily: AppTheme.font, fontSize: 18),
         decoration: InputDecoration(
-          hintText: 'ابحث عن اسم المستخدم...',
-          hintStyle: const TextStyle(fontFamily: 'Amiri', color: Colors.grey),
+          hintText: tr.searchUsernameHint,
+          hintStyle: TextStyle(fontFamily: AppTheme.font, color: Colors.grey),
           prefixIcon: const Icon(Icons.search, color: AppTheme.primaryColor),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(

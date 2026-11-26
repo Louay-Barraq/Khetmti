@@ -4,6 +4,7 @@ import 'package:khetmti/core/utils/helpers.dart';
 import 'package:khetmti/features/khetma/models/khetma_part.dart';
 import 'package:khetmti/features/khetma/models/part_state.dart';
 import 'package:khetmti/shared/widgets/motion.dart';
+import 'package:khetmti/l10n/l10n.dart';
 
 /// Color, icon and wording of each part state, shared by the tiles and the
 /// filter chips so both always agree.
@@ -23,11 +24,11 @@ extension PartStateStyle on PartState {
       };
 
   String label(String? reader) => switch (this) {
-        PartState.available => 'متاحة للحجز',
-        PartState.mine => 'محجوزة لك',
-        PartState.taken => 'محجوزة لـ ${reader ?? 'مشارك'}',
-        PartState.finishedByMe => 'أتممتَ قراءتها',
-        PartState.finished => 'قرأها ${reader ?? 'مشارك'}',
+        PartState.available => tr.partAvailable,
+        PartState.mine => tr.partReservedForYou,
+        PartState.taken => tr.partReservedBy(reader ?? tr.participant),
+        PartState.finishedByMe => tr.partFinishedByYou,
+        PartState.finished => tr.partReadBy(reader ?? tr.participant),
       };
 }
 
@@ -73,7 +74,7 @@ class PartTile extends StatelessWidget {
         duration: AppTheme.medium,
         curve: AppTheme.curve,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
+        padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 12, 12),
         decoration: BoxDecoration(
           color: highlighted ? const Color(0xFFF5F8FF) : Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -86,7 +87,6 @@ class PartTile extends StatelessWidget {
           boxShadow: AppTheme.cardShadow,
         ),
         child: Row(
-          textDirection: TextDirection.rtl,
           children: [
             _NumberBadge(number: number, state: state),
             const SizedBox(width: 12),
@@ -117,19 +117,16 @@ class PartTile extends StatelessWidget {
   Widget _info(Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      textDirection: TextDirection.rtl,
       children: [
         Row(
-          textDirection: TextDirection.rtl,
           children: [
             Flexible(
               child: Text(
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                textDirection: TextDirection.rtl,
-                style: const TextStyle(
-                  fontFamily: 'Amiri',
+                style: TextStyle(
+                  fontFamily: AppTheme.font,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,
@@ -137,13 +134,13 @@ class PartTile extends StatelessWidget {
                 ),
               ),
             ),
-            if (detail != null) ...[
+            // your own reservation carries two action buttons: keep the name, drop the ayah count
+            if (detail != null && state != PartState.mine) ...[
               const SizedBox(width: 6),
               Text(
                 detail!,
-                textDirection: TextDirection.rtl,
-                style: const TextStyle(
-                  fontFamily: 'Amiri',
+                style: TextStyle(
+                  fontFamily: AppTheme.font,
                   fontSize: 13,
                   color: AppTheme.textMuted,
                 ),
@@ -157,7 +154,6 @@ class PartTile extends StatelessWidget {
           child: Row(
             key: ValueKey(state),
             mainAxisSize: MainAxisSize.min,
-            textDirection: TextDirection.rtl,
             children: [
               Icon(state.icon, size: 15, color: color),
               const SizedBox(width: 4),
@@ -166,9 +162,8 @@ class PartTile extends StatelessWidget {
                   state.label(part.username),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textDirection: TextDirection.rtl,
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: color,
@@ -186,7 +181,7 @@ class PartTile extends StatelessWidget {
     return switch (state) {
       PartState.available => _ActionPill(
           key: const ValueKey('reserve'),
-          label: 'احجز',
+          label: tr.reserve,
           icon: Icons.bookmark_add_outlined,
           color: AppTheme.primaryColor,
           onTap: onReserve,
@@ -197,13 +192,13 @@ class PartTile extends StatelessWidget {
           children: [
             _RoundAction(
               icon: Icons.close_rounded,
-              tooltip: 'إلغاء الحجز',
+              tooltip: tr.cancelReservation,
               color: AppTheme.redishColor,
               onTap: onRelease,
             ),
             const SizedBox(width: 6),
             _ActionPill(
-              label: 'أتممت',
+              label: tr.finishedButton,
               icon: Icons.check_rounded,
               color: AppTheme.finishedColor,
               filled: true,
@@ -213,14 +208,14 @@ class PartTile extends StatelessWidget {
         ),
       PartState.finishedByMe => _ActionPill(
           key: const ValueKey('undo'),
-          label: 'تراجع',
+          label: tr.undo,
           icon: Icons.undo_rounded,
           color: AppTheme.textSecondary,
           onTap: onUndo,
         ),
       PartState.taken || PartState.finished => const Icon(
           key: ValueKey('none'),
-          Icons.chevron_left_rounded,
+          Icons.chevron_right_rounded,
           color: AppTheme.textMuted,
         ),
     };
@@ -256,7 +251,7 @@ class _NumberBadge extends StatelessWidget {
                   toArabicDigits(number),
                   key: const ValueKey('number'),
                   style: TextStyle(
-                    fontFamily: 'Amiri',
+                    fontFamily: AppTheme.font,
                     fontSize: 19,
                     fontWeight: FontWeight.bold,
                     color: color,
@@ -309,14 +304,13 @@ class _ActionPill extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          textDirection: TextDirection.rtl,
           children: [
             Icon(icon, size: 18, color: fg),
             const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Amiri',
+                fontFamily: AppTheme.font,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: fg,
