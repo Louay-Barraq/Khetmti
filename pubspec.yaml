@@ -21,6 +21,8 @@ dependencies:
   supabase_flutter: ^2.6.0
   flutter_riverpod: ^2.6.1
   go_router: ^14.8.1
+  # already pulled in by supabase_flutter; used directly by lib/main_screenshots.dart
+  app_links: ^6.4.1
 
 flutter_native_splash:
   image: "assets/images/Khetmti - App Logo.png"
